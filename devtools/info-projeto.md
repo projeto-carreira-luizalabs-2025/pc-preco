@@ -63,6 +63,22 @@ O preço total pode ser representado já com o valor do frete acrescentado.
 
 O valor do frete será calculado em "pc-frete".
 
+---
+
+### Frete Grátis por Valor de Compra
+
+O frete grátis poderá ser aplicado automaticamente sob as seguintes circunstâncias:
+
+- Frete grátis para pedidos com o valor total igual ou superior a R$ 100,00.
+
+- O valor considerado é o total dos produtos no carrinho, sem incluir o frete.
+
+📌 Exemplo
+
+Carrinho com R$ 99,90 em produtos → Frete será cobrado normalmente.
+
+Carrinho com R$ 100,00 ou mais em produtos → Frete grátis será automaticamente aplicado.
+
 <br>
 
 ## 💰 Definição do preço percebido pelo vendedor
