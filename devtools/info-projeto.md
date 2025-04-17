@@ -35,7 +35,8 @@ O novo valor das parcelas pode ser calculado por fórmulas específicas, um exem
 
 $$P = \frac{V \cdot i}{1 - (1 + i)^{-n}}$$
 
-*Onde $P$=Parcela, $V$=Valor Presente, $i$=taxa de juros mensal (decimal), $n$=número de parcelas.*
+*Onde 
+P = Parcela, V = Valor Presente, i = taxa de juros mensal (decimal), n =número de parcelas.*
 
 #### 📌 Exemplo
 
@@ -48,8 +49,7 @@ $$P = \frac{1000 \cdot 0{,}025}{1 - (1 + 0{,}025)^{-12}}$$
 
 Valor aproximado da parcela: **R$ 96,22**
 
-Preço total final:
-$$12 \times 96,22 = R\$ 1.154,64$$
+Preço total final: **12 × 96,22 = R$ 1.154,64**
 
 ---
 
@@ -57,7 +57,7 @@ $$12 \times 96,22 = R\$ 1.154,64$$
 
 O preço total pode ser representado já com o valor do frete acrescentado.
 
-O valor do frete será calculado em "pc-frete".
+O valor do frete será calculado em `pc-frete`.
 
 ---
 
@@ -118,6 +118,8 @@ Custo: R$ 1.000 → Preço permitido: de R$ 1.200 a R$ 1.800
 - Caso produto estiver mais de 30 dias no estoque → 10% de desconto
 - Caso produto estiver mais de 60 dias no estoque → 20% de desconto
 
+**Observação**: Para cálculo do estoque, irá ser realizado em `pc-estoque`
+
 ---
 
 ### Preço promocional em datas especiais
@@ -136,6 +138,8 @@ Vendedores com boa reputação podem cobrar mais.
 #### 📌 Exemplo
 
 * Se reputação for 5 estrelas e índice de devolução < 3%, o vendedor pode ultrapassar o preço médio em até 10%.
+
+**Observação**: O cálculo de reputação do vendedor será feito em `pc-identidade`
 
 ---
 
