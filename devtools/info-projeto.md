@@ -142,3 +142,8 @@ Vendedores com boa reputação podem cobrar mais.
 
 - Se reputação for 5 estrelas e índice de devolução < 3%, o vendedor pode ultrapassar o preço médio em até 10%.
 
+---
+
+### ⚠️  Observação: 
+
+Este documento está em fase de pesquisa e planejamento inicial. Os critérios e regras descritos podem sofrer ajustes conforme novas necessidades surjam ou conforme o projeto evoluir. Sugestões e contribuições são bem-vindas.
