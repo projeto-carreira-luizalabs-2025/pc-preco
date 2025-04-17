@@ -1,4 +1,4 @@
-# 💸 Precificação do produto 
+# 💸 Precificação do produto
 
 Esse documento tem como finalidade determinar como o preço será representado no projeto.
 
@@ -33,27 +33,23 @@ O preço pode mudar de acordo com a forma de pagamento que o cliente escolher:
 
 O novo valor das parcelas pode ser calculado por fórmulas específicas, um exemplo usando Tabela Price:
 
-$$
-P = \frac{V \cdot i}{1 - (1 + i)^{-n}}
-$$
+$$P = \frac{V \cdot i}{1 - (1 + i)^{-n}}$$
+
+*Onde $P$=Parcela, $V$=Valor Presente, $i$=taxa de juros mensal (decimal), $n$=número de parcelas.*
 
 #### 📌 Exemplo
 
 Preço à vista: R$ 1.000,00
 Parcelado em: 12x
-Juros: 2,5% ao mês
+Juros: 2,5% ao mês (0,025)
+Limite s/ juros: 10x
 
-$$
-P = \frac{1000 \cdot 0{,}025}{1 - (1 + 0{,}025)^{-12}}
-$$
+$$P = \frac{1000 \cdot 0{,}025}{1 - (1 + 0{,}025)^{-12}}$$
 
-Valor aproximado da parcela: **R\$96,22** 
+Valor aproximado da parcela: **R$ 96,22**
 
-Preço novo: 
-
-$$
-12 \cdot 96{,}22 = R\$1.154,64
-$$
+Preço total final:
+$$12 \times 96,22 = R\$ 1.154,64$$
 
 ---
 
@@ -74,7 +70,6 @@ O frete grátis poderá ser aplicado automaticamente sob as seguintes circunstâ
 - O valor considerado é o total dos produtos no carrinho, sem incluir o frete.
 
 📌 Exemplo
-
 Carrinho com R$ 99,90 em produtos → Frete será cobrado normalmente.
 
 Carrinho com R$ 100,00 ou mais em produtos → Frete grátis será automaticamente aplicado.
@@ -140,7 +135,22 @@ Vendedores com boa reputação podem cobrar mais.
 
 #### 📌 Exemplo
 
-- Se reputação for 5 estrelas e índice de devolução < 3%, o vendedor pode ultrapassar o preço médio em até 10%.
+* Se reputação for 5 estrelas e índice de devolução < 3%, o vendedor pode ultrapassar o preço médio em até 10%.
+
+---
+
+## 📊 Referências de Mercado
+
+Para entendermos melhor o cenário onde nosso `pc-preco` vai operar, analisamos as práticas de grandes lojas online do Brasil (Magazine Luiza, Mercado Livre, Amazon BR, Via Varejo, Kabum!). Principais pontos observados:
+
+* **Pix é o Rei do Desconto:** Quase todos oferecem descontos bons (7-15%+) para pagamento com Pix. É uma estratégia clara para atrair clientes e reduzir custos. O Boleto perdeu destaque para promoções.
+* **Parcelamento Sem Juros é Padrão:** É muito comum oferecer 10x ou 12x sem juros, especialmente em produtos mais caros. É algo que o cliente espera encontrar. Parcelas em mais vezes geralmente têm juros (muitas vezes ligadas a cartão da loja/crediário).
+* **Juros no Parcelamento:** A informação detalhada da taxa de juros ou do Custo Efetivo Total (CET) raramente aparece na página principal do produto, ficando mais para o final da compra (checkout).
+* **Visual das Promoções:** O formato "De/Por" (preço antigo riscado / preço novo) é universal. Selos de desconto (%) também são comuns. A data exata de fim da promoção na página do produto é rara.
+* **Marketplace (Múltiplos Vendedores):** Empresas como Amazon e Mercado Livre usam o "Buy Box" (destacando uma oferta principal). Outras, como a Via Varejo, mostram mais uma lista de ofertas.
+* **Frete:** O cálculo é sempre feito à parte (precisa do CEP). O "Frete Grátis" é muito divulgado, mas geralmente tem condições (valor mínimo da compra, região, etc.).
+
+*(Nota: Esta análise ajuda a contextualizar as regras e funcionalidades que precisamos considerar para o `pc-preco`).*
 
 ---
 
