@@ -1,11 +1,10 @@
-
 from pydantic import Field
 
 from .base import BaseSettings
 
 
 class AppSettings(BaseSettings):
-    version: str = "0.0.1"
+    version: str = "0.0.2"
 
     app_name: str = Field(default="PC Boleirplate", title="Nome da aplicação")
 
