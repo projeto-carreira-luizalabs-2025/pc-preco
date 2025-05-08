@@ -49,9 +49,7 @@ def add_health_check_router(app: FastAPI, prefix: str = "/api") -> None:
         return {
             "version": settings.version,
             "name": settings.app_name,
-            "service": "Gerenciamento de Preços do Marketplace"
+            "service": "Gerenciamento de Preços do Marketplace",
         }
-
-
 
     app.include_router(health_router)
