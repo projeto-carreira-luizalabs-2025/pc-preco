@@ -2,13 +2,13 @@ from uuid import UUID
 
 from app.common.exceptions import NotFoundException
 
-from ..models import Something
+from ..models import Preco
 from .base import AsyncMemoryRepository
 
 
-class PrecoRepository(AsyncMemoryRepository[Something, UUID]):
+class PrecoRepository(AsyncMemoryRepository[Preco, UUID]):
 
-    async def find_by_name(self, name: str) -> Something:
+    async def find_by_name(self, name: str) -> Preco:
         """
         Busca um alguma coisa pelo nome.
         """
@@ -16,6 +16,15 @@ class PrecoRepository(AsyncMemoryRepository[Something, UUID]):
         if result:
             return result
         raise NotFoundException()
+
+    async def find_by_seller_id_and_sku(self, seller_id: str, sku: str) -> Preco:
+        """
+        Busca um preço pela junção de seller_id + sku
+        """
+
+        result = next((preco for preco in self.memory if preco.seller_id == seller_id and preco.sku == sku), None)
+
+        return result
 
 
 __all__ = ["PrecoRepository"]
