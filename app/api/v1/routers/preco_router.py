@@ -50,9 +50,9 @@ async def get_by_id(
     status_code=status.HTTP_201_CREATED,
 )
 @inject
-async def create(something: PrecoCreate, preco_service: "PrecoService" = Depends(Provide[Container.preco_service])):
+async def create(preco: PrecoCreate, preco_service: "PrecoService" = Depends(Provide[Container.preco_service])):
     # XXX
-    return await preco_service.create(something)
+    return await preco_service.create(preco)
 
 
 @router.patch(
@@ -63,10 +63,10 @@ async def create(something: PrecoCreate, preco_service: "PrecoService" = Depends
 @inject
 async def update_by_id(
     preco_id: int,
-    something: PrecoUpdate,
+    preco: PrecoUpdate,
     preco_service: "PrecoService" = Depends(Provide[Container.preco_service]),
 ):
-    return await preco_service.update(preco_id, something)
+    return await preco_service.update(preco_id, preco)
 
 
 @router.delete("/{preco_id}", status_code=status.HTTP_204_NO_CONTENT)
