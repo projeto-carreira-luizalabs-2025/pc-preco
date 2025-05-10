@@ -1,4 +1,4 @@
 from .base import AsyncCrudRepository
-from .something_repository import SomethingRepository
+from .preco_repository import PrecoRepository
 
-__all__ = ["SomethingRepository", "AsyncCrudRepository"]
+__all__ = ["PrecoRepository", "AsyncCrudRepository"]

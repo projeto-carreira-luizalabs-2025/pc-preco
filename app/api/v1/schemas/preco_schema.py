@@ -1,21 +1,21 @@
 from app.api.common.schemas import ResponseEntity, SchemaType
 
 
-class SomethingSchema(SchemaType):
+class PrecoSchema(SchemaType):
     identity: int
     name: str
     value: int
 
 
-class SomethingResponse(SomethingSchema, ResponseEntity):
+class PrecoResponse(PrecoSchema, ResponseEntity):
     """Resposta adicionando"""
 
 
-class SomethingCreate(SomethingSchema):
-    """Schema para criação Somethings"""
+class PrecoCreate(PrecoSchema):
+    """Schema para criação Precos"""
 
 
-class SomethingUpdate(SchemaType):
+class PrecoUpdate(SchemaType):
     """Permite apenas a atualização do nome e do valor"""
 
     name: str

@@ -1,10 +1,10 @@
 from ..models import Something
-from ..repositories import SomethingRepository
+from ..repositories import PrecoRepository
 from .base import CrudService
 
 
-class SomethingService(CrudService[Something, int]):
-    def __init__(self, repository: SomethingRepository):
+class PrecoService(CrudService[Something, int]):
+    def __init__(self, repository: PrecoRepository):
         super().__init__(repository)
 
     async def find_by_name(self, name: str) -> Something:

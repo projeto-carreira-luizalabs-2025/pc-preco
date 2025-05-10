@@ -1,1 +1,1 @@
-SOMETHING_PREFIX = "/somethings"
+PRECO_PREFIX = "/precos"

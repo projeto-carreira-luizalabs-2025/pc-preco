@@ -6,7 +6,7 @@ from ..models import Something
 from .base import AsyncMemoryRepository
 
 
-class SomethingRepository(AsyncMemoryRepository[Something, UUID]):
+class PrecoRepository(AsyncMemoryRepository[Something, UUID]):
 
     async def find_by_name(self, name: str) -> Something:
         """
@@ -18,4 +18,4 @@ class SomethingRepository(AsyncMemoryRepository[Something, UUID]):
         raise NotFoundException()
 
 
-__all__ = ["SomethingRepository"]
+__all__ = ["PrecoRepository"]
