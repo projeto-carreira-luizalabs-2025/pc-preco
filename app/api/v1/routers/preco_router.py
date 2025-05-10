@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import APIRouter, Depends, status
+from fastapi import HTTPException, APIRouter, Depends, status
 
 from app.api.common.schemas import ListResponse, Paginator, UuidType, get_request_pagination
 from app.container import Container
@@ -51,7 +51,20 @@ async def get_by_id(
 )
 @inject
 async def create(preco: PrecoCreate, preco_service: "PrecoService" = Depends(Provide[Container.preco_service])):
-    # XXX
+    # Verificar se já há um preço de produto (seller_id + sku) cadastrado
+    preco_encontrado = await preco_service.find_by_seller_id_and_sku(seller_id=preco.seller_id, sku=preco.sku)
+
+    if preco_encontrado:
+        raise HTTPException(
+            status_code=409, detail="Preço para produto já cadastrado."
+        )  # Melhorar aqui depois, no response body não está retornando a mensagem
+
+    # Verificar se há valores positivos para os preços
+    if preco.preco_de <= 0:
+        raise HTTPException(status_code=422, detail="'preco_de' deve ser maior que zero.")
+    if preco.preco_por <= 0:
+        raise HTTPException(status_code=422, detail="'preco_por' deve ser maior que zero.")
+
     return await preco_service.create(preco)
 
 
