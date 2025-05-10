@@ -2,9 +2,10 @@ from app.api.common.schemas import ResponseEntity, SchemaType
 
 
 class PrecoSchema(SchemaType):
-    identity: int
-    name: str
-    value: int
+    seller_id: str
+    sku: str
+    preco_de: int
+    preco_por: int
 
 
 class PrecoResponse(PrecoSchema, ResponseEntity):
@@ -16,7 +17,7 @@ class PrecoCreate(PrecoSchema):
 
 
 class PrecoUpdate(SchemaType):
-    """Permite apenas a atualização do nome e do valor"""
+    """Permite apenas a atualização do "preco_de" e "preco_por" """
 
-    name: str
-    value: int
+    preco_de: int
+    preco_por: int
