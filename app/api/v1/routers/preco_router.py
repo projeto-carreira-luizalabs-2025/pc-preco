@@ -31,23 +31,36 @@ async def get(
     return paginator.paginate(results=results)
 
 
+# Busca precificação por "seller_id" e "sku"
 @router.get(
-    "/{preco_id}",
+    "/{seller_id}/{sku}",
     response_model=PrecoResponse,
     status_code=status.HTTP_200_OK,
+    summary="Recuperar precificação por seller_id e sku",
 )
 @inject
 async def get_by_id(
-    preco_id: int,
+    seller_id: str,
+    sku: str,
     preco_service: "PrecoService" = Depends(Provide[Container.preco_service]),
 ):
-    return await preco_service.find_by_id(preco_id)
+    # Verificar se a precificação existe
+    preco_encontrado = await preco_service.find_by_seller_id_and_sku(seller_id=seller_id, sku=sku)
+
+    print(preco_encontrado)
+
+    if preco_encontrado == None:
+        raise HTTPException(status_code=404, detail="Produto não encontrado")
+
+    return preco_encontrado
 
 
+# Cria uma precificação para um produto
 @router.post(
     "",
     response_model=PrecoResponse,
     status_code=status.HTTP_201_CREATED,
+    summary="Criar precificação",
 )
 @inject
 async def create(preco: PrecoCreate, preco_service: "PrecoService" = Depends(Provide[Container.preco_service])):
