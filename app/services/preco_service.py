@@ -38,25 +38,27 @@ class PrecoService(CrudService[Preco, UUID]):
             self._raise_not_found(seller_id, sku)
         return preco_encontrado
 
-    async def create_preco(self, preco) -> Preco:
+    async def create_preco(self, preco_create) -> Preco:
         """
         Cria uma nova precificação após validações de unicidade e valores positivos.
 
-        :param preco: Objeto contendo os dados para criação do preço.
+        :param preco_create: Objeto contendo os dados para criação do preço.
         :return: Instância de Preco criada.
         :raises BadRequestException: Se já existir preço para o produto ou valores inválidos.
         """
-        await self._validate_preco_nao_existe(preco.seller_id, preco.sku)
-        self._validate_precos_positivos(preco)
+        await self._validate_preco_nao_existe(preco_create.seller_id, preco_create.sku)
+        self._validate_precos_positivos(preco_create)
+        # Converte PrecoCreate para Preco, gerando o id automaticamente
+        preco = Preco(**preco_create.model_dump())
         return await self.create(preco)
 
-    async def update_preco(self, seller_id: str, sku: str, preco) -> Preco:
+    async def update_preco(self, seller_id: str, sku: str, preco_update) -> Preco:
         """
         Atualiza uma precificação existente com novos valores.
 
         :param seller_id: Identificador do vendedor.
         :param sku: Código do produto.
-        :param preco: Objeto contendo os novos dados do preço.
+        :param preco_update: Objeto contendo os novos dados do preço.
         :return: Instância de Preco atualizada.
         :raises NotFoundException: Se não encontrar o preço.
         :raises BadRequestException: Se valores inválidos forem informados.
@@ -64,8 +66,8 @@ class PrecoService(CrudService[Preco, UUID]):
         preco_encontrado = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
         if preco_encontrado is None:
             self._raise_not_found(seller_id, sku)
-        self._validate_precos_positivos(preco)
-        return await self.update(preco_encontrado.id, preco)
+        self._validate_precos_positivos(preco_update)
+        return await self.update(preco_encontrado.id, preco_update)
 
     def _validate_precos_positivos(self, preco):
         """

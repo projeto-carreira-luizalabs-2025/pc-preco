@@ -18,12 +18,9 @@ class AsyncMemoryRepository(AsyncCrudRepository[T, ID], Generic[T, ID]):
         self.memory = memory if memory is not None else []
 
     async def create(self, entity: T) -> T:
-        entity_dict = entity.model_dump(by_alias=True)
-        entity_dict["created_at"] = utcnow()
-
+        entity.created_at = utcnow()
         self.memory.append(entity)
-
-        return entity_dict
+        return entity
 
     async def find_by_id(self, entity_id: ID) -> Optional[T]:
         # XXX Aqui eu sei que something tem o id como o campo identity
