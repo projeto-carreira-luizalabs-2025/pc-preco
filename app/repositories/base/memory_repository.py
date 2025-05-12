@@ -13,10 +13,9 @@ ID = TypeVar("ID", bound=int | str)
 
 class AsyncMemoryRepository(AsyncCrudRepository[T, ID], Generic[T, ID]):
 
-    def __init__(self):
+    def __init__(self, memory=None):
         super().__init__()
-        self.memory = []
-        # Deveria passar dinamco
+        self.memory = memory if memory is not None else []
 
     async def create(self, entity: T) -> T:
         entity_dict = entity.model_dump(by_alias=True)
