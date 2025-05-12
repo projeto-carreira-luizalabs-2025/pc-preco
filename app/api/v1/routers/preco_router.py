@@ -60,17 +60,19 @@ async def create(preco: PrecoCreate, preco_service: "PrecoService" = Depends(Pro
 
 
 @router.patch(
-    "/{preco_id}",
+    "/{seller_id}/{sku}",
     response_model=PrecoResponse,
     status_code=status.HTTP_200_OK,
+    summary="Atualizar precificação",
 )
 @inject
 async def update_by_id(
-    preco_id: int,
+    seller_id:  str,
+    sku:  str,
     preco: PrecoUpdate,
     preco_service: "PrecoService" = Depends(Provide[Container.preco_service]),
 ):
-    return await preco_service.update(preco_id, preco)
+    return await preco_service.update_preco(seller_id,sku,preco)
 
 
 @router.delete("/{preco_id}", status_code=status.HTTP_204_NO_CONTENT)
