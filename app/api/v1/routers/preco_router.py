@@ -83,7 +83,7 @@ async def delete(preco_id: UuidType, preco_service: "PrecoService" = Depends(Pro
 
 @router.delete(
     "/{seller_id}/{sku}",
-    status_code=status.HTTP_200_OK,
+    status_code=status.HTTP_204_NO_CONTENT,
     summary="Excluir precificação por seller_id e sku",
 )
 @inject

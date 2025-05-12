@@ -80,7 +80,7 @@ class PrecoService(CrudService[Preco, UUID]):
         preco_encontrado = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
         if preco_encontrado is None:
             self._raise_not_found(seller_id, sku)
-        await self.delete_by_id(preco_encontrado.id)
+        await self.repository.delete_by_seller_id_and_sku(seller_id, sku)
 
     def _validate_precos_positivos(self, preco):
         """
