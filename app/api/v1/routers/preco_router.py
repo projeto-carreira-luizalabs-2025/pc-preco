@@ -39,20 +39,12 @@ async def get(
     summary="Recuperar precificação por seller_id e sku",
 )
 @inject
-async def get_by_id(
+async def get_by_seller_id_and_sku(
     seller_id: str,
     sku: str,
     preco_service: "PrecoService" = Depends(Provide[Container.preco_service]),
 ):
-    # Verificar se a precificação existe
-    preco_encontrado = await preco_service.find_by_seller_id_and_sku(seller_id=seller_id, sku=sku)
-
-    print(preco_encontrado)
-
-    if preco_encontrado == None:
-        raise HTTPException(status_code=404, detail="Produto não encontrado")
-
-    return preco_encontrado
+    return await preco_service.find_by_seller_id_and_sku(seller_id=seller_id, sku=sku)
 
 
 # Cria uma precificação para um produto
@@ -64,21 +56,7 @@ async def get_by_id(
 )
 @inject
 async def create(preco: PrecoCreate, preco_service: "PrecoService" = Depends(Provide[Container.preco_service])):
-    # Verificar se já há um preço de produto (seller_id + sku) cadastrado
-    preco_encontrado = await preco_service.find_by_seller_id_and_sku(seller_id=preco.seller_id, sku=preco.sku)
-
-    if preco_encontrado:
-        raise HTTPException(
-            status_code=409, detail="Preço para produto já cadastrado."
-        )  # Melhorar aqui depois, no response body não está retornando a mensagem
-
-    # Verificar se há valores positivos para os preços
-    if preco.preco_de <= 0:
-        raise HTTPException(status_code=422, detail="'preco_de' deve ser maior que zero.")
-    if preco.preco_por <= 0:
-        raise HTTPException(status_code=422, detail="'preco_por' deve ser maior que zero.")
-
-    return await preco_service.create(preco)
+    return await preco_service.create_preco(preco)
 
 
 @router.patch(
