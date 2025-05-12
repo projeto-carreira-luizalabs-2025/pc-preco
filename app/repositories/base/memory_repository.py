@@ -46,7 +46,7 @@ class AsyncMemoryRepository(AsyncCrudRepository[T, ID], Generic[T, ID]):
         # XXX TODO Falta ordenar
 
         entities = []
-        async for document in filtered_list:
+        for document in filtered_list:
             entities.append(document)
         return entities
 
