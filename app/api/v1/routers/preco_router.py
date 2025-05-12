@@ -20,6 +20,7 @@ router = APIRouter(prefix=PRECO_PREFIX, tags=["Preços"])
     "",
     response_model=ListResponse[PrecoResponse],
     status_code=status.HTTP_200_OK,
+    summary="Recuperar lista de precificações",
 )
 @inject
 async def get(
