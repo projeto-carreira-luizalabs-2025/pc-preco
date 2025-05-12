@@ -1,4 +1,4 @@
-from typing import Any, Generic, List, Optional, TypeVar
+from typing import Any, Generic, List, Optional, Type, TypeVar
 
 from pydantic import BaseModel
 
@@ -13,42 +13,43 @@ ID = TypeVar("ID", bound=int | str)
 
 class AsyncMemoryRepository(AsyncCrudRepository[T, ID], Generic[T, ID]):
 
-    def __init__(self):
+    def __init__(self, key_name: str, model_class: Type[T]):
         super().__init__()
-        self.memory = []
+        self.key_name = key_name
+        self.memory: list[dict] = []
+        self.model_class = model_class
         # Deveria passar dinamco
 
     async def create(self, entity: T) -> T:
         entity_dict = entity.model_dump(by_alias=True)
         entity_dict["created_at"] = utcnow()
 
-        self.memory.append(entity)
+        self.memory.append(entity_dict)
 
-        return entity_dict
+        return entity
 
     async def find_by_id(self, entity_id: ID) -> Optional[T]:
-        # XXX Aqui eu sei que something tem o id como o campo identity
+        # XXX Lembrar que elementos da memória são dicionionários
+        result = next((r for r in self.memory if r.get(self.key_name) == entity_id), None)
+        if result is not None:
+            result = self.model_class(**result)
+        return result
 
-        result = next((r for r in self.memory if r.identity == entity_id), None)
-        if result:
-            return result
+    @staticmethod
+    def _can_filter(data: T, filters: dict | None) -> bool:
+        filters = filters or {}
 
-        raise NotFoundException()
+        for key, value in filters.items():
+            if value is not None and data.get(key) != value:
+                return False
+        return True
 
     async def find(self, filters: dict, limit: int = 10, offset: int = 0, sort: Optional[dict] = None) -> List[T]:
-
-        filtered_list = [
-            data
-            for data in self.memory
-            # TODO Criar filtro
-        ]
+        filtered_list = [data for data in self.memory if self._can_filter(data, filters)]
 
         # XXX TODO Falta ordenar
-
-        entities = []
-        async for document in filtered_list:
-            entities.append(document)
-        return entities
+        result_list = [self.model_class(**register) for register in filtered_list]
+        return result_list
 
     async def update(self, entity_id: ID, entity: Any) -> T:
         # XXX Chave fixada por somehting, ajustar depois.

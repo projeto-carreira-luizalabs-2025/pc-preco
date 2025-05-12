@@ -1,8 +1,13 @@
+from pydantic import PositiveInt
+
 from app.api.common.schemas import ResponseEntity, SchemaType
 
 
-class SomethingSchema(SchemaType):
-    identity: int
+class SomethingBase(SchemaType):
+    identify: PositiveInt
+
+
+class SomethingSchema(SomethingBase):
     name: str
     value: int
 
@@ -13,6 +18,12 @@ class SomethingResponse(SomethingSchema, ResponseEntity):
 
 class SomethingCreate(SomethingSchema):
     """Schema para criação Somethings"""
+
+
+class SomethingCreateResponse(SomethingBase):
+    """
+    Resposta para a criação de alguma coisa
+    """
 
 
 class SomethingUpdate(SchemaType):

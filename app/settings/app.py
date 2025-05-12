@@ -4,7 +4,7 @@ from .base import BaseSettings
 
 
 class AppSettings(BaseSettings):
-    version: str = "0.0.2"
+    version: str = Field("0.2.1", description="Versão da aplicação")
 
     app_name: str = Field(default="PC Boleirplate", title="Nome da aplicação")
 
