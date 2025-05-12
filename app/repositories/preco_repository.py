@@ -26,5 +26,10 @@ class PrecoRepository(AsyncMemoryRepository[Preco, UUID]):
 
         return result
 
+    async def delete_by_id(self, id: UUID):
+        """
+        Remove um preco da memória com base no ID.
+        """
+        self.memory = [preco for preco in self.memory if preco.id != id]
 
 __all__ = ["PrecoRepository"]

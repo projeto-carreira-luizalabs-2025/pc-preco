@@ -80,3 +80,16 @@ async def update_by_id(
 @inject
 async def delete(preco_id: UuidType, preco_service: "PrecoService" = Depends(Provide[Container.preco_service])):
     await preco_service.delete_by_id(preco_id)
+
+@router.delete(
+    "/{seller_id}/{sku}",
+    status_code=status.HTTP_200_OK,
+    summary="Excluir precificação por seller_id e sku",
+)
+@inject
+async def delete_by_seller_id_and_sku(
+    seller_id: str,
+    sku: str,
+    preco_service: "PrecoService" = Depends(Provide[Container.preco_service])
+):
+    await preco_service.delete_by_seller_id_and_sku(seller_id, sku)

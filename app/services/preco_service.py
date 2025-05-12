@@ -69,6 +69,19 @@ class PrecoService(CrudService[Preco, UUID]):
         self._validate_precos_positivos(preco_update)
         return await self.update(preco_encontrado.id, preco_update)
 
+    async def delete_by_seller_id_and_sku(self, seller_id: str, sku: str):
+        """
+        Remove um preço baseado em seller_id e sku.
+
+        :param seller_id: Identificador do vendedor.
+        :param sku: Código do produto.
+        :raises NotFoundException: Se o preço não for encontrado.
+        """
+        preco_encontrado = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
+        if preco_encontrado is None:
+            self._raise_not_found(seller_id, sku)
+        await self.delete_by_id(preco_encontrado.id)
+
     def _validate_precos_positivos(self, preco):
         """
         Valida se os valores de preco_de e preco_por são positivos.
@@ -127,3 +140,4 @@ class PrecoService(CrudService[Preco, UUID]):
                 field=field
             )
         ])
+
