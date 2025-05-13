@@ -39,10 +39,20 @@ class AsyncMemoryRepository(AsyncCrudRepository[T, ID], Generic[T, ID]):
             # TODO Criar filtro
         ]
 
-        # XXX TODO Falta ordenar
+        # Ordenação
+        if sort:
+            # Tirar os espaços de chaves do sort
+            stripped_sort = {key.strip(): value for key, value in sort.items()}
+
+            for field, direction in reversed(list(stripped_sort.items())):
+                reverse = direction == -1  # Reverse é true caso for em ordem descendente
+                filtered_list = sorted(filtered_list, key=lambda x: getattr(x, field, None), reverse=reverse)
+
+        # Paginação
+        paginated_list = filtered_list[offset : offset + limit]
 
         entities = []
-        for document in filtered_list:
+        for document in paginated_list:
             entities.append(document)
         return entities
 
