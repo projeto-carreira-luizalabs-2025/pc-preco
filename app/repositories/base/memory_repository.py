@@ -61,10 +61,10 @@ class AsyncMemoryRepository(AsyncCrudRepository[T, ID], Generic[T, ID]):
         if current_document:
             # TODO XXX Atualizar os dados
             return self.model_class(**current_document)
-        raise NotFoundException()
+        return None
 
-    async def delete_by_id(self, entity_id: ID) -> None:
-        # XXX TODO
+    async def delete_by_id(self, entity_id: ID) -> bool:
         current_document = await self.find_by_id(entity_id)
-        if not current_document:
-            raise NotFoundException()
+        if current_document:
+            # XXX TODO Remover
+            ...

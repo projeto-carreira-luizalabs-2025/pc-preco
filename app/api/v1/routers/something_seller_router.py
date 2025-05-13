@@ -51,7 +51,7 @@ async def get_by_id(
     """
     Pesquisa por alguma coisa com base em sua chave.
     """
-    something = await something_service.find_by_id(something_id)
+    something = await something_service.find_by_id(something_id, can_raise_exception=True)
     return something.model_dump()
 
 
