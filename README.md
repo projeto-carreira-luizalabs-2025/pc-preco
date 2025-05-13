@@ -25,7 +25,6 @@ Além disso, o `pc-preco` atua em conjunto com:
 Cada microsserviço mantém responsabilidades bem definidas, mas trabalham de forma integrada para oferecer uma
 experiência de compra completa.
 
-
 ## 👥 Equipe
 
 - Carlos Eduardo
@@ -33,25 +32,25 @@ experiência de compra completa.
 - João Lucas Ferreira
 - Layza Nauane De Paula Silva
 
-
 ## 📄 Documentação
 
 <!-- Colar o design docs da sua aplicação no link abaixo -->
 
 Você pode encontrar a documentação inicial referente a este projeto neste [design docs](https://github.com/projeto-carreira-luizalabs-2025/pc-preco/blob/main/devtools/info-projeto.md)
+
 ```bash
-.           
+.
 ├── devtools/
     └── info-projeto.md     # Documento de levantamento da informação base
 ```
 
 ## 💻 Tecnologias
+
 Este projeto foi construído usando várias tecnologias chaves para garantir performance, segurança e facilidade de uso:
 
-* **Python 3.12**: Escolhido por sua simplicidade e poderosas capacidades de programação. A versão 3.13 é a mais recente, oferecendo melhorias significativas em eficiência e recursos linguísticos.
-* **FastAPI**: Uma moderna e rápida (altas performances) web framework para Python, que é ideal para a construção de APIs.
-* O restante das dependências estão em `requirements`.
-
+- **Python 3.12**: Escolhido por sua simplicidade e poderosas capacidades de programação. A versão 3.13 é a mais recente, oferecendo melhorias significativas em eficiência e recursos linguísticos.
+- **FastAPI**: Uma moderna e rápida (altas performances) web framework para Python, que é ideal para a construção de APIs.
+- O restante das dependências estão em `requirements`.
 
 ## ✨ Configuração do ambiente local
 
@@ -64,6 +63,7 @@ Clone o projeto em sua máquina:
 ```bash
 git clone https://github.com/projeto-carreira-luizalabs-2025/pc-preco.git
 ```
+
 Depois de clonar o projeto, acesse o diretório:
 
 ```bash
@@ -106,6 +106,7 @@ make load-test-env
 ```
 
 Use o comando para subir a api:
+
 ```bash
 make run-dev
 ```
@@ -113,16 +114,17 @@ make run-dev
 Acesse a doc da API em: [localhost:8000/api/docs](http://0.0.0.0:8000/api/docs) ou em [localhost:8000/redoc](http://0.0.0.0:8000/redoc)
 
 ## 📁 Estrutura do projeto
+
 ```bash
 .
 ├── README.md               # Documentação principal do projeto: informações do projeto, instruções de setup, uso e execução
 ├── app/                    # Diretório principal do código-fonte da aplicação (em construção)
 │   └── api/                # Rotas, controladores e interfaces REST da aplicação
 │   └── common/             # Utilitários, constantes, exceções e helpers compartilhados entre os módulos
-│   └── integrations/       # Integrações com sistemas externos 
+│   └── integrations/       # Integrações com sistemas externos
 │   └── models/             # Definições de modelos para rotas
-│   └── repositories/       
-│   └── services/            
+│   └── repositories/
+│   └── services/
 │   └── settings/           # Configurações da aplicação
 ├── devtools/               # Ferramentas e scripts auxiliares para desenvolvimento
 │   └── scripts/            # Scripts automatizados usados no `makefile` (ex: configuração de ambiente)
@@ -131,3 +133,4 @@ Acesse a doc da API em: [localhost:8000/api/docs](http://0.0.0.0:8000/api/docs) 
 ├── pyproject.toml          # Arquivo de configuração do projeto Python
 ├── requirements.txt        # Lista geral de dependências do projeto
 
+```
