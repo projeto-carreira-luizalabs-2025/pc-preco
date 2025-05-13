@@ -1,0 +1,52 @@
+###
+# Exemplo de carga de something
+
+###
+# Minha URL
+@url=http://localhost:8000
+
+###
+# Health
+#
+GET {{url}}/api/health
+
+###
+# 
+# Endpoint para `something``
+@api_something={{url}}/seller/v1/somethings
+
+###
+# Cadastro 1
+POST {{api_something}}
+
+{
+    "identify": 1,
+    "name": "something01",
+    "value": 11
+}
+
+###
+# Cadastro 2
+POST {{api_something}}
+
+{
+    "identify": 2,
+    "name": "name02",
+    "value": 22
+}
+
+###
+# Pesquisa pela chave
+GET {{api_something}}/1
+
+###
+# Pesquisa pela chave que não existe
+GET {{api_something}}/9000
+
+###
+# Pesquisa paginada 1
+GET {{api_something}}
+
+###
+# Pesquisa paginada 3 com parametro
+GET {{api_something}}?name=name02
