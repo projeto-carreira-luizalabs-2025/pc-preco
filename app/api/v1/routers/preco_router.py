@@ -45,7 +45,7 @@ async def get_by_seller_id_and_sku(
     sku: str,
     preco_service: "PrecoService" = Depends(Provide[Container.preco_service]),
 ):
-    return await preco_service.find_by_seller_id_and_sku(seller_id=seller_id, sku=sku)
+    return await preco_service.get_by_seller_id_and_sku(seller_id=seller_id, sku=sku)
 
 
 # Cria uma precificação para um produto
@@ -68,18 +68,13 @@ async def create(preco: PrecoCreate, preco_service: "PrecoService" = Depends(Pro
 )
 @inject
 async def update_by_id(
-    seller_id:  str,
-    sku:  str,
+    seller_id: str,
+    sku: str,
     preco: PrecoUpdate,
     preco_service: "PrecoService" = Depends(Provide[Container.preco_service]),
 ):
-    return await preco_service.update_preco(seller_id,sku,preco)
+    return await preco_service.update_preco(seller_id, sku, preco)
 
-
-@router.delete("/{preco_id}", status_code=status.HTTP_204_NO_CONTENT)
-@inject
-async def delete(preco_id: UuidType, preco_service: "PrecoService" = Depends(Provide[Container.preco_service])):
-    await preco_service.delete_by_id(preco_id)
 
 @router.delete(
     "/{seller_id}/{sku}",
@@ -88,8 +83,6 @@ async def delete(preco_id: UuidType, preco_service: "PrecoService" = Depends(Pro
 )
 @inject
 async def delete_by_seller_id_and_sku(
-    seller_id: str,
-    sku: str,
-    preco_service: "PrecoService" = Depends(Provide[Container.preco_service])
+    seller_id: str, sku: str, preco_service: "PrecoService" = Depends(Provide[Container.preco_service])
 ):
     await preco_service.delete_by_seller_id_and_sku(seller_id, sku)

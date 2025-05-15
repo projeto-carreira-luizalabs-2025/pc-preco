@@ -24,7 +24,7 @@ class PrecoService(CrudService[Preco, UUID]):
         """
         super().__init__(repository)
 
-    async def find_by_seller_id_and_sku(self, seller_id: str, sku: str) -> Preco:
+    async def get_by_seller_id_and_sku(self, seller_id: str, sku: str) -> Preco:
         """
         Busca um preço pelo seller_id e sku.
 
@@ -67,7 +67,7 @@ class PrecoService(CrudService[Preco, UUID]):
         if preco_encontrado is None:
             self._raise_not_found(seller_id, sku)
         self._validate_precos_positivos(preco_update)
-        return await self.update(preco_encontrado.id, preco_update)
+        return await self.update(preco_encontrado["id"], preco_update)
 
     async def delete_by_seller_id_and_sku(self, seller_id: str, sku: str):
         """
@@ -114,15 +114,17 @@ class PrecoService(CrudService[Preco, UUID]):
         :param sku: Código do produto.
         :raises NotFoundException: Sempre.
         """
-        raise NotFoundException(details=[
-            ErrorDetail(
-                message="Preço para produto não encontrado.",
-                location="path",
-                slug="preco_nao_encontrado",
-                field="sku",
-                ctx={"seller_id": seller_id, "sku": sku}
-            )
-        ])
+        raise NotFoundException(
+            details=[
+                ErrorDetail(
+                    message="Preço para produto não encontrado.",
+                    location="path",
+                    slug="preco_nao_encontrado",
+                    field="sku",
+                    ctx={"seller_id": seller_id, "sku": sku},
+                )
+            ]
+        )
 
     def _raise_bad_request(self, message: str, field: str):
         """
@@ -132,12 +134,6 @@ class PrecoService(CrudService[Preco, UUID]):
         :param field: Campo relacionado ao erro.
         :raises BadRequestException: Sempre.
         """
-        raise BadRequestException(details=[
-            ErrorDetail(
-                message=message,
-                location="body",
-                slug="preco_invalido",
-                field=field
-            )
-        ])
-
+        raise BadRequestException(
+            details=[ErrorDetail(message=message, location="body", slug="preco_invalido", field=field)]
+        )

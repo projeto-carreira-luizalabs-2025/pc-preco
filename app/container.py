@@ -10,13 +10,16 @@ memory_precos = [
     Preco(seller_id="2", sku="B", preco_de=200, preco_por=180),
 ]
 
+preco_dicts = [p.model_dump() for p in memory_precos]
+
+
 class Container(containers.DeclarativeContainer):
     config = providers.Configuration()
 
     settings = providers.Singleton(AppSettings)
 
     # Repositórios
-    preco_repository = providers.Singleton(PrecoRepository, memory=memory_precos)
+    preco_repository = providers.Singleton(PrecoRepository, memory=preco_dicts)
 
     # Serviços
     health_check_service = providers.Singleton(

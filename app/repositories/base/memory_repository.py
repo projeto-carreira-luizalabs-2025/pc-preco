@@ -29,8 +29,7 @@ class AsyncMemoryRepository(AsyncCrudRepository[T, ID], Generic[T, ID]):
         return entity
 
     async def find_by_id(self, entity_id: ID) -> Optional[T]:
-        # XXX Lembrar que elementos da memória são dicionionários
-        result = next((r for r in self.memory if r.get(self.key_name) == entity_id), None)
+        result = next((r for r in self.memory if r[self.key_name] == entity_id), None)
         if result is not None:
             result = self.model_class(**result)
         return result
@@ -47,51 +46,37 @@ class AsyncMemoryRepository(AsyncCrudRepository[T, ID], Generic[T, ID]):
     async def find(self, filters: dict, limit: int = 10, offset: int = 0, sort: Optional[dict] = None) -> List[T]:
         filtered_list = [data for data in self.memory if self._can_filter(data, filters)]
 
-        # XXX TODO Falta ordenar
         # Ordenação
         if sort:
             # Tirar os espaços de chaves do sort
             stripped_sort = {key.strip(): value for key, value in sort.items()}
 
             for field, direction in reversed(list(stripped_sort.items())):
-                reverse = direction == -1  # Reverse é true caso for em ordem descendente
-                filtered_list = sorted(filtered_list, key=lambda x: getattr(x, field, None), reverse=reverse)
+                reverse = direction == -1
+                filtered_list = [item for item in filtered_list if item.get(field) is not None]
+                filtered_list = sorted(filtered_list, key=lambda x: x.get(field), reverse=reverse)
 
         # Paginação
         paginated_list = filtered_list[offset : offset + limit]
 
-        entities = []
-        for document in paginated_list:
-            entities.append(document)
+        entities = [self.model_class(**document) for document in paginated_list]
         return entities
-
-        result_list = [self.model_class(**register) for register in filtered_list]
-        return result_list
 
     async def update(self, entity_id: ID, entity: Any) -> T:
         entity_dict = entity.model_dump(by_alias=True, exclude={"id"})
         entity_dict["updated_at"] = utcnow()
 
-        current_document = await self.find_by_id(entity_id)
-
-        """
         for idx, current_document in enumerate(self.memory):
-            if getattr(current_document, "id", None) == entity_id:
-                # Atualiza os campos do objeto existente
-                for key, value in entity_dict.items():
-                    setattr(current_document, key, value)
-                self.memory[idx] = current_document
-                return current_document
-        raise NotFoundException()
-        """
-
-        if current_document:
-            # TODO XXX Atualizar os dados
-            return self.model_class(**current_document)
-        return None
+            if current_document.get(self.key_name) == entity_id:
+                # Atualiza o dicionário com os novos valores
+                updated = {**current_document, **entity_dict}
+                self.memory[idx] = updated
+                return self.model_class(**updated)
 
     async def delete_by_id(self, entity_id: ID) -> bool:
         current_document = await self.find_by_id(entity_id)
-        if current_document:
-            # XXX TODO Remover
-            ...
+
+        if not current_document:
+            return None
+
+        self.memory = [doc for doc in self.memory if doc.get(self.key_name) != entity_id]
