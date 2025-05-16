@@ -52,13 +52,13 @@ class PriceService(CrudService[Price, UUID]):
         price = Price(**price_create.model_dump())
         return await self.create(price)
 
-    async def update_price(self, seller_id: str, sku: str, price_update) -> Price:
+    async def update_price(self, seller_id: str, sku: str, price_update: dict) -> Price:
         """
         Atualiza uma precificação existente com novos valores.
 
         :param seller_id: Identificador do vendedor.
         :param sku: Código do produto.
-        :param preco_update: Objeto contendo os novos dados do preço.
+        :param price_update: Dicionário contendo os novos dados do preço.
         :return: Instância de Preco atualizada.
         :raises NotFoundException: Se não encontrar o preço.
         :raises BadRequestException: Se valores inválidos forem informados.
@@ -67,7 +67,7 @@ class PriceService(CrudService[Price, UUID]):
         if price_found is None:
             self._raise_not_found(seller_id, sku)
         self._validate_positive_prices(price_update)
-        return await self.update(price_found["id"], price_update)
+        return await self.repository.update_by_seller_id_and_sku(seller_id, sku, price_update)
 
     async def delete_by_seller_id_and_sku(self, seller_id: str, sku: str):
         """
