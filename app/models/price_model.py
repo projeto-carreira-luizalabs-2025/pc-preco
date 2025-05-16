@@ -1,7 +1,7 @@
 from . import PersistableEntity
 
 
-class Preco(PersistableEntity):
+class Price(PersistableEntity):
     seller_id: str
     sku: str
     preco_de: int

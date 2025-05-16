@@ -1,22 +1,22 @@
 from app.api.common.schemas import ResponseEntity, SchemaType
 
 
-class PrecoSchema(SchemaType):
+class PriceSchema(SchemaType):
     seller_id: str
     sku: str
     preco_de: int
     preco_por: int
 
 
-class PrecoResponse(PrecoSchema, ResponseEntity):
+class PriceResponse(PriceSchema, ResponseEntity):
     """Resposta adicionando"""
 
 
-class PrecoCreate(PrecoSchema):
+class PriceCreate(PriceSchema):
     """Schema para criação Precos"""
 
 
-class PrecoUpdate(SchemaType):
+class PriceUpdate(SchemaType):
     """Permite apenas a atualização do "preco_de" e "preco_por" """
 
     preco_de: int

@@ -1,16 +1,16 @@
-from app.models import Preco
+from app.models import Price
 from dependency_injector import containers, providers
 
-from app.repositories import PrecoRepository
-from app.services import HealthCheckService, PrecoService
+from app.repositories import PriceRepository
+from app.services import HealthCheckService, PriceService
 from app.settings import AppSettings
 
-memory_precos = [
-    Preco(seller_id="1", sku="A", preco_de=100, preco_por=90),
-    Preco(seller_id="2", sku="B", preco_de=200, preco_por=180),
+memory_prices = [
+    Price(seller_id="1", sku="A", preco_de=100, preco_por=90),
+    Price(seller_id="2", sku="B", preco_de=200, preco_por=180),
 ]
 
-preco_dicts = [p.model_dump() for p in memory_precos]
+price_dicts = [p.model_dump() for p in memory_prices]
 
 
 class Container(containers.DeclarativeContainer):
@@ -19,11 +19,11 @@ class Container(containers.DeclarativeContainer):
     settings = providers.Singleton(AppSettings)
 
     # Repositórios
-    preco_repository = providers.Singleton(PrecoRepository, memory=preco_dicts)
+    price_repository = providers.Singleton(PriceRepository, memory=price_dicts)
 
     # Serviços
     health_check_service = providers.Singleton(
         HealthCheckService, checkers=config.health_check_checkers, settings=settings
     )
 
-    preco_service = providers.Singleton(PrecoService, repository=preco_repository)
+    price_service = providers.Singleton(PriceService, repository=price_repository)

@@ -6,28 +6,28 @@ from fastapi import HTTPException, APIRouter, Depends, status
 from app.api.common.schemas import ListResponse, Paginator, UuidType, get_request_pagination
 from app.container import Container
 
-from ..schemas.preco_schema import PrecoCreate, PrecoResponse, PrecoUpdate
-from . import PRECO_PREFIX
+from ..schemas.price_schema import PriceCreate, PriceResponse, PriceUpdate
+from . import PRICE_PREFIX
 
 if TYPE_CHECKING:
-    from app.services import PrecoService
+    from app.services import PriceService
 
 
-router = APIRouter(prefix=PRECO_PREFIX, tags=["Preços"])
+router = APIRouter(prefix=PRICE_PREFIX, tags=["Preços"])
 
 
 @router.get(
     "",
-    response_model=ListResponse[PrecoResponse],
+    response_model=ListResponse[PriceResponse],
     status_code=status.HTTP_200_OK,
     summary="Recuperar lista de precificações",
 )
 @inject
 async def get(
     paginator: Paginator = Depends(get_request_pagination),
-    preco_service: "PrecoService" = Depends(Provide[Container.preco_service]),
+    price_service: "PriceService" = Depends(Provide[Container.price_service]),
 ):
-    results = await preco_service.find(paginator=paginator, filters={})
+    results = await price_service.find(paginator=paginator, filters={})
 
     return paginator.paginate(results=results)
 
@@ -35,7 +35,7 @@ async def get(
 # Busca precificação por "seller_id" e "sku"
 @router.get(
     "/{seller_id}/{sku}",
-    response_model=PrecoResponse,
+    response_model=PriceResponse,
     status_code=status.HTTP_200_OK,
     summary="Recuperar precificação por seller_id e sku",
 )
@@ -43,26 +43,26 @@ async def get(
 async def get_by_seller_id_and_sku(
     seller_id: str,
     sku: str,
-    preco_service: "PrecoService" = Depends(Provide[Container.preco_service]),
+    price_service: "PriceService" = Depends(Provide[Container.price_service]),
 ):
-    return await preco_service.get_by_seller_id_and_sku(seller_id=seller_id, sku=sku)
+    return await price_service.get_by_seller_id_and_sku(seller_id=seller_id, sku=sku)
 
 
 # Cria uma precificação para um produto
 @router.post(
     "",
-    response_model=PrecoResponse,
+    response_model=PriceResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Criar precificação",
 )
 @inject
-async def create(preco: PrecoCreate, preco_service: "PrecoService" = Depends(Provide[Container.preco_service])):
-    return await preco_service.create_preco(preco)
+async def create(price: PriceCreate, price_service: "PriceService" = Depends(Provide[Container.price_service])):
+    return await price_service.create_price(price)
 
 
 @router.patch(
     "/{seller_id}/{sku}",
-    response_model=PrecoResponse,
+    response_model=PriceResponse,
     status_code=status.HTTP_200_OK,
     summary="Atualizar precificação",
 )
@@ -70,10 +70,10 @@ async def create(preco: PrecoCreate, preco_service: "PrecoService" = Depends(Pro
 async def update_by_id(
     seller_id: str,
     sku: str,
-    preco: PrecoUpdate,
-    preco_service: "PrecoService" = Depends(Provide[Container.preco_service]),
+    price: PriceUpdate,
+    price_service: "PriceService" = Depends(Provide[Container.price_service]),
 ):
-    return await preco_service.update_preco(seller_id, sku, preco)
+    return await price_service.update_price(seller_id, sku, price)
 
 
 @router.delete(
@@ -83,6 +83,6 @@ async def update_by_id(
 )
 @inject
 async def delete_by_seller_id_and_sku(
-    seller_id: str, sku: str, preco_service: "PrecoService" = Depends(Provide[Container.preco_service])
+    seller_id: str, sku: str, price_service: "PriceService" = Depends(Provide[Container.price_service])
 ):
-    await preco_service.delete_by_seller_id_and_sku(seller_id, sku)
+    await price_service.delete_by_seller_id_and_sku(seller_id, sku)
