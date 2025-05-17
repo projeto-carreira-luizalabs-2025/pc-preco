@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Body, Depends, Path, status
 
-from app.api.common.schemas import ListResponse, Paginator, UuidType, get_request_pagination
+from app.api.common.schemas import ListResponse, Paginator, get_request_pagination
 from app.container import Container
 
 from ..schemas.preco_schema import PrecoCreate, PrecoResponse, PrecoUpdate
@@ -11,7 +11,6 @@ from . import PRECO_PREFIX
 
 if TYPE_CHECKING:
     from app.services import PrecoService
-
 
 router = APIRouter(prefix=PRECO_PREFIX, tags=["Preços"])
 
@@ -49,8 +48,8 @@ async def get(
 )
 @inject
 async def get_by_seller_id_and_sku(
-    seller_id: str = Path(..., description="Identificador único do seller", example="seller123"),
-    sku: str = Path(..., description="Código SKU do produto", example="SKU001"),
+    seller_id: str = Path(..., description="Identificador único do seller", examples=["seller123"]),
+    sku: str = Path(..., description="Código SKU do produto", examples=["SKU001"]),
     preco_service: "PrecoService" = Depends(Provide[Container.preco_service]),
 ):
     """
@@ -72,16 +71,24 @@ async def get_by_seller_id_and_sku(
 )
 @inject
 async def create(
-    preco: PrecoCreate = Body(..., 
+    preco: PrecoCreate = Body(
+        ...,
         description="Dados da precificação a ser criada",
-        example={
-            "seller_id": "seller123",
-            "sku": "SKU001",
-            "preco_de": 10000,
-            "preco_por": 8500
-        }
-    ), 
-    preco_service: "PrecoService" = Depends(Provide[Container.preco_service])
+        json_schema_extra={  # Correção: Usar json_schema_extra
+            "examples": {
+                "default": {
+                    "summary": "Exemplo de criação de preço",
+                    "value": {
+                        "seller_id": "seller123",
+                        "sku": "SKU001",
+                        "preco_de": 10000,
+                        "preco_por": 8500,
+                    },
+                }
+            }
+        },
+    ),
+    preco_service: "PrecoService" = Depends(Provide[Container.preco_service]),
 ):
     """
     Cria uma precificação para um produto.
@@ -102,14 +109,19 @@ async def create(
 )
 @inject
 async def update_by_id(
-    seller_id: str = Path(..., description="Identificador único do seller", example="seller123"),
-    sku: str = Path(..., description="Código SKU do produto", example="SKU001"),
-    preco: PrecoUpdate = Body(..., 
+    seller_id: str = Path(..., description="Identificador único do seller", examples=["seller123"]),
+    sku: str = Path(..., description="Código SKU do produto", examples=["SKU001"]),
+    preco: PrecoUpdate = Body(
+        ...,
         description="Dados da precificação a serem atualizados",
-        example={
-            "preco_de": 12000,
-            "preco_por": 9500
-        }
+        json_schema_extra={
+            "examples": {
+                "default": {
+                    "summary": "Exemplo de atualização de preço",
+                    "value": {"preco_de": 12000, "preco_por": 9500},
+                }
+            }
+        },
     ),
     preco_service: "PrecoService" = Depends(Provide[Container.preco_service]),
 ):
@@ -122,6 +134,7 @@ async def update_by_id(
     """
     return await preco_service.update_preco(seller_id, sku, preco)
 
+
 @router.delete(
     "/{seller_id}/{sku}",
     status_code=status.HTTP_204_NO_CONTENT,
@@ -131,9 +144,9 @@ async def update_by_id(
 )
 @inject
 async def delete_by_seller_id_and_sku(
-    seller_id: str = Path(..., description="Identificador único do seller", example="seller123"),
-    sku: str = Path(..., description="Código SKU do produto", example="SKU001"),
-    preco_service: "PrecoService" = Depends(Provide[Container.preco_service])
+    seller_id: str = Path(..., description="Identificador único do seller", examples=["seller123"]),
+    sku: str = Path(..., description="Código SKU do produto", examples=["SKU001"]),
+    preco_service: "PrecoService" = Depends(Provide[Container.preco_service]),
 ):
     """
     Exclui uma precificação pelo seller_id e sku.

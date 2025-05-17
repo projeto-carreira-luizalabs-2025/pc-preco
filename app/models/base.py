@@ -14,6 +14,7 @@ class UuidModel(BaseModel):
     """
     Modelo base que fornece um campo de identificação UUID.
     """
+
     id: UuidType = Field(default_factory=uuid7, alias="_id")
 
 
@@ -21,6 +22,7 @@ class AuditModel(BaseModel):
     """
     Modelo base que fornece campos de auditoria para rastreamento de alterações.
     """
+
     created_at: datetime | None = Field(default_factory=utcnow, description="Data e hora da criação")
     updated_at: datetime | None = Field(None, description="Data e hora da atualização")
     created_by: str | None = Field(None, description="Criado por")
@@ -35,6 +37,7 @@ class PersistableEntity(UuidModel, AuditModel):
     Entidade base para todos os modelos persistíveis no sistema.
     Combina identificação UUID e campos de auditoria.
     """
+
     model_config: ClassVar[ConfigDict] = ConfigDict(populate_by_name=True, from_attributes=True)
 
     @classmethod

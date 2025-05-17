@@ -21,21 +21,17 @@ class Paginator(BaseModel):
     Esta classe processa os parâmetros de paginação, ordenação e filtragem,
     e formata a resposta com os metadados de navegação apropriados.
     """
+
     request_path: str = Field(..., description="Caminho da requisição atual")
     limit: int = Field(
         default=PAGE_DEFAULT_LIMIT,
         ge=1,
         le=PAGE_MAX_LIMIT,
-        description="Quantidade de registros por página (mín: 1, máx: configurável)"
+        description="Quantidade de registros por página (mín: 1, máx: configurável)",
     )
-    offset: int = Field(
-        default=0, 
-        ge=0,
-        description="Posição inicial para busca dos registros"
-    )
+    offset: int = Field(default=0, ge=0, description="Posição inicial para busca dos registros")
     sort: str | None = Field(
-        default=None,
-        description="Campos e direção de ordenação (ex: 'campo:asc,outro_campo:desc')"
+        default=None, description="Campos e direção de ordenação (ex: 'campo:asc,outro_campo:desc')"
     )
 
     def get_sort_order(self) -> dict[str, int] | None:

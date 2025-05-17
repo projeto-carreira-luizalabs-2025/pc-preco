@@ -17,6 +17,7 @@ class Container(containers.DeclarativeContainer):
     Container de injeção de dependências da aplicação.
     Configura e fornece todas as dependências necessárias para os serviços.
     """
+
     # Configuração
     config = providers.Configuration()
 
@@ -24,19 +25,11 @@ class Container(containers.DeclarativeContainer):
     settings = providers.Singleton(AppSettings)
 
     # Repositórios
-    preco_repository = providers.Singleton(
-        PrecoRepository, 
-        memory=memory_precos
-    )
+    preco_repository = providers.Singleton(PrecoRepository, memory=memory_precos)
 
     # Serviços
     health_check_service = providers.Singleton(
-        HealthCheckService, 
-        checkers=config.health_check_checkers, 
-        settings=settings
+        HealthCheckService, checkers=config.health_check_checkers, settings=settings
     )
 
-    preco_service = providers.Singleton(
-        PrecoService, 
-        repository=preco_repository
-    )
+    preco_service = providers.Singleton(PrecoService, repository=preco_repository)

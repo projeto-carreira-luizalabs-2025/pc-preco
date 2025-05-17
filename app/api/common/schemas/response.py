@@ -21,28 +21,29 @@ class PageResponse(BaseModel):
     o limite de itens por página, o offset utilizado, a quantidade de itens
     retornados e o limite máximo permitido.
     """
+
     limit: int | None = Field(
         default=50,
         ge=1,
         le=PAGE_MAX_LIMIT,
         description="Quantidade de registros solicitados por página",
-        example=50
+        json_schema_extra={'example': 50},
     )
     offset: int | None = Field(
         default=0,
         ge=0,
         description="Posição inicial a partir da qual os registros foram retornados",
-        example=0
+        json_schema_extra={'example': 0},
     )
     count: int | None = Field(
-        default=0, 
+        default=0,
         description="Quantidade total de registros retornados nessa página",
-        example=25
+        json_schema_extra={'example': 25},
     )
     max_limit: int | None = Field(
         default=PAGE_MAX_LIMIT,
         description="Valor máximo permitido para o parâmetro limit",
-        example=100
+        json_schema_extra={'example': 100},
     )
 
 
@@ -61,14 +62,9 @@ class ListMeta(BaseModel):
     Esta classe agrupa os metadados de paginação e navegação que são
     incluídos nas respostas de listagem.
     """
-    page: PageResponse | None = Field(
-        default=None, 
-        description="Metadados de paginação"
-    )
-    links: NavigationLinks | None = Field(
-        default=None, 
-        description="Links de navegação entre páginas"
-    )
+
+    page: PageResponse | None = Field(default=None, description="Metadados de paginação")
+    links: NavigationLinks | None = Field(default=None, description="Links de navegação entre páginas")
 
 
 class ListResponse(BaseModel, Generic[T]):
@@ -79,17 +75,12 @@ class ListResponse(BaseModel, Generic[T]):
     fornecendo uma estrutura consistente com metadados de paginação e navegação,
     além dos resultados propriamente ditos.
     """
-    meta: ListMeta | None = Field(
-        None, 
-        description="Metadados da resposta, incluindo paginação e links de navegação"
-    )
-    results: Sequence[T] | None = Field(
-        None, 
-        description="Lista de resultados retornados"
-    )
+
+    meta: ListMeta | None = Field(None, description="Metadados da resposta, incluindo paginação e links de navegação")
+    results: Sequence[T] | None = Field(None, description="Lista de resultados retornados")
 
 
-type ErrorLocation = Literal["query", "path", "body", "header"]  # type: ignore[valid-type]
+type ErrorLocation = Literal["query", "path", "body", "header"]
 
 
 class ErrorDetail(BaseModel):
@@ -99,6 +90,7 @@ class ErrorDetail(BaseModel):
     Contém informações detalhadas sobre um erro específico, incluindo a mensagem,
     localização, identificador, campo relacionado e contexto adicional.
     """
+
     message: str = Field(..., description="Descrição detalhada do erro")
     location: ErrorLocation | None = Field(None, description="Localização do erro (query, path, body, header)")
     slug: str | None = Field(None, description="Identificador único do erro")
@@ -113,6 +105,7 @@ class ErrorResponse(BaseModel):
     Esta estrutura é utilizada para todas as respostas de erro da API,
     fornecendo informações consistentes sobre o erro ocorrido.
     """
+
     slug: str = Field(..., description="Identificador único do erro")
     message: str = Field(..., description="Mensagem geral do erro")
     details: None | list[ErrorDetail] = Field(..., description="Lista de detalhes específicos do erro")

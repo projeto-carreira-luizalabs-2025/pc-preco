@@ -1,12 +1,11 @@
-from typing import Any
+from typing import Any, NoReturn
 from uuid import UUID
 
+from ..api.common.schemas.response import ErrorDetail
+from ..common.exceptions import BadRequestException, NotFoundException
 from ..models import Preco
 from ..repositories import PrecoRepository
 from .base import CrudService
-
-from ..common.exceptions import BadRequestException, NotFoundException
-from ..api.common.schemas.response import ErrorDetail
 
 
 class PrecoService(CrudService[Preco, UUID]):
@@ -49,7 +48,6 @@ class PrecoService(CrudService[Preco, UUID]):
         """
         await self._validate_price_not_exists(preco_create.seller_id, preco_create.sku)
         self._validate_positive_prices(preco_create)
-        # Converte PrecoCreate para Preco, gerando o id automaticamente
         preco = Preco(**preco_create.model_dump())
         return await self.create(preco)
 
@@ -107,7 +105,7 @@ class PrecoService(CrudService[Preco, UUID]):
         if found_price:
             self._raise_bad_request("Preço para produto já cadastrado.", "sku")
 
-    def _raise_not_found(self, seller_id: str, sku: str) -> None:
+    def _raise_not_found(self, seller_id: str, sku: str) -> NoReturn:
         """
         Lança exceção de NotFoundException com detalhes do erro.
 
@@ -115,17 +113,19 @@ class PrecoService(CrudService[Preco, UUID]):
         :param sku: Código do produto.
         :raises NotFoundException: Sempre.
         """
-        raise NotFoundException(details=[
-            ErrorDetail(
-                message="Preço para produto não encontrado.",
-                location="path",
-                slug="preco_nao_encontrado",
-                field="sku",
-                ctx={"seller_id": seller_id, "sku": sku}
-            )
-        ])
+        raise NotFoundException(
+            details=[
+                ErrorDetail(
+                    message="Preço para produto não encontrado.",
+                    location="path",
+                    slug="preco_nao_encontrado",
+                    field="sku",
+                    ctx={"seller_id": seller_id, "sku": sku},
+                )
+            ]
+        )
 
-    def _raise_bad_request(self, message: str, field: str) -> None:
+    def _raise_bad_request(self, message: str, field: str) -> NoReturn:
         """
         Lança exceção de BadRequestException com detalhes do erro.
 
@@ -133,11 +133,6 @@ class PrecoService(CrudService[Preco, UUID]):
         :param field: Campo relacionado ao erro.
         :raises BadRequestException: Sempre.
         """
-        raise BadRequestException(details=[
-            ErrorDetail(
-                message=message,
-                location="body",
-                slug="preco_invalido",
-                field=field
-            )
-        ])
+        raise BadRequestException(
+            details=[ErrorDetail(message=message, location="body", slug="preco_invalido", field=field)]
+        )

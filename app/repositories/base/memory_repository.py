@@ -1,21 +1,21 @@
 from typing import Any, Generic, List, Optional, TypeVar
-
-from pydantic import BaseModel
+from uuid import UUID as PythonUUID
 
 from app.common.datetime import utcnow
 from app.common.exceptions import NotFoundException
+from app.models.base import PersistableEntity
 
 from .async_crud_repository import AsyncCrudRepository
 
-T = TypeVar("T", bound=BaseModel)
-ID = TypeVar("ID", bound=int | str)
+T = TypeVar("T", bound=PersistableEntity)
+ID = TypeVar("ID", bound=int | str | PythonUUID)
 
 
 class AsyncMemoryRepository(AsyncCrudRepository[T, ID], Generic[T, ID]):
 
-    def __init__(self, memory=None):
+    def __init__(self, memory: Optional[List[T]] = None):
         super().__init__()
-        self.memory = memory if memory is not None else []
+        self.memory: List[T] = memory if memory is not None else []
 
     async def create(self, entity: T) -> T:
         entity.created_at = utcnow()
@@ -23,9 +23,7 @@ class AsyncMemoryRepository(AsyncCrudRepository[T, ID], Generic[T, ID]):
         return entity
 
     async def find_by_id(self, entity_id: ID) -> Optional[T]:
-        # XXX Aqui eu sei que something tem o id como o campo identity
-
-        result = next((r for r in self.memory if r.identity == entity_id), None)
+        result = next((r for r in self.memory if r.id == entity_id), None)
         if result:
             return result
 
@@ -39,39 +37,36 @@ class AsyncMemoryRepository(AsyncCrudRepository[T, ID], Generic[T, ID]):
             # TODO Criar filtro
         ]
 
-        # Ordenação
         if sort:
-            # Tirar os espaços de chaves do sort
             stripped_sort = {key.strip(): value for key, value in sort.items()}
 
             for field, direction in reversed(list(stripped_sort.items())):
-                reverse = direction == -1  # Reverse é true caso for em ordem descendente
-                filtered_list = sorted(filtered_list, key=lambda x: getattr(x, field, None), reverse=reverse)
+                reverse = direction == -1
 
-        # Paginação
+                def sort_key(item: T) -> Any:
+                    value = getattr(item, field, None)
+                    return (value is None, value)
+
+                filtered_list = sorted(filtered_list, key=sort_key, reverse=reverse)
+
         paginated_list = filtered_list[offset : offset + limit]
 
-        entities = []
+        entities: List[T] = []
         for document in paginated_list:
             entities.append(document)
         return entities
 
     async def update(self, entity_id: ID, entity: Any) -> T:
-        entity_dict = entity.model_dump(by_alias=True, exclude={"id"})
-        entity_dict["updated_at"] = utcnow()
+        update_data_dict = entity.model_dump(exclude_unset=True, by_alias=True, exclude={"id"})
+        update_data_dict["updated_at"] = utcnow()
 
         for idx, current_document in enumerate(self.memory):
-            if getattr(current_document, "id", None) == entity_id:
-                # Atualiza os campos do objeto existente
-                for key, value in entity_dict.items():
+            if current_document.id == entity_id:
+                for key, value in update_data_dict.items():
                     setattr(current_document, key, value)
-                self.memory[idx] = current_document
                 return current_document
         raise NotFoundException()
 
     async def delete_by_id(self, entity_id: ID) -> None:
-        # XXX TODO
-        current_document = await self.find_by_id(entity_id)
-        if not current_document:
-            raise NotFoundException()
-        self.memory = [doc for doc in self.memory if getattr(doc, "id", None) != entity_id]
+        await self.find_by_id(entity_id)
+        self.memory = [doc for doc in self.memory if doc.id != entity_id]

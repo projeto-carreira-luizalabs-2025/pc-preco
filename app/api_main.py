@@ -1,5 +1,4 @@
 import os
-from typing import Any
 
 import dotenv
 from fastapi import FastAPI
@@ -33,10 +32,7 @@ def init() -> FastAPI:
     setattr(app_api, 'container', container)
 
     # Configura o autowiring para os módulos que usam injeção de dependência
-    container.wire(modules=[
-        "app.api.common.routers.health_check_routers",
-        "app.api.v1.routers.preco_router"
-    ])
+    container.wire(modules=["app.api.common.routers.health_check_routers", "app.api.v1.routers.preco_router"])
 
     # Outros middlewares podem ser adicionados aqui se necessário
 
