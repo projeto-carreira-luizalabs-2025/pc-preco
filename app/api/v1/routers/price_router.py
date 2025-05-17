@@ -6,7 +6,7 @@ from fastapi import HTTPException, APIRouter, Depends, status
 from app.api.common.schemas import ListResponse, Paginator, UuidType, get_request_pagination
 from app.container import Container
 
-from ..schemas.price_schema import PriceCreate, PriceResponse, PriceUpdate
+from ..schemas.price_schema import PriceCreate, PriceResponse, PriceUpdate, PriceErrorResponse
 from . import PRICE_PREFIX
 
 if TYPE_CHECKING:
@@ -21,6 +21,14 @@ router = APIRouter(prefix=PRICE_PREFIX, tags=["Preços"])
     response_model=ListResponse[PriceResponse],
     status_code=status.HTTP_200_OK,
     summary="Recuperar lista de precificações",
+    responses={
+        422: {
+            "description": "Error: Unprocessable Entity",
+            "content": {
+                "application/json": {"example": PriceErrorResponse.Config.schema_extra["unprocessable_entity"]}
+            },
+        },
+    },
 )
 @inject
 async def get(
@@ -38,6 +46,12 @@ async def get(
     response_model=PriceResponse,
     status_code=status.HTTP_200_OK,
     summary="Recuperar precificação por seller_id e sku",
+    responses={
+        404: {
+            "description": "Error: Not Found",
+            "content": {"application/json": {"example": PriceErrorResponse.Config.schema_extra["not_found"]}},
+        },
+    },
 )
 @inject
 async def get_by_seller_id_and_sku(
@@ -54,6 +68,12 @@ async def get_by_seller_id_and_sku(
     response_model=PriceResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Criar precificação",
+    responses={
+        400: {
+            "description": "Error: Bad Request",
+            "content": {"application/json": {"example": PriceErrorResponse.Config.schema_extra["preco_de"]}},
+        },
+    },
 )
 @inject
 async def create(price: PriceCreate, price_service: "PriceService" = Depends(Provide[Container.price_service])):
@@ -65,6 +85,16 @@ async def create(price: PriceCreate, price_service: "PriceService" = Depends(Pro
     response_model=PriceResponse,
     status_code=status.HTTP_200_OK,
     summary="Atualizar precificação",
+    responses={
+        404: {
+            "description": "Error: Not Found",
+            "content": {"application/json": {"example": PriceErrorResponse.Config.schema_extra["not_found"]}},
+        },
+        400: {
+            "description": "Error: Bad Request",
+            "content": {"application/json": {"example": PriceErrorResponse.Config.schema_extra["preco_de"]}},
+        },
+    },
 )
 @inject
 async def update_by_id(
@@ -80,6 +110,12 @@ async def update_by_id(
     "/{seller_id}/{sku}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Excluir precificação por seller_id e sku",
+    responses={
+        404: {
+            "description": "Error: Not Found",
+            "content": {"application/json": {"example": PriceErrorResponse.Config.schema_extra["not_found"]}},
+        },
+    },
 )
 @inject
 async def delete_by_seller_id_and_sku(
