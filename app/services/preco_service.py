@@ -1,3 +1,4 @@
+from typing import Any
 from uuid import UUID
 
 from ..models import Preco
@@ -33,12 +34,12 @@ class PrecoService(CrudService[Preco, UUID]):
         :return: Instância de Preco encontrada.
         :raises NotFoundException: Se não encontrar o preço.
         """
-        preco_encontrado = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
-        if preco_encontrado is None:
+        found_price = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
+        if found_price is None:
             self._raise_not_found(seller_id, sku)
-        return preco_encontrado
+        return found_price
 
-    async def create_preco(self, preco_create) -> Preco:
+    async def create_preco(self, preco_create: Any) -> Preco:
         """
         Cria uma nova precificação após validações de unicidade e valores positivos.
 
@@ -46,13 +47,13 @@ class PrecoService(CrudService[Preco, UUID]):
         :return: Instância de Preco criada.
         :raises BadRequestException: Se já existir preço para o produto ou valores inválidos.
         """
-        await self._validate_preco_nao_existe(preco_create.seller_id, preco_create.sku)
-        self._validate_precos_positivos(preco_create)
+        await self._validate_price_not_exists(preco_create.seller_id, preco_create.sku)
+        self._validate_positive_prices(preco_create)
         # Converte PrecoCreate para Preco, gerando o id automaticamente
         preco = Preco(**preco_create.model_dump())
         return await self.create(preco)
 
-    async def update_preco(self, seller_id: str, sku: str, preco_update) -> Preco:
+    async def update_preco(self, seller_id: str, sku: str, preco_update: Any) -> Preco:
         """
         Atualiza uma precificação existente com novos valores.
 
@@ -63,13 +64,13 @@ class PrecoService(CrudService[Preco, UUID]):
         :raises NotFoundException: Se não encontrar o preço.
         :raises BadRequestException: Se valores inválidos forem informados.
         """
-        preco_encontrado = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
-        if preco_encontrado is None:
+        found_price = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
+        if found_price is None:
             self._raise_not_found(seller_id, sku)
-        self._validate_precos_positivos(preco_update)
-        return await self.update(preco_encontrado.id, preco_update)
+        self._validate_positive_prices(preco_update)
+        return await self.update(found_price.id, preco_update)
 
-    async def delete_by_seller_id_and_sku(self, seller_id: str, sku: str):
+    async def delete_by_seller_id_and_sku(self, seller_id: str, sku: str) -> None:
         """
         Remove um preço baseado em seller_id e sku.
 
@@ -77,12 +78,12 @@ class PrecoService(CrudService[Preco, UUID]):
         :param sku: Código do produto.
         :raises NotFoundException: Se o preço não for encontrado.
         """
-        preco_encontrado = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
-        if preco_encontrado is None:
+        found_price = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
+        if found_price is None:
             self._raise_not_found(seller_id, sku)
         await self.repository.delete_by_seller_id_and_sku(seller_id, sku)
 
-    def _validate_precos_positivos(self, preco):
+    def _validate_positive_prices(self, preco: Any) -> None:
         """
         Valida se os valores de preco_de e preco_por são positivos.
 
@@ -94,7 +95,7 @@ class PrecoService(CrudService[Preco, UUID]):
         if preco.preco_por <= 0:
             self._raise_bad_request("preco_por deve ser maior que zero.", "preco_por")
 
-    async def _validate_preco_nao_existe(self, seller_id: str, sku: str):
+    async def _validate_price_not_exists(self, seller_id: str, sku: str) -> None:
         """
         Verifica se já existe um preço cadastrado para o seller_id e sku informados.
 
@@ -102,11 +103,11 @@ class PrecoService(CrudService[Preco, UUID]):
         :param sku: Código do produto.
         :raises BadRequestException: Se já existir preço cadastrado.
         """
-        preco_encontrado = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
-        if preco_encontrado:
+        found_price = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
+        if found_price:
             self._raise_bad_request("Preço para produto já cadastrado.", "sku")
 
-    def _raise_not_found(self, seller_id: str, sku: str):
+    def _raise_not_found(self, seller_id: str, sku: str) -> None:
         """
         Lança exceção de NotFoundException com detalhes do erro.
 
@@ -124,7 +125,7 @@ class PrecoService(CrudService[Preco, UUID]):
             )
         ])
 
-    def _raise_bad_request(self, message: str, field: str):
+    def _raise_bad_request(self, message: str, field: str) -> None:
         """
         Lança exceção de BadRequestException com detalhes do erro.
 
@@ -140,4 +141,3 @@ class PrecoService(CrudService[Preco, UUID]):
                 field=field
             )
         ])
-
