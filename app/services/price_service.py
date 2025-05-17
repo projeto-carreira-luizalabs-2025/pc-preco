@@ -90,9 +90,9 @@ class PriceService(CrudService[Price, UUID]):
         :raises BadRequestException: Se algum valor for menor ou igual a zero.
         """
         if price.preco_de <= 0:
-            self._raise_bad_request("preco_de deve ser maior que zero.", "preco_de")
+            self._raise_bad_request("preco_de deve ser maior que zero.", "preco_de", price.preco_de)
         if price.preco_por <= 0:
-            self._raise_bad_request("preco_por deve ser maior que zero.", "preco_por")
+            self._raise_bad_request("preco_por deve ser maior que zero.", "preco_por", price.preco_por)
 
     async def _validate_non_existent_price(self, seller_id: str, sku: str):
         """
@@ -126,14 +126,17 @@ class PriceService(CrudService[Price, UUID]):
             ]
         )
 
-    def _raise_bad_request(self, message: str, field: str):
+    def _raise_bad_request(self, message: str, field: str, value=None):
         """
         Lança exceção de BadRequestException com detalhes do erro.
 
         :param message: Mensagem descritiva do erro.
         :param field: Campo relacionado ao erro.
+        :param value: Valor que causou o erro (opcional).
         :raises BadRequestException: Sempre.
         """
         raise BadRequestException(
-            details=[ErrorDetail(message=message, location="body", slug="preco_invalido", field=field)]
+            details=[
+                ErrorDetail(message=message, location="body", slug="preco_invalido", field=field, ctx={"value": value})
+            ]
         )
