@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import HTTPException, APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status
 
 from app.api.common.schemas import ListResponse, Paginator, UuidType, get_request_pagination
 from app.container import Container
@@ -25,7 +25,7 @@ router = APIRouter(prefix=PRICE_PREFIX, tags=["Preços"])
         422: {
             "description": "Error: Unprocessable Entity",
             "content": {
-                "application/json": {"example": PriceErrorResponse.Config.schema_extra["unprocessable_entity"]}
+                "application/json": {"example": PriceErrorResponse.Config.json_schema_extra["unprocessable_entity"]}
             },
         },
     },
@@ -49,7 +49,7 @@ async def get(
     responses={
         404: {
             "description": "Error: Not Found",
-            "content": {"application/json": {"example": PriceErrorResponse.Config.schema_extra["not_found"]}},
+            "content": {"application/json": {"example": PriceErrorResponse.Config.json_schema_extra["not_found"]}},
         },
     },
 )
@@ -71,7 +71,7 @@ async def get_by_seller_id_and_sku(
     responses={
         400: {
             "description": "Error: Bad Request",
-            "content": {"application/json": {"example": PriceErrorResponse.Config.schema_extra["preco_de"]}},
+            "content": {"application/json": {"example": PriceErrorResponse.Config.json_schema_extra["preco_de"]}},
         },
     },
 )
@@ -88,16 +88,16 @@ async def create(price: PriceCreate, price_service: "PriceService" = Depends(Pro
     responses={
         404: {
             "description": "Error: Not Found",
-            "content": {"application/json": {"example": PriceErrorResponse.Config.schema_extra["not_found"]}},
+            "content": {"application/json": {"example": PriceErrorResponse.Config.json_schema_extra["not_found"]}},
         },
         400: {
             "description": "Error: Bad Request",
-            "content": {"application/json": {"example": PriceErrorResponse.Config.schema_extra["preco_de"]}},
+            "content": {"application/json": {"example": PriceErrorResponse.Config.json_schema_extra["preco_de"]}},
         },
     },
 )
 @inject
-async def update_by_id(
+async def update_by_seller_id_and_sku(
     seller_id: str,
     sku: str,
     price: PriceUpdate,
@@ -113,7 +113,7 @@ async def update_by_id(
     responses={
         404: {
             "description": "Error: Not Found",
-            "content": {"application/json": {"example": PriceErrorResponse.Config.schema_extra["not_found"]}},
+            "content": {"application/json": {"example": PriceErrorResponse.Config.json_schema_extra["not_found"]}},
         },
     },
 )

@@ -9,22 +9,24 @@ class PriceSchema(SchemaType):
     preco_por: int
 
     class Config:
-        schema_extra = {"example": {"seller_id": "abc123", "sku": "sku001", "preco_de": 29900, "preco_por": 19900}}
+        json_schema_extra = {"example": {"seller_id": "abc123", "sku": "sku001", "preco_de": 1000, "preco_por": 500}}
 
 
 class PriceResponse(PriceSchema, ResponseEntity):
     """Resposta de uma precificação"""
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "id": "uuid-da-resposta",
                 "created_at": "2025-05-16T13:45:00Z",
                 "updated_at": "2025-05-17T08:12:00Z",
+                "created_by": "user_id",
+                "updated_by": "user_id",
                 "seller_id": "abc123",
                 "sku": "sku001",
-                "preco_de": 29900,
-                "preco_por": 19900,
+                "preco_de": 1000,
+                "preco_por": 500,
             }
         }
 
@@ -33,7 +35,7 @@ class PriceCreate(PriceSchema):
     """Schema para criação de precificações"""
 
     class Config:
-        schema_extra = {"example": {"seller_id": "abc123", "sku": "sku001", "preco_de": 29900, "preco_por": 19900}}
+        json_schema_extra = {"example": {"seller_id": "abc123", "sku": "sku001", "preco_de": 1000, "preco_por": 500}}
 
 
 class PriceUpdate(SchemaType):
@@ -43,14 +45,14 @@ class PriceUpdate(SchemaType):
     preco_por: int
 
     class Config:
-        schema_extra = {"example": {"preco_de": 29900, "preco_por": 18900}}
+        json_schema_extra = {"example": {"preco_de": 1000, "preco_por": 500}}
 
 
 class PriceErrorResponse(ErrorResponse):
     """Schema para erros de preços"""
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "preco_de": {
                 "slug": "BAD_REQUEST",
                 "message": "Erro de validação",
