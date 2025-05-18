@@ -1,9 +1,8 @@
-from typing import Any, Generic, List, Optional, Type, TypeVar
+from typing import Any, Dict, Generic, List, Optional, Type, TypeVar
 
 from pydantic import BaseModel
 
 from app.common.datetime import utcnow
-from app.common.exceptions import NotFoundException
 
 from .async_crud_repository import AsyncCrudRepository
 
@@ -18,7 +17,6 @@ class AsyncMemoryRepository(AsyncCrudRepository[T, ID], Generic[T, ID]):
         self.key_name = key_name
         self.memory: list[dict] = []
         self.model_class = model_class
-        # Deveria passar dinamco
 
     async def create(self, entity: T) -> T:
         entity_dict = entity.model_dump(by_alias=True)
@@ -31,11 +29,11 @@ class AsyncMemoryRepository(AsyncCrudRepository[T, ID], Generic[T, ID]):
     async def find_by_id(self, entity_id: ID) -> Optional[T]:
         result = next((r for r in self.memory if r[self.key_name] == entity_id), None)
         if result is not None:
-            result = self.model_class(**result)
-        return result
+            return self.model_class(**result)
+        return None
 
     @staticmethod
-    def _can_filter(data: T, filters: dict | None) -> bool:
+    def _can_filter(data: Dict[str, Any], filters: Dict[str, Any] | None) -> bool:
         filters = filters or {}
 
         for key, value in filters.items():
@@ -43,7 +41,9 @@ class AsyncMemoryRepository(AsyncCrudRepository[T, ID], Generic[T, ID]):
                 return False
         return True
 
-    async def find(self, filters: dict, limit: int = 10, offset: int = 0, sort: Optional[dict] = None) -> List[T]:
+    async def find(
+        self, filters: Dict[str, Any], limit: int = 10, offset: int = 0, sort: Optional[Dict[str, int]] = None
+    ) -> List[T]:
         filtered_list = [data for data in self.memory if self._can_filter(data, filters)]
 
         # Ordenação
@@ -54,7 +54,8 @@ class AsyncMemoryRepository(AsyncCrudRepository[T, ID], Generic[T, ID]):
             for field, direction in reversed(list(stripped_sort.items())):
                 reverse = direction == -1
                 filtered_list = [item for item in filtered_list if item.get(field) is not None]
-                filtered_list = sorted(filtered_list, key=lambda x: x.get(field), reverse=reverse)
+                # Usando uma função de ordenação typesafe
+                filtered_list = sorted(filtered_list, key=lambda x: x.get(field, 0), reverse=reverse)
 
         # Paginação
         paginated_list = filtered_list[offset : offset + limit]
@@ -73,10 +74,14 @@ class AsyncMemoryRepository(AsyncCrudRepository[T, ID], Generic[T, ID]):
                 self.memory[idx] = updated
                 return self.model_class(**updated)
 
-    async def delete_by_id(self, entity_id: ID) -> bool:
+        # Se não encontrou o documento, retorna None (ou poderia lançar uma exceção)
+        raise ValueError(f"Entity with id {entity_id} not found")
+
+    async def delete_by_id(self, entity_id: ID) -> None:
         current_document = await self.find_by_id(entity_id)
 
         if not current_document:
             return None
 
         self.memory = [doc for doc in self.memory if doc.get(self.key_name) != entity_id]
+        return

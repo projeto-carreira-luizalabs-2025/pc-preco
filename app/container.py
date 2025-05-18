@@ -1,4 +1,3 @@
-from app.models import Price
 from dependency_injector import containers, providers
 
 from app.repositories import PriceRepository

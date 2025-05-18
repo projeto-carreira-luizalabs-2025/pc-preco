@@ -5,7 +5,6 @@ from fastapi import APIRouter, Depends, FastAPI
 from starlette import status
 
 from app.container import Container
-from app.settings import settings
 
 if TYPE_CHECKING:
     from app.settings import AppSettings

@@ -3,10 +3,10 @@ from typing import TYPE_CHECKING
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, status
 
-from app.api.common.schemas import ListResponse, Paginator, UuidType, get_request_pagination
+from app.api.common.schemas import ListResponse, Paginator, get_request_pagination
 from app.container import Container
 
-from ..schemas.price_schema import PriceCreate, PriceResponse, PriceUpdate, PriceErrorResponse
+from ..schemas.price_schema import PriceCreate, PriceErrorResponse, PriceResponse, PriceUpdate
 from . import PRICE_PREFIX
 
 if TYPE_CHECKING:
@@ -77,7 +77,10 @@ async def get_by_seller_id_and_sku(
 )
 @inject
 async def create(price: PriceCreate, price_service: "PriceService" = Depends(Provide[Container.price_service])):
-    return await price_service.create_price(price)
+    from app.models import Price
+
+    price_model = Price(**price.model_dump())
+    return await price_service.create_price(price_model)
 
 
 @router.patch(
@@ -103,7 +106,10 @@ async def update_by_seller_id_and_sku(
     price: PriceUpdate,
     price_service: "PriceService" = Depends(Provide[Container.price_service]),
 ):
-    return await price_service.update_price(seller_id, sku, price)
+    from app.models import Price
+
+    price_model = Price(seller_id=seller_id, sku=sku, **price.model_dump())
+    return await price_service.update_price(seller_id, sku, price_model)
 
 
 @router.delete(

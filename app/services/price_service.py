@@ -1,15 +1,11 @@
-from uuid import UUID
-
+from ..api.common.schemas.response import ErrorDetail
+from ..common.exceptions import BadRequestException, NotFoundException
 from ..models import Price
 from ..repositories import PriceRepository
 from .base import CrudService
 
 
-from ..common.exceptions import BadRequestException, NotFoundException
-from ..api.common.schemas.response import ErrorDetail
-
-
-class PriceService(CrudService[Price, UUID]):
+class PriceService(CrudService[Price, str]):
     """
     Serviço responsável pelas regras de negócio relacionadas à entidade Preco.
     Fornece métodos para criação, atualização, busca e validação de preços.
@@ -34,10 +30,12 @@ class PriceService(CrudService[Price, UUID]):
         :return: Instância de Preco encontrada.
         :raises NotFoundException: Se não encontrar o preço.
         """
-        price_found = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
-        if price_found is None:
+        price_dict = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
+        if price_dict is None:
             self._raise_not_found(seller_id, sku)
-        return price_found
+
+        # Garantimos que price_dict não é None neste ponto, podemos usá-lo com segurança
+        return Price.model_validate(price_dict)
 
     async def create_price(self, price_create: Price) -> Price:
         """

@@ -1,13 +1,11 @@
-from uuid import UUID
+from typing import Any, Dict, List, Optional
 
 from ..models import Price
 from .base import AsyncMemoryRepository
 
-from typing import Any, Dict, Optional, List
 
-
-class PriceRepository(AsyncMemoryRepository[Price, UUID]):
-    def __init__(self, memory: List[Dict[str, Any]] = None):
+class PriceRepository(AsyncMemoryRepository[Price, str]):
+    def __init__(self, memory: Optional[List[Dict[str, Any]]] = None):
         """
         Inicializa o repositório com uma lista opcional de preços.
 
@@ -54,7 +52,10 @@ class PriceRepository(AsyncMemoryRepository[Price, UUID]):
                 self.memory[i].update(price_update)
                 return self.memory[i]
 
-    async def delete_by_seller_id_and_sku(self, seller_id: str, sku: str):
+        # Se não encontrar o registro, retorna None ou lança erro
+        raise ValueError(f"Preço não encontrado para seller_id={seller_id}, sku={sku}")
+
+    async def delete_by_seller_id_and_sku(self, seller_id: str, sku: str) -> None:
         """
         Remove um preco da memória com base no ID.
 
