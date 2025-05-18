@@ -1,0 +1,66 @@
+###
+# Exemplo de carga de preços
+
+###
+# Minha URL
+@url=http://localhost:8000
+
+###
+# Health Check
+#
+GET {{url}}/api/health
+
+###
+# 
+# Endpoint para `preços`
+@api_preco={{url}}/seller/v1/precos
+
+###
+# Cadastro 1 - Criação de preço
+POST {{api_preco}}
+
+{
+    "seller_id": "1",
+    "sku": "SKU001",
+    "preco_de": 15000,
+    "preco_por": 12000,
+    "quantidade_preco": 1
+}
+
+###
+# Cadastro 2 - Criação de outro preço
+POST {{api_preco}}
+
+{
+    "seller_id": "2",
+    "sku": "SKU002",
+    "preco_de": 25000,
+    "preco_por": 22000,
+    "quantidade_preco": 1
+}
+
+###
+# Pesquisa pela chave (seller_id e sku)
+GET {{api_preco}}/1/SKU001
+
+###
+# Pesquisa por chave que não existe
+GET {{api_preco}}/9000/NAOEXISTE
+
+###
+# Listagem paginada de preços
+GET {{api_preco}}
+
+###
+# Atualização de preço existente
+PATCH {{api_preco}}/1/SKU001
+
+{
+    "preco_de": 15000,
+    "preco_por": 10000
+}
+
+###
+# Exclusão de preço
+DELETE {{api_preco}}/1/SKU001
+
