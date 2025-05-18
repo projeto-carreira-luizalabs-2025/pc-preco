@@ -21,6 +21,23 @@ def create_app(settings: ApiSettings, router: APIRouter) -> FastAPI:
     app = FastAPI(
         lifespan=_lifespan,
         title=settings.app_name,
+        description="""
+        # API de Precificação
+
+        API para gerenciamento de preços de produtos por seller.
+
+        ## Funcionalidades
+
+        * Consulta de preços por seller e SKU
+        * Criação de novas precificações
+        * Atualização de preços existentes
+        * Exclusão de precificações
+
+        ## Observações
+
+        * Todos os valores monetários são representados em centavos (ex: R$ 100,00 = 10000)
+        * A API suporta paginação, ordenação e filtragem nas consultas
+        """,
         openapi_url=settings.openapi_path,
         version=settings.version,
         docs_url="/api/docs",
