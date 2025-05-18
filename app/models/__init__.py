@@ -1,4 +1,4 @@
 from .base import AuditModel, PersistableEntity, UuidModel, UuidType
-from .preco_model import Preco
+from .price_model import Price
 
-__all__ = ["AuditModel", "PersistableEntity", "UuidModel", "UuidType", "Preco"]
+__all__ = ["AuditModel", "PersistableEntity", "UuidModel", "UuidType", "Price"]

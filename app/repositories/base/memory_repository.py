@@ -1,9 +1,8 @@
-from typing import Any, Generic, List, Optional, TypeVar
+from typing import Any, Dict, Generic, List, Optional, Type, TypeVar
 
 from pydantic import BaseModel
 
 from app.common.datetime import utcnow
-from app.common.exceptions import NotFoundException
 
 from .async_crud_repository import AsyncCrudRepository
 
@@ -13,31 +12,39 @@ ID = TypeVar("ID", bound=int | str)
 
 class AsyncMemoryRepository(AsyncCrudRepository[T, ID], Generic[T, ID]):
 
-    def __init__(self, memory=None):
+    def __init__(self, key_name: str, model_class: Type[T]):
         super().__init__()
-        self.memory = memory if memory is not None else []
+        self.key_name = key_name
+        self.memory: list[dict] = []
+        self.model_class = model_class
 
     async def create(self, entity: T) -> T:
-        entity.created_at = utcnow()
-        self.memory.append(entity)
+        entity_dict = entity.model_dump(by_alias=True)
+        entity_dict["created_at"] = utcnow()
+
+        self.memory.append(entity_dict)
+
         return entity
 
     async def find_by_id(self, entity_id: ID) -> Optional[T]:
-        # XXX Aqui eu sei que something tem o id como o campo identity
+        result = next((r for r in self.memory if r[self.key_name] == entity_id), None)
+        if result is not None:
+            return self.model_class(**result)
+        return None
 
-        result = next((r for r in self.memory if r.identity == entity_id), None)
-        if result:
-            return result
+    @staticmethod
+    def _can_filter(data: Dict[str, Any], filters: Dict[str, Any] | None) -> bool:
+        filters = filters or {}
 
-        raise NotFoundException()
+        for key, value in filters.items():
+            if value is not None and data.get(key) != value:
+                return False
+        return True
 
-    async def find(self, filters: dict, limit: int = 10, offset: int = 0, sort: Optional[dict] = None) -> List[T]:
-
-        filtered_list = [
-            data
-            for data in self.memory
-            # TODO Criar filtro
-        ]
+    async def find(
+        self, filters: Dict[str, Any], limit: int = 10, offset: int = 0, sort: Optional[Dict[str, int]] = None
+    ) -> List[T]:
+        filtered_list = [data for data in self.memory if self._can_filter(data, filters)]
 
         # Ordenação
         if sort:
@@ -45,15 +52,15 @@ class AsyncMemoryRepository(AsyncCrudRepository[T, ID], Generic[T, ID]):
             stripped_sort = {key.strip(): value for key, value in sort.items()}
 
             for field, direction in reversed(list(stripped_sort.items())):
-                reverse = direction == -1  # Reverse é true caso for em ordem descendente
-                filtered_list = sorted(filtered_list, key=lambda x: getattr(x, field, None), reverse=reverse)
+                reverse = direction == -1
+                filtered_list = [item for item in filtered_list if item.get(field) is not None]
+                # Usando uma função de ordenação typesafe
+                filtered_list = sorted(filtered_list, key=lambda x: x.get(field, 0), reverse=reverse)
 
         # Paginação
         paginated_list = filtered_list[offset : offset + limit]
 
-        entities = []
-        for document in paginated_list:
-            entities.append(document)
+        entities = [self.model_class(**document) for document in paginated_list]
         return entities
 
     async def update(self, entity_id: ID, entity: Any) -> T:
@@ -61,17 +68,20 @@ class AsyncMemoryRepository(AsyncCrudRepository[T, ID], Generic[T, ID]):
         entity_dict["updated_at"] = utcnow()
 
         for idx, current_document in enumerate(self.memory):
-            if getattr(current_document, "id", None) == entity_id:
-                # Atualiza os campos do objeto existente
-                for key, value in entity_dict.items():
-                    setattr(current_document, key, value)
-                self.memory[idx] = current_document
-                return current_document
-        raise NotFoundException()
+            if current_document.get(self.key_name) == entity_id:
+                # Atualiza o dicionário com os novos valores
+                updated = {**current_document, **entity_dict}
+                self.memory[idx] = updated
+                return self.model_class(**updated)
+
+        # Se não encontrou o documento, retorna None (ou poderia lançar uma exceção)
+        raise ValueError(f"Entity with id {entity_id} not found")
 
     async def delete_by_id(self, entity_id: ID) -> None:
-        # XXX TODO
         current_document = await self.find_by_id(entity_id)
+
         if not current_document:
-            raise NotFoundException()
-        self.memory = [doc for doc in self.memory if getattr(doc, "id", None) != entity_id]
+            return None
+
+        self.memory = [doc for doc in self.memory if doc.get(self.key_name) != entity_id]
+        return

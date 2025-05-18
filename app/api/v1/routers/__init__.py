@@ -1,1 +1,1 @@
-PRECO_PREFIX = "/precos"
+PRICE_PREFIX = "/precos"

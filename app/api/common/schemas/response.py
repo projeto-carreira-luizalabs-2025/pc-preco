@@ -14,6 +14,14 @@ PAGE_MAX_LIMIT = api_settings.pagination.max_limit
 
 
 class PageResponse(BaseModel):
+    """
+    Metadados de paginação incluídos nas respostas de listagem.
+
+    Esta classe contém informações sobre a paginação atual, incluindo
+    o limite de itens por página, o offset utilizado, a quantidade de itens
+    retornados e o limite máximo permitido.
+    """
+
     limit: int | None = Field(
         default=50,
         ge=1,
@@ -41,30 +49,59 @@ class Page(BaseModel):
 
 
 class ListMeta(BaseModel):
-    page: PageResponse | None = Field(default=None, description="Pagination metadata")
-    links: NavigationLinks | None = Field(default=None, description="Navigation metadata")
+    """
+    Metadados incluídos nas respostas de listagem.
+
+    Esta classe agrupa os metadados de paginação e navegação
+    incluídos nas respostas de listagem.
+    """
+
+    page: PageResponse | None = Field(default=None, description="Metadados de paginação")
+    links: NavigationLinks | None = Field(default=None, description="Links de navegação entre páginas")
 
 
 class ListResponse(BaseModel, Generic[T]):
-    meta: ListMeta | None = Field(None, description="Metadata of the response")
-    results: Sequence[T] | None = Field(None, description="The content of the response")
+    """
+    Estrutura padrão para respostas de listagem da API.
+
+    Esta estrutura é utilizada para todas as respostas de listagem da API,
+    fornecendo uma estrutura consistente com metadados de paginação e navegação,
+    além dos resultados propriamente ditos.
+    """
+
+    meta: ListMeta | None = Field(None, description="Metadados da resposta, incluindo paginação e links de navegação")
+    results: Sequence[T] | None = Field(None, description="Lista de resultados retornados")
 
 
 type ErrorLocation = Literal["query", "path", "body", "header"]  # type: ignore[valid-type]
 
 
 class ErrorDetail(BaseModel):
-    message: str = Field(..., description="Descrição do erro")
-    location: ErrorLocation | None = Field(None, description="Descrição do erro")
-    slug: str | None = Field(None, description="Identificação do erro")
-    field: str | None = Field(None, description="Campo que gerou o erro")
-    ctx: dict | None = Field(None, description="Contexto do erro")
+    """
+    Detalhes específicos de um erro.
+
+    Contém informações detalhadas sobre um erro específico, incluindo a mensagem,
+    localização, identificador, campo relacionado e contexto adicional.
+    """
+
+    message: str = Field(..., description="Descrição detalhada do erro")
+    location: ErrorLocation | None = Field(None, description="Localização do erro (query, path, body, header)")
+    slug: str | None = Field(None, description="Identificador único do erro")
+    field: str | None = Field(None, description="Nome do campo que gerou o erro")
+    ctx: dict | None = Field(None, description="Contexto adicional do erro")
 
 
 class ErrorResponse(BaseModel):
-    slug: str = Field(..., description="Identificação do erro")
-    message: str = Field(..., description="Descrição do erro")
-    details: None | list[ErrorDetail] = Field(..., description="Detalhes do erro")
+    """
+    Estrutura padrão para respostas de erro da API.
+
+    Esta estrutura é utilizada para todas as respostas de erro da API,
+    fornecendo informações consistentes sobre o erro ocorrido.
+    """
+
+    slug: str = Field(..., description="Identificador único do erro")
+    message: str = Field(..., description="Mensagem geral do erro")
+    details: None | list[ErrorDetail] = Field(..., description="Lista de detalhes específicos do erro")
 
 
 class FileBinaryResponse(Response):

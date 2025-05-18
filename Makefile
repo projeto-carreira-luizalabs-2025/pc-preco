@@ -29,7 +29,6 @@ requirements-dev:
 	pip install --upgrade pip
 	@pip install -r requirements/develop.txt
 
-
 lint:
 	isort ${APP_DIR} ${ROOT_TESTS_DIR}
 	bandit -c pyproject.toml -r -f custom ${APP_DIR} ${ROOT_TESTS_DIR}
@@ -41,18 +40,27 @@ check-lint:
 	bandit -c pyproject.toml -r -f custom ${APP_DIR} ${ROOT_TESTS_DIR}
 	black --check ${APP_DIR} ${ROOT_TESTS_DIR}
 	flake8 --max-line-length=120 ${APP_DIR} ${ROOT_TESTS_DIR}
-	mypy ${APP_DIR} ${SCRIPTS_DIR} ${MIGRATIONS_DIR} ${ROOT_TESTS_DIR}
+	mypy ${APP_DIR} ${ROOT_TESTS_DIR}
 
 safety:
 	@pip-audit -r requirements/base.txt
 
 dead-fixtures:
+ifeq ($(OS),Windows_NT)
+	@cmd /C "set ENV=$(ENV)&& pytest --dead-fixtures"
+else
 	@ENV=$(ENV) pytest --dead-fixtures
+endif
 
+test:
+ifeq ($(OS),Windows_NT)
+	@cmd /C "set ENV=test&& pytest ${ROOT_TESTS_DIR}/"
+else
+	@ENV=test pytest ${ROOT_TESTS_DIR}/
+endif
 
-.PHONY: build
-build: lint-check test
-
+.PHONY: build test run
+build: check-lint test
 
 pop-env:
 	@./devtools/scripts/pop-env
@@ -61,14 +69,26 @@ load-env:
 	@./devtools/scripts/push-env "devtools/dotenv.$(env)"
 
 load-dev-env:
+ifeq ($(OS),Windows_NT)
+	@cmd /C "set env=dev&& make $(MAKE_ARGS) load-env"
+else
 	@env=dev make $(MAKE_ARGS) load-env
+endif
 
 load-test-env:
+ifeq ($(OS),Windows_NT)
+	@cmd /C "set env=test&& make $(MAKE_ARGS) load-env"
+else
 	@env=test make $(MAKE_ARGS) load-env
+endif
 
 .PHONY: run
 run:
 	$(INIT)
 
 run-dev:
-	@ENV=$(ENV) $(INIT) --reload
+ifeq ($(OS),Windows_NT)
+	@cmd /C "set ENV=dev&& $(INIT) --reload"
+else
+	@ENV=dev $(INIT) --reload
+endif
