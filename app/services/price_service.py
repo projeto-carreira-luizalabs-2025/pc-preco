@@ -31,8 +31,8 @@ class PriceService(CrudService[Price, str]):
         :raises NotFoundException: Se não encontrar o preço.
         """
         price_dict = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
-        if price_dict is None:
-            self._raise_not_found(seller_id, sku)
+
+        self._raise_not_found(seller_id, sku, price_dict is None)
 
         # Garantimos que price_dict não é None neste ponto, podemos usá-lo com segurança
         return Price.model_validate(price_dict)
@@ -63,8 +63,8 @@ class PriceService(CrudService[Price, str]):
         :raises BadRequestException: Se valores inválidos forem informados.
         """
         price_found = await self.repository.exists_by_seller_id_and_sku(seller_id, sku)
-        if not price_found:
-            self._raise_not_found(seller_id, sku)
+
+        self._raise_not_found(seller_id, sku, not price_found)
         self._validate_positive_prices(price_update)
         updated = await self.repository.update_by_seller_id_and_sku(seller_id, sku, price_update)
         return Price(**updated)
@@ -78,21 +78,28 @@ class PriceService(CrudService[Price, str]):
         :raises NotFoundException: Se o preço não for encontrado.
         """
         price_found = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
-        if price_found is None:
-            self._raise_not_found(seller_id, sku)
+        self._raise_not_found(seller_id, sku, price_found is None)
         await self.repository.delete_by_seller_id_and_sku(seller_id, sku)
 
     def _validate_positive_prices(self, price):
         """
         Valida se os valores de preco_de e preco_por são positivos.
 
-        :param preco: Objeto de preço a ser validado.
+        :param price: Objeto de preço a ser validado.
+        """
+        self._validate_positives(price.preco_de, "preco_de")
+        self._validate_positives(price.preco_por, "preco_por")
+
+    def _validate_positives(self, value, field: str):
+        """
+        Valida se o valor fornecido é maior que zero.
+
+        :param field: Nome do campo que está sendo validado.
+        :param value: Valor númerico a ser validado (opcional).
         :raises BadRequestException: Se algum valor for menor ou igual a zero.
         """
-        if price.preco_de <= 0:
-            self._raise_bad_request("preco_de deve ser maior que zero.", "preco_de", price.preco_de)
-        if price.preco_por <= 0:
-            self._raise_bad_request("preco_por deve ser maior que zero.", "preco_por", price.preco_por)
+        if value <= 0:
+            self._raise_bad_request(f"{field} deve ser maior que zero.", field, value)
 
     async def _validate_non_existent_price(self, seller_id: str, sku: str):
         """
@@ -106,7 +113,7 @@ class PriceService(CrudService[Price, str]):
         if price_found:
             self._raise_bad_request("Preço para produto já cadastrado.", "sku")
 
-    def _raise_not_found(self, seller_id: str, sku: str):
+    def _raise_not_found(self, seller_id: str, sku: str, condition: bool = True):
         """
         Lança exceção de NotFoundException com detalhes do erro.
 
@@ -114,17 +121,18 @@ class PriceService(CrudService[Price, str]):
         :param sku: Código do produto.
         :raises NotFoundException: Sempre.
         """
-        raise NotFoundException(
-            details=[
-                ErrorDetail(
-                    message="Preço para produto não encontrado.",
-                    location="path",
-                    slug="preco_nao_encontrado",
-                    field="sku",
-                    ctx={"seller_id": seller_id, "sku": sku},
-                )
-            ]
-        )
+        if condition:
+            raise NotFoundException(
+                details=[
+                    ErrorDetail(
+                        message="Preço para produto não encontrado.",
+                        location="path",
+                        slug="preco_nao_encontrado",
+                        field="sku",
+                        ctx={"seller_id": seller_id, "sku": sku},
+                    )
+                ]
+            )
 
     def _raise_bad_request(self, message: str, field: str, value=None):
         """
