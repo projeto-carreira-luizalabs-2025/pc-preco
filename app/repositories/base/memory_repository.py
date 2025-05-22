@@ -55,7 +55,9 @@ class AsyncMemoryRepository(AsyncCrudRepository[T, ID], Generic[T, ID]):
                 reverse = direction == -1
                 filtered_list = [item for item in filtered_list if item.get(field) is not None]
                 # Usando uma função de ordenação typesafe
-                filtered_list = sorted(filtered_list, key=lambda x: x.get(field, 0), reverse=reverse)
+                filtered_list = sorted(
+                    filtered_list, key=lambda x, current_field=field: x.get(current_field, 0), reverse=reverse
+                )
 
         # Paginação
         paginated_list = filtered_list[offset : offset + limit]
@@ -84,4 +86,3 @@ class AsyncMemoryRepository(AsyncCrudRepository[T, ID], Generic[T, ID]):
             return None
 
         self.memory = [doc for doc in self.memory if doc.get(self.key_name) != entity_id]
-        return
