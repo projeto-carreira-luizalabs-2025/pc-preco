@@ -10,6 +10,7 @@ PORT?=8000
 INIT?=uvicorn ${API_MODULE_MAIN}:app --host $(HOST) --port $(PORT)
 DOCKER_IMAGE_NAME=pc/preco
 DOCKERFILE_PATH=./devtools/docker/Dockerfile
+CONTAINER_NAME?=pc-preco
 
 clean:
 	@find . -name "*.pyc" | xargs rm -rf
@@ -99,10 +100,10 @@ docker-build:
 	docker build -f $(DOCKERFILE_PATH) -t $(DOCKER_IMAGE_NAME) .
 
 docker-run:
-	docker run --rm -e ENV=dev -p 8000:8000 $(DOCKER_IMAGE_NAME)
+	docker run --rm --name $(CONTAINER_NAME) -e ENV=dev -p 8000:8000 $(DOCKER_IMAGE_NAME)
 
 docker-shell:
-	docker run --rm -it -e ENV=dev $(DOCKER_IMAGE_NAME) /bin/bash
+	docker run --rm -it --name $(CONTAINER_NAME) -e ENV=dev $(DOCKER_IMAGE_NAME) /bin/bash
 
 docker-compose-sonar-up:
 	docker compose -f ./devtools/docker/docker-compose-sonar.yml up -d
