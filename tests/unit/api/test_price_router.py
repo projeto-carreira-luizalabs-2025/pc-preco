@@ -29,7 +29,7 @@ async def criar_precificacao_retorna_201(client: AsyncClient):
     payload = {"seller_id": "seller123", "sku": "sku456", "price": 100.0}
     response = await client.post("/prices", json=payload)
     assert response.status_code == status.HTTP_201_CREATED
-    assert response.json()["price"] == 100.0
+    assert response.json()["price"] == pytest.approx(100.0)
 
 
 @pytest.mark.asyncio
@@ -44,7 +44,7 @@ async def atualizar_precificacao_retorna_200(client: AsyncClient):
     payload = {"price": 150.0}
     response = await client.patch("/prices/seller123/sku456", json=payload)
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()["price"] == 150.0
+    assert response.json()["price"] == pytest.approx(150.0)
 
 
 @pytest.mark.asyncio
