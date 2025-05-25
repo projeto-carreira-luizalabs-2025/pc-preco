@@ -4,21 +4,20 @@ from app.api.v1.schemas.price_schema import PriceCreate, PriceResponse, PriceSch
 class TestPrecoSchema:
     def test_criacao_com_campos_vazios(self):
         """Testa a criação do PriceSchema com strings vazias para seller_id e sku."""
-        # Pydantic permite strings vazias por padrão
-        schema = PriceSchema(seller_id="", sku="", preco_de=10000, preco_por=8500)
+        schema = PriceSchema(seller_id="", sku="", de=10000, por=8500)
         assert schema.seller_id == ""
         assert schema.sku == ""
 
     def test_criacao_com_precos_iguais(self):
-        """Testa a criação do PriceSchema com preco_de igual a preco_por."""
-        schema = PriceSchema(seller_id="seller123", sku="SKU001", preco_de=10000, preco_por=10000)
-        assert schema.preco_de == schema.preco_por
+        """Testa a criação do PriceSchema com o atributo 'de' igual ao atributo 'por'."""
+        schema = PriceSchema(seller_id="seller123", sku="SKU001", de=10000, por=10000)
+        assert schema.de == schema.por
 
     def test_criacao_com_precos_grandes(self):
         """Testa a criação do PriceSchema com valores de preço muito altos."""
-        schema = PriceSchema(seller_id="seller123", sku="SKU001", preco_de=10**9, preco_por=10**8)
-        assert schema.preco_de == 10**9
-        assert schema.preco_por == 10**8
+        schema = PriceSchema(seller_id="seller123", sku="SKU001", de=10**9, por=10**8)
+        assert schema.de == 10**9
+        assert schema.por == 10**8
 
 
 class TestPrecoResponse:
@@ -28,8 +27,8 @@ class TestPrecoResponse:
             "id": "123e4567-e89b-12d3-a456-426614174000",
             "seller_id": "seller123",
             "sku": "SKU001",
-            "preco_de": 10000,
-            "preco_por": 8500,
+            "de": 10000,
+            "por": 8500,
             "created_at": "2023-01-01T00:00:00",
             "updated_at": None,
             "created_by": None,
@@ -46,8 +45,8 @@ class TestPrecoResponse:
             "id": "123e4567-e89b-12d3-a456-426614174000",
             "seller_id": "seller123",
             "sku": "SKU001",
-            "preco_de": 10000,
-            "preco_por": 8500,
+            "de": 10000,
+            "por": 8500,
             "created_at": "2023-01-01T00:00:00",
             "updated_at": "2023-01-02T00:00:00",
             "created_by": "admin",
@@ -62,19 +61,19 @@ class TestPrecoResponse:
 class TestPrecoCreate:
     def test_criacao_com_precos_minimos_validos(self):
         """Testa a criação do PriceCreate com o menor valor válido para os preços."""
-        schema = PriceCreate(seller_id="seller123", sku="SKU001", preco_de=1, preco_por=1)
-        assert schema.preco_de == 1
-        assert schema.preco_por == 1
+        schema = PriceCreate(seller_id="seller123", sku="SKU001", de=1, por=1)
+        assert schema.de == 1
+        assert schema.por == 1
 
 
 class TestPrecoUpdate:
     def test_atualizacao_com_precos_iguais(self):
-        """Testa a atualização de preços com preco_de igual a preco_por."""
-        schema = PriceUpdate(preco_de=5000, preco_por=5000)
-        assert schema.preco_de == schema.preco_por
+        """Testa a atualização de preços com o atributo 'de' igual ao atributo 'por'."""
+        schema = PriceUpdate(de=5000, por=5000)
+        assert schema.de == schema.por
 
     def test_atualizacao_com_precos_grandes(self):
         """Testa a atualização de preços com valores muito altos."""
-        schema = PriceUpdate(preco_de=10**9, preco_por=10**8)
-        assert schema.preco_de == 10**9
-        assert schema.preco_por == 10**8
+        schema = PriceUpdate(de=10**9, por=10**8)
+        assert schema.de == 10**9
+        assert schema.por == 10**8

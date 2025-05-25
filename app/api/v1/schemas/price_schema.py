@@ -5,11 +5,11 @@ from app.api.common.schemas.response import ErrorResponse
 class PriceSchema(SchemaType):
     seller_id: str
     sku: str
-    preco_de: int
-    preco_por: int
+    de: int
+    por: int
 
     class Config:
-        json_schema_extra = {"example": {"seller_id": "abc123", "sku": "sku001", "preco_de": 1000, "preco_por": 500}}
+        json_schema_extra = {"example": {"seller_id": "abc123", "sku": "sku001", "de": 1000, "por": 500}}
 
 
 class PriceResponse(PriceSchema, ResponseEntity):
@@ -25,8 +25,8 @@ class PriceResponse(PriceSchema, ResponseEntity):
                 "updated_by": "user_id",
                 "seller_id": "abc123",
                 "sku": "sku001",
-                "preco_de": 1000,
-                "preco_por": 500,
+                "de": 1000,
+                "por": 500,
             }
         }
 
@@ -35,17 +35,17 @@ class PriceCreate(PriceSchema):
     """Schema para criação de precificações"""
 
     class Config:
-        json_schema_extra = {"example": {"seller_id": "abc123", "sku": "sku001", "preco_de": 1000, "preco_por": 500}}
+        json_schema_extra = {"example": {"seller_id": "abc123", "sku": "sku001", "de": 1000, "por": 500}}
 
 
 class PriceUpdate(SchemaType):
-    """Permite apenas a atualização de 'preco_de' e 'preco_por'"""
+    """Permite apenas a atualização dos atributos 'de' e 'por'"""
 
-    preco_de: int
-    preco_por: int
+    de: int
+    por: int
 
     class Config:
-        json_schema_extra = {"example": {"preco_de": 1000, "preco_por": 500}}
+        json_schema_extra = {"example": {"de": 1000, "por": 500}}
 
 
 class PriceErrorResponse(ErrorResponse):
@@ -53,15 +53,15 @@ class PriceErrorResponse(ErrorResponse):
 
     class Config:
         json_schema_extra = {
-            "preco_de": {
+            "de": {
                 "slug": "BAD_REQUEST",
                 "message": "Erro de validação",
                 "details": [
                     {
-                        "message": "preco_de deve ser maior que zero.",
+                        "message": "O campo 'de' deve ser maior que zero.",
                         "location": "body",
                         "slug": "preco_invalido",
-                        "field": "preco_de",
+                        "field": "de",
                         "ctx": {"value": -10},
                     }
                 ],

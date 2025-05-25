@@ -71,7 +71,7 @@ async def get_by_seller_id_and_sku(
     responses={
         400: {
             "description": "Error: Bad Request",
-            "content": {"application/json": {"example": PriceErrorResponse.Config.json_schema_extra["preco_de"]}},
+            "content": {"application/json": {"example": PriceErrorResponse.Config.json_schema_extra["de"]}},
         },
     },
 )
@@ -95,7 +95,7 @@ async def create(price: PriceCreate, price_service: "PriceService" = Depends(Pro
         },
         400: {
             "description": "Error: Bad Request",
-            "content": {"application/json": {"example": PriceErrorResponse.Config.json_schema_extra["preco_de"]}},
+            "content": {"application/json": {"example": PriceErrorResponse.Config.json_schema_extra["de"]}},
         },
     },
 )

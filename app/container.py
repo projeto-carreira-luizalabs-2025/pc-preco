@@ -5,8 +5,8 @@ from app.services import HealthCheckService, PriceService
 from app.settings import AppSettings
 
 memory_prices = [
-    {"seller_id": "1", "sku": "A", "preco_de": 100, "preco_por": 90},
-    {"seller_id": "2", "sku": "B", "preco_de": 200, "preco_por": 180},
+    {"seller_id": "1", "sku": "A", "de": 100, "por": 90},
+    {"seller_id": "2", "sku": "B", "de": 200, "por": 180},
 ]
 
 

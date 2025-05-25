@@ -16,8 +16,8 @@ from app.settings import AppSettings, api_settings
 @pytest.fixture
 def test_prices() -> list[Price]:
     return [
-        Price(seller_id="1", sku="A", preco_de=100, preco_por=90),
-        Price(seller_id="2", sku="B", preco_de=200, preco_por=180),
+        Price(seller_id="1", sku="A", de=100, por=90),
+        Price(seller_id="2", sku="B", de=200, por=180),
     ]
 
 
@@ -28,8 +28,8 @@ class TestContainer(containers.DeclarativeContainer):
     price_repository = providers.Factory(
         PriceRepository,
         memory=providers.List(
-            providers.Object(Price(seller_id="1", sku="A", preco_de=100, preco_por=90)),
-            providers.Object(Price(seller_id="2", sku="B", preco_de=200, preco_por=180)),
+            providers.Object(Price(seller_id="1", sku="A", de=100, por=90)),
+            providers.Object(Price(seller_id="2", sku="B", de=200, por=180)),
         ),
     )
 

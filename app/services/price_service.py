@@ -83,12 +83,12 @@ class PriceService(CrudService[Price, str]):
 
     def _validate_positive_prices(self, price):
         """
-        Valida se os valores de preco_de e preco_por são positivos.
+        Valida se os atributos 'de' e 'por' são positivos.
 
         :param price: Objeto de preço a ser validado.
         """
-        self._validate_positives(price.preco_de, "preco_de")
-        self._validate_positives(price.preco_por, "preco_por")
+        self._validate_positives(price.de, "de")
+        self._validate_positives(price.por, "por")
 
     def _validate_positives(self, value, field: str):
         """
