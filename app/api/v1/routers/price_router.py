@@ -80,7 +80,7 @@ async def create(price: PriceCreate, price_service: "PriceService" = Depends(Pro
     from app.models import Price
 
     price_model = Price(**price.model_dump())
-    return await price_service.create_price(price_model)
+    return await price_service.create(price_model)
 
 
 @router.patch(
@@ -109,7 +109,8 @@ async def update_by_seller_id_and_sku(
     from app.models import Price
 
     price_model = Price(seller_id=seller_id, sku=sku, **price.model_dump())
-    return await price_service.update_price(seller_id, sku, price_model)
+    entity_id = f"{seller_id}|{sku}"
+    return await price_service.update(entity_id, price_model)
 
 
 @router.delete(
@@ -127,4 +128,4 @@ async def update_by_seller_id_and_sku(
 async def delete_by_seller_id_and_sku(
     seller_id: str, sku: str, price_service: "PriceService" = Depends(Provide[Container.price_service])
 ):
-    await price_service.delete_by_seller_id_and_sku(seller_id, sku)
+    await price_service.delete(seller_id, sku)

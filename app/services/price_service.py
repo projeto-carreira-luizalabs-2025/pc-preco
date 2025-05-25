@@ -37,7 +37,7 @@ class PriceService(CrudService[Price, str]):
         # Garantimos que price_dict não é None neste ponto, podemos usá-lo com segurança
         return Price.model_validate(price_dict)
 
-    async def create_price(self, price_create: Price) -> Price:
+    async def create(self, price_create: Price) -> Price:
         """
         Cria uma nova precificação após validações de unicidade e valores positivos.
 
@@ -49,27 +49,39 @@ class PriceService(CrudService[Price, str]):
         self._validate_positive_prices(price_create)
         # Converte PrecoCreate para Preco, gerando o id automaticamente
         price = Price(**price_create.model_dump())
-        return await self.create(price)
+        return await super().create(price)
 
-    async def update_price(self, seller_id: str, sku: str, price_update: Price) -> Price:
+    async def update(self, entity_id: str, entity: Price) -> Price:
         """
         Atualiza uma precificação existente com novos valores.
-
-        :param seller_id: Identificador do vendedor.
-        :param sku: Código do produto.
-        :param price_update: Objeto contendo os novos dados do preço.
+        :param entity_id: Chave composta seller_id|sku (formato: seller_id|sku)
+        :param entity: Objeto contendo os novos dados do preço.
         :return: Instância de Preco atualizada.
         :raises NotFoundException: Se não encontrar o preço.
         :raises BadRequestException: Se valores inválidos forem informados.
         """
+        # Espera-se que entity_id seja 'seller_id|sku'
+        try:
+            seller_id, sku = entity_id.split("|", 1)
+        except ValueError:
+            raise BadRequestException(
+                details=[
+                    ErrorDetail(
+                        message="entity_id deve ser no formato 'seller_id|sku'",
+                        location="path",
+                        slug="preco_invalido",
+                        field="entity_id",
+                        ctx={"entity_id": entity_id},
+                    )
+                ]
+            )
         price_found = await self.repository.exists_by_seller_id_and_sku(seller_id, sku)
-
         self._raise_not_found(seller_id, sku, not price_found)
-        self._validate_positive_prices(price_update)
-        updated = await self.repository.update_by_seller_id_and_sku(seller_id, sku, price_update)
+        self._validate_positive_prices(entity)
+        updated = await self.repository.update_by_seller_id_and_sku(seller_id, sku, entity)
         return Price(**updated)
 
-    async def delete_by_seller_id_and_sku(self, seller_id: str, sku: str):
+    async def delete(self, seller_id: str, sku: str):
         """
         Remove um preço baseado em seller_id e sku.
 
@@ -113,7 +125,8 @@ class PriceService(CrudService[Price, str]):
         if price_found:
             self._raise_bad_request("Preço para produto já cadastrado.", "sku")
 
-    def _raise_not_found(self, seller_id: str, sku: str, condition: bool = True):
+    @staticmethod
+    def _raise_not_found(seller_id: str, sku: str, condition: bool = True):
         """
         Lança exceção de NotFoundException com detalhes do erro.
 
