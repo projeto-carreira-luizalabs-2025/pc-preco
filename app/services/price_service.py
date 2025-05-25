@@ -1,5 +1,4 @@
-from ..api.common.schemas.response import ErrorDetail
-from ..common.exceptions import BadRequestException, NotFoundException
+from ..common.exceptions.price_exceptions import PriceBadRequestException, PriceNotFoundException
 from ..models import Price
 from ..repositories import PriceRepository
 from .base import CrudService
@@ -64,16 +63,10 @@ class PriceService(CrudService[Price, str]):
         try:
             seller_id, sku = entity_id.split("|", 1)
         except ValueError:
-            raise BadRequestException(
-                details=[
-                    ErrorDetail(
-                        message="entity_id deve ser no formato 'seller_id|sku'",
-                        location="path",
-                        slug="preco_invalido",
-                        field="entity_id",
-                        ctx={"entity_id": entity_id},
-                    )
-                ]
+            raise PriceBadRequestException(
+                message="entity_id deve ser no formato 'seller_id|sku'",
+                field="entity_id",
+                value=entity_id,
             )
         price_found = await self.repository.exists_by_seller_id_and_sku(seller_id, sku)
         self._raise_not_found(seller_id, sku, not price_found)
@@ -135,17 +128,7 @@ class PriceService(CrudService[Price, str]):
         :raises NotFoundException: Sempre.
         """
         if condition:
-            raise NotFoundException(
-                details=[
-                    ErrorDetail(
-                        message="Preço para produto não encontrado.",
-                        location="path",
-                        slug="preco_nao_encontrado",
-                        field="sku",
-                        ctx={"seller_id": seller_id, "sku": sku},
-                    )
-                ]
-            )
+            raise PriceNotFoundException(seller_id=seller_id, sku=sku)
 
     def _raise_bad_request(self, message: str, field: str, value=None):
         """
@@ -156,14 +139,4 @@ class PriceService(CrudService[Price, str]):
         :param value: Valor que causou o erro (opcional).
         :raises BadRequestException: Sempre.
         """
-        raise BadRequestException(
-            details=[
-                ErrorDetail(
-                    message=message,
-                    location="body",
-                    slug="preco_invalido",
-                    field=field,
-                    ctx={"value": value} if value is not None else {},
-                )
-            ]
-        )
+        raise PriceBadRequestException(message=message, field=field, value=value)
