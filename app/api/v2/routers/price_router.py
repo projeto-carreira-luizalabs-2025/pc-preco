@@ -50,7 +50,7 @@ async def get(
 
 # Busca precificação por "seller_id" e "sku"
 @router.get(
-    "/{seller_id}/{sku}",
+    "/{sku}",
     response_model=PriceResponse,
     status_code=status.HTTP_200_OK,
     summary="Recuperar precificação por seller_id e sku",
@@ -59,13 +59,32 @@ async def get(
             "description": "Error: Not Found",
             "content": {"application/json": {"example": PriceErrorResponse.Config.json_schema_extra["not_found"]}},
         },
+        400: {
+            "description": "Header 'seller-id' obrigatório",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "slug": "BAD_REQUEST",
+                        "message": "Bad Request",
+                        "details": [
+                            {
+                                "message": "Header 'seller-id' obrigatório",
+                                "location": "header",
+                                "slug": "missing_required_header",
+                                "field": "seller-id",
+                            }
+                        ],
+                    }
+                }
+            },
+        },
     },
 )
 @inject
 async def get_by_seller_id_and_sku(
-    seller_id: str,
     sku: str,
     price_service: "PriceService" = Depends(Provide[Container.price_service]),
+    seller_id: str = Depends(get_required_seller_id)
 ):
     return await price_service.get_by_seller_id_and_sku(seller_id=seller_id, sku=sku)
 
