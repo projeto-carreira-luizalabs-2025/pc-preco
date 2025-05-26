@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Header
 
 from app.api.common.schemas import ListResponse, Paginator, get_request_pagination
 from app.container import Container
@@ -86,7 +86,7 @@ async def create(price: PriceCreate, price_service: "PriceService" = Depends(Pro
 
 # Atualiza uma precificação por "seller_id" e "sku"
 @router.put(
-    "/{seller_id}/{sku}",
+    "/{sku}",
     response_model=PriceResponse,
     status_code=status.HTTP_200_OK,
     summary="Atualizar precificação por seller_id e sku",
@@ -103,10 +103,10 @@ async def create(price: PriceCreate, price_service: "PriceService" = Depends(Pro
 )
 @inject
 async def replace(
-    seller_id: str,
     sku: str,
     price: PriceUpdate,
     price_service: "PriceService" = Depends(Provide[Container.price_service]),
+    seller_id: str = Header(..., alias="seller-id", description="ID do vendedor", convert_underscores=False),
 ):
     from app.models import Price
 
@@ -117,7 +117,7 @@ async def replace(
 
 # Atualiza parcialmente uma precificação por "seller_id" e "sku"
 @router.patch(
-    "/{seller_id}/{sku}",
+    "/{sku}",
     response_model=PriceResponse,
     status_code=status.HTTP_200_OK,
     summary="Atualizar parcialmente precificação por seller_id e sku",
@@ -134,10 +134,10 @@ async def replace(
 )
 @inject
 async def patch(
-    seller_id: str,
     sku: str,
     price_update_data: PricePatch,
     price_service: "PriceService" = Depends(Provide[Container.price_service]),
+    seller_id: str = Header(..., alias="seller-id", description="ID do vendedor", convert_underscores=False),
 ):
     update_data = price_update_data.model_dump(exclude_unset=True)
     entity_id = f"{seller_id}|{sku}"
