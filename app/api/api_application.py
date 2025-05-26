@@ -8,8 +8,10 @@ from .common.error_handlers import add_error_handlers
 from .common.routers.health_check_routers import add_health_check_router
 from .middlewares.configure_middlewares import configure_middlewares
 
+from typing import List, Tuple
 
-def create_app(settings: ApiSettings, router: APIRouter) -> FastAPI:
+
+def create_app(settings: ApiSettings, router_configs: List[Tuple[APIRouter, str, List[str]]]) -> FastAPI:
     @asynccontextmanager
     async def _lifespan(_app: FastAPI):
         # Qualquer ação necessária na inicialização
@@ -51,7 +53,9 @@ def create_app(settings: ApiSettings, router: APIRouter) -> FastAPI:
     add_error_handlers(app)
 
     # Rotas
-    app.include_router(router)
+    for router_instance, prefix, tags in router_configs:
+        app.include_router(router_instance, prefix=prefix, tags=tags)
+
     add_health_check_router(app, prefix=settings.health_check_base_path)
 
     return app

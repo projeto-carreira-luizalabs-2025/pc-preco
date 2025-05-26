@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from app.services import PriceService
 
 
-router = APIRouter(prefix=PRICE_PREFIX, tags=["Preços (v1)"])
+router = APIRouter(prefix=PRICE_PREFIX, tags=["Preços (v2)"])
 
 
 # Recupera lista de precificações

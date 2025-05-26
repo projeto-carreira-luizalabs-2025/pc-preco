@@ -1,7 +1,7 @@
-from fastapi import APIRouter
+from app.api.v1 import router as price_router_v1
+from app.api.v2 import router as price_router_v2
 
-from app.api.v1 import router_selller as v1_router_seller
-
-routes = APIRouter()
-
-routes.include_router(v1_router_seller)
+router_configurations = [
+    (price_router_v1, "/api/v1", ["Preços (v1)"]),  # Use .router para acessar a instância do APIRouter
+    (price_router_v2, "/api/v2", ["Preços (v2)"]),  # Use .router para acessar a instância do APIRouter
+]
