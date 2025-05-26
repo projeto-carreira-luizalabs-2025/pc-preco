@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, status
 from app.api.common.schemas import ListResponse, Paginator, get_request_pagination
 from app.container import Container
 
-from ..schemas.price_schema import PriceCreate, PriceErrorResponse, PriceResponse, PriceUpdate
+from ..schemas.price_schema import PriceCreate, PriceErrorResponse, PriceResponse, PriceUpdate, PricePatch
 from . import PRICE_PREFIX
 
 if TYPE_CHECKING:
@@ -16,6 +16,7 @@ if TYPE_CHECKING:
 router = APIRouter(prefix=PRICE_PREFIX, tags=["Preços"])
 
 
+# Recupera lista de precificações
 @router.get(
     "",
     response_model=ListResponse[PriceResponse],
@@ -62,7 +63,7 @@ async def get_by_seller_id_and_sku(
     return await price_service.get_by_seller_id_and_sku(seller_id=seller_id, sku=sku)
 
 
-# Cria uma precificação para um produto
+# Cria uma precificação
 @router.post(
     "",
     response_model=PriceResponse,
@@ -83,11 +84,12 @@ async def create(price: PriceCreate, price_service: "PriceService" = Depends(Pro
     return await price_service.create(price_model)
 
 
-@router.patch(
+# Atualiza uma precificação por "seller_id" e "sku"
+@router.put(
     "/{seller_id}/{sku}",
     response_model=PriceResponse,
     status_code=status.HTTP_200_OK,
-    summary="Atualizar precificação",
+    summary="Atualizar precificação por seller_id e sku",
     responses={
         404: {
             "description": "Error: Not Found",
@@ -100,7 +102,7 @@ async def create(price: PriceCreate, price_service: "PriceService" = Depends(Pro
     },
 )
 @inject
-async def update_by_seller_id_and_sku(
+async def replace(
     seller_id: str,
     sku: str,
     price: PriceUpdate,
@@ -113,6 +115,36 @@ async def update_by_seller_id_and_sku(
     return await price_service.update(entity_id, price_model)
 
 
+# Atualiza parcialmente uma precificação por "seller_id" e "sku"
+@router.patch(
+    "/{seller_id}/{sku}",
+    response_model=PriceResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Atualizar parcialmente precificação por seller_id e sku",
+    responses={
+        404: {
+            "description": "Error: Not Found",
+            "content": {"application/json": {"example": PriceErrorResponse.Config.json_schema_extra["not_found"]}},
+        },
+        400: {
+            "description": "Error: Bad Request",
+            "content": {"application/json": {"example": PriceErrorResponse.Config.json_schema_extra["de"]}},
+        },
+    },
+)
+@inject
+async def patch(
+    seller_id: str,
+    sku: str,
+    price_update_data: PricePatch,
+    price_service: "PriceService" = Depends(Provide[Container.price_service]),
+):
+    update_data = price_update_data.model_dump(exclude_unset=True)
+    entity_id = f"{seller_id}|{sku}"
+    return await price_service.patch(entity_id, update_data)
+
+
+# Deleta uma precificação por "seller_id" e "sku"
 @router.delete(
     "/{seller_id}/{sku}",
     status_code=status.HTTP_204_NO_CONTENT,
@@ -125,7 +157,5 @@ async def update_by_seller_id_and_sku(
     },
 )
 @inject
-async def delete_by_seller_id_and_sku(
-    seller_id: str, sku: str, price_service: "PriceService" = Depends(Provide[Container.price_service])
-):
+async def delete(seller_id: str, sku: str, price_service: "PriceService" = Depends(Provide[Container.price_service])):
     await price_service.delete(seller_id, sku)

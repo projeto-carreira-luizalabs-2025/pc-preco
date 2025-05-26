@@ -3,6 +3,8 @@ from ..models import Price
 from ..repositories import PriceRepository
 from .base import CrudService
 
+from typing import Any, Dict
+
 
 class PriceService(CrudService[Price, str]):
     """
@@ -49,6 +51,45 @@ class PriceService(CrudService[Price, str]):
         # Converte PrecoCreate para Preco, gerando o id automaticamente
         price = Price(**price_create.model_dump())
         return await super().create(price)
+
+    async def patch(self, entity_id: str, update_data: Dict[str, Any]) -> Price:
+        """
+        Atualiza campos de uma precificação.
+        :param entity_id: Chave composta seller_id|sku (formato: seller_id|sku)
+        :update_data: Dicionário contendo os campos a serem atualizados.
+        :return: Instância de Preco atualizada.
+        :raises NotFoundException: Se não encontrar o preço.
+        :raises BadRequestException: Se valores inválidos forem informados.
+        """
+        # Espera-se que entity_id seja 'seller_id|sku'
+        try:
+            seller_id, sku = entity_id.split("|", 1)
+        except ValueError:
+            raise PriceBadRequestException(
+                message="entity_id deve ser no formato 'seller_id|sku'",
+                field="entity_id",
+                value=entity_id,
+            )
+        price_dict = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
+        self._raise_not_found(seller_id, sku, price_dict is None)
+
+        existing_price = Price.model_validate(price_dict)
+
+        merged_price_data = existing_price.model_dump()
+        merged_price_data.update(update_data)
+
+        try:
+            merged_price = Price.model_validate(merged_price_data)
+        except ValueError:
+            raise PriceBadRequestException(
+                message="Dados inválidos para atualização.",
+                field="update_data",
+                value=update_data,
+            )
+
+        self._validate_positive_prices(merged_price)
+        updated = await self.repository.update_by_seller_id_and_sku(seller_id, sku, merged_price)
+        return Price(**updated)
 
     async def update(self, entity_id: str, entity: Price) -> Price:
         """

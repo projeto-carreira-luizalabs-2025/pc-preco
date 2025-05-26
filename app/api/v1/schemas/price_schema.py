@@ -48,6 +48,16 @@ class PriceUpdate(SchemaType):
         json_schema_extra = {"example": {"de": 1000, "por": 500}}
 
 
+class PricePatch(SchemaType):
+    """Permite atualização parcial dos atributos 'de' e 'por'"""
+
+    de: int | None = None
+    por: int | None = None
+
+    class Config:
+        json_schema_extra = {"example": {"de": 1000}}
+
+
 class PriceErrorResponse(ErrorResponse):
     """Schema para erros de preços"""
 
