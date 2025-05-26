@@ -113,24 +113,101 @@ make run-dev
 
 Acesse a doc da API em: [localhost:8000/api/docs](http://0.0.0.0:8000/api/docs) ou em [localhost:8000/redoc](http://0.0.0.0:8000/redoc)
 
+## 📦 Pré-requisitos (ambiente Python)
+
+Antes de rodar os testes, executar a aplicação localmente ou realizar a análise de qualidade com o SonarQube, certifique-se de:
+
+```bash
+make build-venv
+make requirements-dev
+```
+
+Esses comandos criam o ambiente virtual e instalam as dependências necessárias para o funcionamento do projeto.
+
+## 🧪 Testes
+
+Para rodar os testes automatizados do projeto, use o comando abaixo:
+
+```bash
+make test
+```
+## 🐳 Docker
+
+Para construir a imagem Docker da aplicação, execute:
+
+``` bash
+make docker-build # Criará uma imagem com o nome pc/preco.
+```
+
+Para rodar a aplicação em um contêiner Docker:
+
+``` bash
+make docker-run # Iniciará um contêiner chamado pc-preco, expondo a porta 8000 do contêiner para a porta 8000 do seu host.
+```
+
+Se precisar acessar o shell do contêiner para depuração ou outras operações:
+
+```bash
+make docker-shell # Isso abrirá uma sessão bash interativa dentro do contêiner.
+```
+
+## 🔍 Análise de Qualidade com SonarQube
+
+Para subir o ambiente do SonarQube com Docker Compose, execute:
+
+``` bash
+make docker-compose-sonar-up # Inicia o servidor SonarQube e seus serviços dependentes (como o banco de dados) via Docker Compose
+```
+
+Após a execução, acesse a interface web do SonarQube em: http://localhost:9000
+
+Se em algum momento quiser parar o ambiente do SonarQube, execute:
+
+```bash
+make docker-compose-sonar-down # Desligará o ambiente do SonarQube e removerá os contêineres
+```
+
+🔐 Gerar Token de Autenticação
+
+1. Acesse o SonarQube: http://localhost:9000
+
+2. Vá em: **My Account** > **Security**
+
+3. Gere um token de autenticação pessoal. Guarde-o bem, pois você não terá acesso a ele novamente.
+
+4. Exporte as variáveis de ambiente com o token gerado:
+
+``` bash
+export SONAR_TOKEN=<seu_token>
+export SONAR_HOST_URL=http://localhost:9000 pysonar-scanner
+```
+
+Após isso, o SonarQube exibirá um relatório completo de qualidade do código na interface web.
+
 ## 📁 Estrutura do projeto
 
 ```bash
 .
-├── README.md               # Documentação principal do projeto: informações do projeto, instruções de setup, uso e execução
-├── app/                    # Diretório principal do código-fonte da aplicação (em construção)
-│   └── api/                # Rotas, controladores e interfaces REST da aplicação
-│   └── common/             # Utilitários, constantes, exceções e helpers compartilhados entre os módulos
-│   └── integrations/       # Integrações com sistemas externos
-│   └── models/             # Definições de modelos para rotas
-│   └── repositories/
-│   └── services/
-│   └── settings/           # Configurações da aplicação
-├── devtools/               # Ferramentas e scripts auxiliares para desenvolvimento
-│   └── scripts/            # Scripts automatizados usados no `makefile` (ex: configuração de ambiente)
-│   └── info-projeto.md     # Documento de levantamento da informação base
-├── requirements/           # Pasta com arquivos de dependências específicas (ex: develop.txt, base.txt)
-├── pyproject.toml          # Arquivo de configuração do projeto Python
-├── requirements.txt        # Lista geral de dependências do projeto
-
+├── README.md                   # Documentação principal do projeto: informações do projeto, instruções de setup, uso e execução
+├── app/                        # Diretório principal do código-fonte da aplicação (em construção)
+│   └── api/                    # Rotas, controladores e interfaces REST da aplicação
+│   └── common/                 # Utilitários, constantes, exceções e helpers compartilhados entre os módulos
+│   └── integrations/           # Integrações com sistemas externos
+│   └── models/                 # Definições de modelos para rotas
+│   └── repositories/           # Módulos para interação com o banco de dados e persistência de dados
+│   └── services/               # Camada de lógica de negócio da aplicação
+│   └── settings/               # Configurações da aplicação
+│   └── worker/                 
+├── devtools/                   # Ferramentas e scripts auxiliares para desenvolvimento
+│   └── docker                  # Arquivos e configurações para Docker (ex: Dockerfile, docker-compose-sonar.yml)
+│   └── scripts/                # Scripts automatizados usados no `makefile` (ex: configuração de ambiente)
+│   └── info-projeto.md         # Documento de levantamento da informação base
+├── requirements/               # Pasta com arquivos de dependências específicas (ex: develop.txt, base.txt)
+├── tests                       # Pasta para testes da aplicação
+│   └── unit                    # Testes unitários para módulos e funções específicas
+├── venv                        # Ambiente virtual Python para isolamento de dependências
+├── makefile                    # Automatiza tarefas comuns do projeto (ex: build, test, run)
+├── pyproject.toml              # Arquivo de configuração do projeto Python
+├── requirements.txt            # Lista geral de dependências do projeto
+├── sonar-project.properties    # Configurações para o SonarQube Scanner
 ```
