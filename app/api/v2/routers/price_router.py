@@ -1,8 +1,9 @@
 from typing import TYPE_CHECKING
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import APIRouter, Depends, status, Header
+from fastapi import APIRouter, Depends, status
 
+from app.api.common.dependencies import get_required_seller_id
 from app.api.common.schemas import ListResponse, Paginator, get_request_pagination
 from app.api.common.schemas.price.price_schema import (
     PriceCreate,
@@ -112,7 +113,7 @@ async def replace(
     sku: str,
     price: PriceUpdate,
     price_service: "PriceService" = Depends(Provide[Container.price_service]),
-    seller_id: str = Header(..., alias="seller-id", description="ID do vendedor", convert_underscores=False),
+    seller_id: str = Depends(get_required_seller_id),
 ):
     from app.models import Price
 
@@ -143,7 +144,7 @@ async def patch(
     sku: str,
     price_update_data: PricePatch,
     price_service: "PriceService" = Depends(Provide[Container.price_service]),
-    seller_id: str = Header(..., alias="seller-id", description="ID do vendedor", convert_underscores=False),
+    seller_id: str = Depends(get_required_seller_id),
 ):
     update_data = price_update_data.model_dump(exclude_unset=True)
     entity_id = f"{seller_id}|{sku}"
@@ -152,7 +153,7 @@ async def patch(
 
 # Deleta uma precificação por "seller_id" e "sku"
 @router.delete(
-    "/{seller_id}/{sku}",
+    "/{sku}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Excluir precificação por seller_id e sku",
     responses={
@@ -160,8 +161,31 @@ async def patch(
             "description": "Error: Not Found",
             "content": {"application/json": {"example": PriceErrorResponse.Config.json_schema_extra["not_found"]}},
         },
+        400: {
+            "description": "Header 'seller-id' obrigatório",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "slug": "BAD_REQUEST",
+                        "message": "Bad Request",
+                        "details": [
+                            {
+                                "message": "Header 'seller-id' obrigatório",
+                                "location": "header",
+                                "slug": "missing_required_header",
+                                "field": "seller-id",
+                            }
+                        ],
+                    }
+                }
+            },
+        },
     },
 )
 @inject
-async def delete(seller_id: str, sku: str, price_service: "PriceService" = Depends(Provide[Container.price_service])):
+async def delete(
+    sku: str,
+    price_service: "PriceService" = Depends(Provide[Container.price_service]),
+    seller_id: str = Depends(get_required_seller_id),
+):
     await price_service.delete(seller_id, sku)
