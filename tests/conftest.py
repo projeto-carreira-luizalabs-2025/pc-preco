@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from app.api.api_application import create_app
-from app.api.router import routes as api_routes
+from app.api.router import router_configurations as api_routes
 from app.models import Price
 from app.repositories import PriceRepository
 from app.services import HealthCheckService, PriceService
@@ -16,8 +16,28 @@ from app.settings import AppSettings, api_settings
 @pytest.fixture
 def test_prices() -> list[Price]:
     return [
-        Price(seller_id="1", sku="A", de=100, por=90),
-        Price(seller_id="2", sku="B", de=200, por=180),
+        Price(
+            seller_id="1",
+            sku="A",
+            de=100,
+            por=90,
+            updated_at=None,
+            created_by=None,
+            updated_by=None,
+            audit_created_at=None,
+            audit_updated_at=None,
+        ),
+        Price(
+            seller_id="2",
+            sku="B",
+            de=200,
+            por=180,
+            updated_at=None,
+            created_by=None,
+            updated_by=None,
+            audit_created_at=None,
+            audit_updated_at=None,
+        ),
     ]
 
 
@@ -28,8 +48,32 @@ class TestContainer(containers.DeclarativeContainer):
     price_repository = providers.Factory(
         PriceRepository,
         memory=providers.List(
-            providers.Object(Price(seller_id="1", sku="A", de=100, por=90)),
-            providers.Object(Price(seller_id="2", sku="B", de=200, por=180)),
+            providers.Object(
+                Price(
+                    seller_id="1",
+                    sku="A",
+                    de=100,
+                    por=90,
+                    updated_at=None,
+                    created_by=None,
+                    updated_by=None,
+                    audit_created_at=None,
+                    audit_updated_at=None,
+                )
+            ),
+            providers.Object(
+                Price(
+                    seller_id="2",
+                    sku="B",
+                    de=200,
+                    por=180,
+                    updated_at=None,
+                    created_by=None,
+                    updated_by=None,
+                    audit_created_at=None,
+                    audit_updated_at=None,
+                )
+            ),
         ),
     )
 

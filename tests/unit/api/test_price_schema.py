@@ -1,4 +1,4 @@
-from app.api.v1.schemas.price_schema import PriceCreate, PriceResponse, PriceSchema, PriceUpdate
+from app.api.common.schemas.price.price_schema import PriceCreate, PriceResponse, PriceSchema, PriceUpdate
 
 
 class TestPrecoSchema:

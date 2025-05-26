@@ -1,4 +1,6 @@
 from contextlib import asynccontextmanager
+from enum import Enum
+from typing import List, Optional, Tuple, Union
 
 from fastapi import APIRouter, FastAPI
 
@@ -8,10 +10,10 @@ from .common.error_handlers import add_error_handlers
 from .common.routers.health_check_routers import add_health_check_router
 from .middlewares.configure_middlewares import configure_middlewares
 
-from typing import List, Tuple
 
-
-def create_app(settings: ApiSettings, router_configs: List[Tuple[APIRouter, str, List[str]]]) -> FastAPI:
+def create_app(
+    settings: ApiSettings, router_configs: List[Tuple[APIRouter, str, Optional[List[Union[str, Enum]]]]]
+) -> FastAPI:
     @asynccontextmanager
     async def _lifespan(_app: FastAPI):
         # Qualquer ação necessária na inicialização

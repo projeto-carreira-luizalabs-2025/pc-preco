@@ -18,7 +18,7 @@ def init() -> FastAPI:
 
     container = Container()
 
-    container.config.from_pydantic(api_settings)
+    container.config.from_dict(api_settings.model_dump())  # type: ignore[attr-defined]
 
     app_api = create_app(api_settings, router_configurations)
     app_api.container = container  # type: ignore[attr-defined]

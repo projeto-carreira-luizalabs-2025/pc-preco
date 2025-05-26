@@ -4,9 +4,15 @@ from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, status
 
 from app.api.common.schemas import ListResponse, Paginator, get_request_pagination
+from app.api.common.schemas.price.price_schema import (
+    PriceCreate,
+    PriceErrorResponse,
+    PricePatch,
+    PriceResponse,
+    PriceUpdate,
+)
 from app.container import Container
 
-from ..schemas.price_schema import PriceCreate, PriceErrorResponse, PriceResponse, PriceUpdate, PricePatch
 from . import PRICE_PREFIX
 
 if TYPE_CHECKING:

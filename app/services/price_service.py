@@ -1,9 +1,9 @@
+from typing import Any, Dict
+
 from ..common.exceptions.price_exceptions import PriceBadRequestException, PriceNotFoundException
 from ..models import Price
 from ..repositories import PriceRepository
 from .base import CrudService
-
-from typing import Any, Dict
 
 
 class PriceService(CrudService[Price, str]):
