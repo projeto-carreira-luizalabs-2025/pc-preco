@@ -7,11 +7,18 @@ from app.api.common.dependencies import get_required_seller_id
 from app.api.common.schemas import ListResponse, Paginator, get_request_pagination
 from app.api.common.schemas.price.price_schema import (
     PriceCreate,
-    PriceErrorResponse,
     PricePatch,
     PriceResponse,
     PriceUpdate,
 )
+from app.api.common.responses.price_responses import (
+    UNPROCESSABLE_ENTITY_RESPONSE,
+    NOT_FOUND_RESPONSE,
+    BAD_REQUEST_RESPONSE,
+    MISSING_HEADER_RESPONSE,
+)
+
+from app.models import Price
 from app.container import Container
 
 from . import PRICE_PREFIX
@@ -30,12 +37,7 @@ router = APIRouter(prefix=PRICE_PREFIX, tags=["Preços (v2)"])
     status_code=status.HTTP_200_OK,
     summary="Recuperar lista de precificações",
     responses={
-        422: {
-            "description": "Error: Unprocessable Entity",
-            "content": {
-                "application/json": {"example": PriceErrorResponse.Config.json_schema_extra["unprocessable_entity"]}
-            },
-        },
+        422: UNPROCESSABLE_ENTITY_RESPONSE
     },
 )
 @inject
@@ -55,29 +57,8 @@ async def get(
     status_code=status.HTTP_200_OK,
     summary="Recuperar precificação por seller_id e sku",
     responses={
-        404: {
-            "description": "Error: Not Found",
-            "content": {"application/json": {"example": PriceErrorResponse.Config.json_schema_extra["not_found"]}},
-        },
-        400: {
-            "description": "Header 'seller-id' obrigatório",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "slug": "BAD_REQUEST",
-                        "message": "Bad Request",
-                        "details": [
-                            {
-                                "message": "Header 'seller-id' obrigatório",
-                                "location": "header",
-                                "slug": "missing_required_header",
-                                "field": "seller-id",
-                            }
-                        ],
-                    }
-                }
-            },
-        },
+        404: NOT_FOUND_RESPONSE,
+        400: MISSING_HEADER_RESPONSE,
     },
 )
 @inject
@@ -96,16 +77,11 @@ async def get_by_seller_id_and_sku(
     status_code=status.HTTP_201_CREATED,
     summary="Criar precificação",
     responses={
-        400: {
-            "description": "Error: Bad Request",
-            "content": {"application/json": {"example": PriceErrorResponse.Config.json_schema_extra["de"]}},
-        },
+        400: BAD_REQUEST_RESPONSE,
     },
 )
 @inject
 async def create(price: PriceCreate, price_service: "PriceService" = Depends(Provide[Container.price_service])):
-    from app.models import Price
-
     price_model = Price(**price.model_dump())
     return await price_service.create(price_model)
 
@@ -117,14 +93,8 @@ async def create(price: PriceCreate, price_service: "PriceService" = Depends(Pro
     status_code=status.HTTP_200_OK,
     summary="Atualizar precificação por seller_id e sku",
     responses={
-        404: {
-            "description": "Error: Not Found",
-            "content": {"application/json": {"example": PriceErrorResponse.Config.json_schema_extra["not_found"]}},
-        },
-        400: {
-            "description": "Error: Bad Request",
-            "content": {"application/json": {"example": PriceErrorResponse.Config.json_schema_extra["de"]}},
-        },
+        404: NOT_FOUND_RESPONSE,
+        400: BAD_REQUEST_RESPONSE,
     },
 )
 @inject
@@ -134,7 +104,6 @@ async def replace(
     price_service: "PriceService" = Depends(Provide[Container.price_service]),
     seller_id: str = Depends(get_required_seller_id),
 ):
-    from app.models import Price
 
     price_model = Price(seller_id=seller_id, sku=sku, **price.model_dump())
     entity_id = f"{seller_id}|{sku}"
@@ -148,14 +117,8 @@ async def replace(
     status_code=status.HTTP_200_OK,
     summary="Atualizar parcialmente precificação por seller_id e sku",
     responses={
-        404: {
-            "description": "Error: Not Found",
-            "content": {"application/json": {"example": PriceErrorResponse.Config.json_schema_extra["not_found"]}},
-        },
-        400: {
-            "description": "Error: Bad Request",
-            "content": {"application/json": {"example": PriceErrorResponse.Config.json_schema_extra["de"]}},
-        },
+        404: NOT_FOUND_RESPONSE,
+        400: BAD_REQUEST_RESPONSE,
     },
 )
 @inject
@@ -176,29 +139,8 @@ async def patch(
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Excluir precificação por seller_id e sku",
     responses={
-        404: {
-            "description": "Error: Not Found",
-            "content": {"application/json": {"example": PriceErrorResponse.Config.json_schema_extra["not_found"]}},
-        },
-        400: {
-            "description": "Header 'seller-id' obrigatório",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "slug": "BAD_REQUEST",
-                        "message": "Bad Request",
-                        "details": [
-                            {
-                                "message": "Header 'seller-id' obrigatório",
-                                "location": "header",
-                                "slug": "missing_required_header",
-                                "field": "seller-id",
-                            }
-                        ],
-                    }
-                }
-            },
-        },
+        404: NOT_FOUND_RESPONSE,
+        400: MISSING_HEADER_RESPONSE
     },
 )
 @inject
