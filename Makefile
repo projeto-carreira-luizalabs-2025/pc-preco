@@ -110,3 +110,25 @@ docker-compose-sonar-up:
 
 docker-compose-sonar-down:
 	docker compose -f ./devtools/docker/docker-compose-sonar.yml down
+
+coverage:
+ifeq ($(OS),Windows_NT)
+	@cmd /C "set ENV=test&& pytest --cov=app --cov-report=term-missing --cov-report=xml ./tests/ --cov-fail-under=90 --durations=5"
+else
+	@ENV=test pytest --cov=app --cov-report=term-missing --cov-report=xml ./tests/ --cov-fail-under=90 --durations=5
+endif
+
+coverage-no-fail:
+ifeq ($(OS),Windows_NT)
+	@cmd /C "set ENV=test&& pytest --cov=app --cov-report=term-missing --cov-report=xml ./tests/"
+else
+	@ENV=test pytest --cov=app --cov-report=term-missing --cov-report=xml ./tests/
+endif
+
+coverage-html:
+ifeq ($(OS),Windows_NT)
+	@cmd /C "set ENV=test&& pytest --cov=app --cov-report=term-missing --cov-report=html ./tests/"
+else
+	@ENV=test pytest --cov=app --cov-report=term-missing --cov-report=html ./tests/
+endif
+
