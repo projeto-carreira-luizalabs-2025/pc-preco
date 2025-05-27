@@ -4,22 +4,16 @@ from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, status
 
 from app.api.common.dependencies import get_required_seller_id
-from app.api.common.schemas import ListResponse, Paginator, get_request_pagination
-from app.api.common.schemas.price.price_schema import (
-    PriceCreate,
-    PricePatch,
-    PriceResponse,
-    PriceUpdate,
-)
 from app.api.common.responses.price_responses import (
-    UNPROCESSABLE_ENTITY_RESPONSE,
-    NOT_FOUND_RESPONSE,
     BAD_REQUEST_RESPONSE,
     MISSING_HEADER_RESPONSE,
+    NOT_FOUND_RESPONSE,
+    UNPROCESSABLE_ENTITY_RESPONSE,
 )
-
-from app.models import Price
+from app.api.common.schemas import ListResponse, Paginator, get_request_pagination
+from app.api.common.schemas.price.price_schema import PriceCreate, PricePatch, PriceResponse, PriceUpdate
 from app.container import Container
+from app.models import Price
 
 from . import PRICE_PREFIX
 
@@ -36,9 +30,7 @@ router = APIRouter(prefix=PRICE_PREFIX, tags=["Preços (v2)"])
     response_model=ListResponse[PriceResponse],
     status_code=status.HTTP_200_OK,
     summary="Recuperar lista de precificações",
-    responses={
-        422: UNPROCESSABLE_ENTITY_RESPONSE
-    },
+    responses={422: UNPROCESSABLE_ENTITY_RESPONSE},
 )
 @inject
 async def get(
@@ -65,7 +57,7 @@ async def get(
 async def get_by_seller_id_and_sku(
     sku: str,
     price_service: "PriceService" = Depends(Provide[Container.price_service]),
-    seller_id: str = Depends(get_required_seller_id)
+    seller_id: str = Depends(get_required_seller_id),
 ):
     return await price_service.get_by_seller_id_and_sku(seller_id=seller_id, sku=sku)
 
@@ -138,10 +130,7 @@ async def patch(
     "/{sku}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Excluir precificação por seller_id e sku",
-    responses={
-        404: NOT_FOUND_RESPONSE,
-        400: MISSING_HEADER_RESPONSE
-    },
+    responses={404: NOT_FOUND_RESPONSE, 400: MISSING_HEADER_RESPONSE},
 )
 @inject
 async def delete(

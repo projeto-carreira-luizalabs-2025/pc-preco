@@ -94,10 +94,15 @@ def container() -> Generator[TestContainer, None, None]:
 @pytest.fixture
 def app(container: TestContainer) -> FastAPI:
     app_instance = create_app(api_settings, api_routes)
-
     app_instance.container = container  # type: ignore[attr-defined]
-
-    container.wire(modules=["app.api.common.routers.health_check_routers", "app.api.v1.routers.price_router"])
+    # Faz o wire dos dois price_router (v1 e v2) e health_check
+    container.wire(
+        modules=[
+            "app.api.common.routers.health_check_routers",
+            "app.api.v1.routers.price_router",
+            "app.api.v2.routers.price_router",
+        ]
+    )
     return app_instance
 
 

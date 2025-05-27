@@ -1,36 +1,26 @@
 from app.api.common.schemas.price.price_schema import PriceErrorResponse
 
+APPLICATION_JSON = "application/json"
+
 UNPROCESSABLE_ENTITY_RESPONSE = {
     "description": "Error: Unprocessable Entity",
-    "content": {
-        "application/json": {
-            "example": PriceErrorResponse.Config.json_schema_extra["unprocessable_entity"]
-        }
-    },
+    "content": {APPLICATION_JSON: {"example": PriceErrorResponse.Config.json_schema_extra["unprocessable_entity"]}},
 }
 
 NOT_FOUND_RESPONSE = {
     "description": "Error: Not Found",
-    "content": {
-        "application/json": {
-            "example": PriceErrorResponse.Config.json_schema_extra["not_found"]
-        }
-    },
+    "content": {APPLICATION_JSON: {"example": PriceErrorResponse.Config.json_schema_extra["not_found"]}},
 }
 
 BAD_REQUEST_RESPONSE = {
     "description": "Error: Bad Request",
-    "content": {
-        "application/json": {
-            "example": PriceErrorResponse.Config.json_schema_extra["de"]
-        }
-    },
+    "content": {APPLICATION_JSON: {"example": PriceErrorResponse.Config.json_schema_extra["de"]}},
 }
 
 MISSING_HEADER_RESPONSE = {
     "description": "Header 'seller-id' obrigatório",
     "content": {
-        "application/json": {
+        APPLICATION_JSON: {
             "example": {
                 "slug": "BAD_REQUEST",
                 "message": "Bad Request",
