@@ -1,5 +1,6 @@
-from ..api.common.schemas.response import ErrorDetail
-from ..common.exceptions import BadRequestException, NotFoundException
+from typing import Any, Dict
+
+from ..common.exceptions.price_exceptions import PriceBadRequestException, PriceNotFoundException
 from ..models import Price
 from ..repositories import PriceRepository
 from .base import CrudService
@@ -37,7 +38,7 @@ class PriceService(CrudService[Price, str]):
         # Garantimos que price_dict não é None neste ponto, podemos usá-lo com segurança
         return Price.model_validate(price_dict)
 
-    async def create_price(self, price_create: Price) -> Price:
+    async def create(self, price_create: Price) -> Price:
         """
         Cria uma nova precificação após validações de unicidade e valores positivos.
 
@@ -49,27 +50,72 @@ class PriceService(CrudService[Price, str]):
         self._validate_positive_prices(price_create)
         # Converte PrecoCreate para Preco, gerando o id automaticamente
         price = Price(**price_create.model_dump())
-        return await self.create(price)
+        return await super().create(price)
 
-    async def update_price(self, seller_id: str, sku: str, price_update: Price) -> Price:
+    async def patch(self, entity_id: str, update_data: Dict[str, Any]) -> Price:
         """
-        Atualiza uma precificação existente com novos valores.
-
-        :param seller_id: Identificador do vendedor.
-        :param sku: Código do produto.
-        :param price_update: Objeto contendo os novos dados do preço.
+        Atualiza campos de uma precificação.
+        :param entity_id: Chave composta seller_id|sku (formato: seller_id|sku)
+        :update_data: Dicionário contendo os campos a serem atualizados.
         :return: Instância de Preco atualizada.
         :raises NotFoundException: Se não encontrar o preço.
         :raises BadRequestException: Se valores inválidos forem informados.
         """
-        price_found = await self.repository.exists_by_seller_id_and_sku(seller_id, sku)
+        # Espera-se que entity_id seja 'seller_id|sku'
+        try:
+            seller_id, sku = entity_id.split("|", 1)
+        except ValueError:
+            raise PriceBadRequestException(
+                message="entity_id deve ser no formato 'seller_id|sku'",
+                field="entity_id",
+                value=entity_id,
+            )
+        price_dict = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
+        self._raise_not_found(seller_id, sku, price_dict is None)
 
-        self._raise_not_found(seller_id, sku, not price_found)
-        self._validate_positive_prices(price_update)
-        updated = await self.repository.update_by_seller_id_and_sku(seller_id, sku, price_update)
+        existing_price = Price.model_validate(price_dict)
+
+        merged_price_data = existing_price.model_dump()
+        merged_price_data.update(update_data)
+
+        try:
+            merged_price = Price.model_validate(merged_price_data)
+        except ValueError:
+            raise PriceBadRequestException(
+                message="Dados inválidos para atualização.",
+                field="update_data",
+                value=update_data,
+            )
+
+        self._validate_positive_prices(merged_price)
+        updated = await self.repository.update_by_seller_id_and_sku(seller_id, sku, merged_price)
         return Price(**updated)
 
-    async def delete_by_seller_id_and_sku(self, seller_id: str, sku: str):
+    async def update(self, entity_id: str, entity: Price) -> Price:
+        """
+        Atualiza uma precificação existente com novos valores.
+        :param entity_id: Chave composta seller_id|sku (formato: seller_id|sku)
+        :param entity: Objeto contendo os novos dados do preço.
+        :return: Instância de Preco atualizada.
+        :raises NotFoundException: Se não encontrar o preço.
+        :raises BadRequestException: Se valores inválidos forem informados.
+        """
+        # Espera-se que entity_id seja 'seller_id|sku'
+        try:
+            seller_id, sku = entity_id.split("|", 1)
+        except ValueError:
+            raise PriceBadRequestException(
+                message="entity_id deve ser no formato 'seller_id|sku'",
+                field="entity_id",
+                value=entity_id,
+            )
+        price_found = await self.repository.exists_by_seller_id_and_sku(seller_id, sku)
+        self._raise_not_found(seller_id, sku, not price_found)
+        self._validate_positive_prices(entity)
+        updated = await self.repository.update_by_seller_id_and_sku(seller_id, sku, entity)
+        return Price(**updated)
+
+    async def delete(self, seller_id: str, sku: str):
         """
         Remove um preço baseado em seller_id e sku.
 
@@ -83,12 +129,12 @@ class PriceService(CrudService[Price, str]):
 
     def _validate_positive_prices(self, price):
         """
-        Valida se os valores de preco_de e preco_por são positivos.
+        Valida se os atributos 'de' e 'por' são positivos.
 
         :param price: Objeto de preço a ser validado.
         """
-        self._validate_positives(price.preco_de, "preco_de")
-        self._validate_positives(price.preco_por, "preco_por")
+        self._validate_positives(price.de, "de")
+        self._validate_positives(price.por, "por")
 
     def _validate_positives(self, value, field: str):
         """
@@ -113,7 +159,8 @@ class PriceService(CrudService[Price, str]):
         if price_found:
             self._raise_bad_request("Preço para produto já cadastrado.", "sku")
 
-    def _raise_not_found(self, seller_id: str, sku: str, condition: bool = True):
+    @staticmethod
+    def _raise_not_found(seller_id: str, sku: str, condition: bool = True):
         """
         Lança exceção de NotFoundException com detalhes do erro.
 
@@ -122,17 +169,7 @@ class PriceService(CrudService[Price, str]):
         :raises NotFoundException: Sempre.
         """
         if condition:
-            raise NotFoundException(
-                details=[
-                    ErrorDetail(
-                        message="Preço para produto não encontrado.",
-                        location="path",
-                        slug="preco_nao_encontrado",
-                        field="sku",
-                        ctx={"seller_id": seller_id, "sku": sku},
-                    )
-                ]
-            )
+            raise PriceNotFoundException(seller_id=seller_id, sku=sku)
 
     def _raise_bad_request(self, message: str, field: str, value=None):
         """
@@ -143,14 +180,4 @@ class PriceService(CrudService[Price, str]):
         :param value: Valor que causou o erro (opcional).
         :raises BadRequestException: Sempre.
         """
-        raise BadRequestException(
-            details=[
-                ErrorDetail(
-                    message=message,
-                    location="body",
-                    slug="preco_invalido",
-                    field=field,
-                    ctx={"value": value} if value is not None else {},
-                )
-            ]
-        )
+        raise PriceBadRequestException(message=message, field=field, value=value)

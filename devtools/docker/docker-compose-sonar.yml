@@ -33,6 +33,7 @@ volumes:
   sonarqube_extensions:
   sonarqube_logs:
   sonarqube_db_data:
+  
 # Instrução para subir o sonar
 # docker-compose -f ./devtools/docker-compose-sonar.yml up
 

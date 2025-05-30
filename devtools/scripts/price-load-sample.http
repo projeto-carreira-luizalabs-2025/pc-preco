@@ -22,8 +22,8 @@ POST {{api_preco}}
 {
     "seller_id": "1",
     "sku": "SKU001",
-    "preco_de": 15000,
-    "preco_por": 12000,
+    "de": 15000,
+    "por": 12000,
     "quantidade_preco": 1
 }
 
@@ -34,8 +34,8 @@ POST {{api_preco}}
 {
     "seller_id": "2",
     "sku": "SKU002",
-    "preco_de": 25000,
-    "preco_por": 22000,
+    "de": 25000,
+    "por": 22000,
     "quantidade_preco": 1
 }
 
@@ -56,8 +56,8 @@ GET {{api_preco}}
 PATCH {{api_preco}}/1/SKU001
 
 {
-    "preco_de": 15000,
-    "preco_por": 10000
+    "de": 15000,
+    "por": 10000
 }
 
 ###

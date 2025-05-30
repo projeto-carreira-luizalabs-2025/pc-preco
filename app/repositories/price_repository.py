@@ -49,7 +49,7 @@ class PriceRepository(AsyncMemoryRepository[Price, str]):
         """
         for i, price in enumerate(self.memory):
             if price["seller_id"] == seller_id and price["sku"] == sku:
-                self.memory[i].update(price_update)
+                self.memory[i].update(price_update.model_dump())
                 return self.memory[i]
 
         # Se não encontrar o registro, retorna None ou lança erro
