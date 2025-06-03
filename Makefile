@@ -111,6 +111,12 @@ docker-compose-sonar-up:
 docker-compose-sonar-down:
 	docker compose -f ./devtools/docker/docker-compose-sonar.yml down
 
+docker-compose-up:
+	docker compose -f ./devtools/docker/docker-compose.yml up -d
+
+docker-compose-down:
+	docker compose -f ./devtools/docker/docker-compose.yml down
+
 coverage:
 ifeq ($(OS),Windows_NT)
 	@cmd /C "set ENV=test&& pytest --cov=app --cov-report=term-missing --cov-report=xml ./tests/ --cov-fail-under=90 --durations=5"
