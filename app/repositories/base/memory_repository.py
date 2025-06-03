@@ -10,7 +10,7 @@ T = TypeVar("T", bound=BaseModel)
 ID = TypeVar("ID", bound=int | str)
 
 
-class AsyncMemoryRepository(AsyncCrudRepository[T, ID], Generic[T, ID]):
+class AsyncMemoryRepository(AsyncCrudRepository[T], Generic[T, ID]):
 
     def __init__(self, key_name: str, model_class: Type[T]):
         super().__init__()

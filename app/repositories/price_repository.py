@@ -1,19 +1,29 @@
 from typing import Any, Dict, List, Optional, Callable
 
+from sqlalchemy import Column, Integer
+
 from ..models import Price
 from .base import AsyncMemoryRepository
 
+from .base.sqlalchemy_crud_repository import SQLAlchemyCrudRepository
+from .base.sqlalchemy_entity_base import SellerIdSkuPersistableEntityBase
+from app.integrations.database.sqlalchemy_client import SQLAlchemyClient
 
-class PriceRepository(AsyncMemoryRepository[Price, str]):
-    def __init__(self, memory: Optional[List[Dict[str, Any]]] = None):
+
+class PriceBase(SellerIdSkuPersistableEntityBase):
+    __tablename__ = "pc_preco"
+
+    value = Column(Integer, nullable=False)
+
+
+class PriceRepository(AsyncMemoryRepository[Price, str], SQLAlchemyCrudRepository[Price, PriceBase]):
+    def __init__(self, sql_client: SQLAlchemyClient):
         """
-        Inicializa o repositório com uma lista opcional de preços.
-
-        :param memory: Lista opcional de dicionários representando objetos Price.
+        Inicializa o repositório de preços com o cliente SQLAlchemy.
+        :param sql_client: Instância do cliente SQLAlchemy.
         """
 
-        super().__init__(key_name="id", model_class=Price)
-        self.memory = memory or []
+        super().__init__(sql_client=sql_client, model_class=PriceBase)
 
     def _can_filter(self, data: Dict[str, Any], filters: Dict[str, Any] | None) -> bool:
         """
