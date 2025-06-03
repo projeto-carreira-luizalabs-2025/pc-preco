@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
+from fastapi import Query
 
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, status
@@ -30,14 +31,33 @@ router = APIRouter(prefix=PRICE_PREFIX, tags=["Preços (v2)"])
     response_model=ListResponse[PriceResponse],
     status_code=status.HTTP_200_OK,
     summary="Recuperar lista de precificações",
-    responses={ 422: UNPROCESSABLE_ENTITY_RESPONSE },
+    responses={422: UNPROCESSABLE_ENTITY_RESPONSE},
 )
 @inject
 async def get(
     paginator: Paginator = Depends(get_request_pagination),
     price_service: "PriceService" = Depends(Provide[Container.price_service]),
+    preco_de_less_than: Optional[float] = Query(None, description='Filtrar preços "de" menores que o valor informado'),
+    preco_de_greater_than: Optional[float] = Query(
+        None, description='Filtrar preços "de" maiores que o valor informado'
+    ),
+    preco_por_less_than: Optional[float] = Query(
+        None, description='Filtrar preços "por" menores que o valor informado'
+    ),
+    preco_por_greater_than: Optional[float] = Query(
+        None, description='Filtrar preços "por" maiores que o valor informado'
+    ),
+    sku: Optional[str] = Query(None, description="Filtrar por SKU específico"),
 ):
-    results = await price_service.find(paginator=paginator, filters={})
+    filters = {
+        "preco_de_less_than": preco_de_less_than,
+        "preco_de_greater_than": preco_de_greater_than,
+        "preco_por_less_than": preco_por_less_than,
+        "preco_por_greater_than": preco_por_greater_than,
+        "sku": sku,
+    }
+
+    results = await price_service.get_filtered(paginator=paginator, filters=filters)
 
     return paginator.paginate(results=results)
 
@@ -48,7 +68,7 @@ async def get(
     response_model=PriceResponse,
     status_code=status.HTTP_200_OK,
     summary="Recuperar precificação por seller_id e sku",
-    responses={ 404: NOT_FOUND_RESPONSE, 400: MISSING_HEADER_RESPONSE },
+    responses={404: NOT_FOUND_RESPONSE, 400: MISSING_HEADER_RESPONSE},
 )
 @inject
 async def get_by_seller_id_and_sku(
@@ -65,7 +85,7 @@ async def get_by_seller_id_and_sku(
     response_model=PriceResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Criar precificação",
-    responses={ 400: BAD_REQUEST_RESPONSE },
+    responses={400: BAD_REQUEST_RESPONSE},
 )
 @inject
 async def create(price: PriceCreate, price_service: "PriceService" = Depends(Provide[Container.price_service])):
@@ -79,7 +99,7 @@ async def create(price: PriceCreate, price_service: "PriceService" = Depends(Pro
     response_model=PriceResponse,
     status_code=status.HTTP_200_OK,
     summary="Atualizar precificação por seller_id e sku",
-    responses={ 404: NOT_FOUND_RESPONSE, 400: BAD_REQUEST_RESPONSE },
+    responses={404: NOT_FOUND_RESPONSE, 400: BAD_REQUEST_RESPONSE},
 )
 @inject
 async def replace(
@@ -100,7 +120,7 @@ async def replace(
     response_model=PriceResponse,
     status_code=status.HTTP_200_OK,
     summary="Atualizar parcialmente precificação por seller_id e sku",
-    responses={ 404: NOT_FOUND_RESPONSE, 400: BAD_REQUEST_RESPONSE },
+    responses={404: NOT_FOUND_RESPONSE, 400: BAD_REQUEST_RESPONSE},
 )
 @inject
 async def patch(
@@ -119,7 +139,7 @@ async def patch(
     "/{sku}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Excluir precificação por seller_id e sku",
-    responses={ 404: NOT_FOUND_RESPONSE, 400: MISSING_HEADER_RESPONSE },
+    responses={404: NOT_FOUND_RESPONSE, 400: MISSING_HEADER_RESPONSE},
 )
 @inject
 async def delete(

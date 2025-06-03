@@ -4,6 +4,7 @@ from ..common.exceptions.price_exceptions import PriceBadRequestException, Price
 from ..models import Price
 from ..repositories import PriceRepository
 from .base import CrudService
+from app.api.common.schemas import Paginator
 
 
 class PriceService(CrudService[Price, str]):
@@ -21,6 +22,20 @@ class PriceService(CrudService[Price, str]):
         :param repository: Instância de PriceRepository para acesso aos dados.
         """
         super().__init__(repository)
+
+    async def get_filtered(self, paginator=Paginator, filters=dict) -> list[Price]:
+        """
+        Recupera uma lista de preços filtrados e paginados.
+
+        :param paginator: Objeto Paginator para controle de paginação.
+        :param filters: Dicionário de filtros a serem aplicados na busca.
+        :return: Lista de instâncias de Preco filtradas e paginadas.
+        """
+
+        # Cria o dicionário de filtros apenas com os valores que não são None
+        current_filters = {key: value for key, value in filters.items() if value is not None}
+
+        return await self.find(filters=current_filters, paginator=paginator)
 
     async def get_by_seller_id_and_sku(self, seller_id: str, sku: str) -> Price:
         """
