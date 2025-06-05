@@ -29,7 +29,7 @@ target_metadata = Base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-if (url_db := getenv("APP_DB_URL")) is not None:
+if (url_db := getenv("APP_DB_URL_ALEMBIC")) is not None:
     print("URL DB carregada da memoria")
     config.set_main_option("sqlalchemy.url", url_db)
 
