@@ -12,7 +12,7 @@ class IdEntityBase(Base):
 
     __abstract__ = True
 
-    id = Column(Integer, primary_key=True, index=True, nullable=False)
+    id = Column(Integer, primary_key=True, index=True, nullable=False, autoincrement=True)
 
 
 class AuditEntityBase(Base):
