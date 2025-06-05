@@ -11,7 +11,7 @@ class IdModel(BaseModel):
     id: UuidType | int | None = Field(None, description="Chave")
 
 
-class IntModel(IdModel):
+class IntModel(BaseModel):
     id: int | None = Field(None, description="Identificador")
 
 
@@ -29,7 +29,7 @@ class AuditModel(BaseModel):
     audit_updated_at: datetime | None = Field(None, description="Data e hora da efetiva atualização do registro")
 
 
-class PersistableEntity(IdModel, AuditModel):
+class PersistableEntity(AuditModel):
     model_config = ConfigDict(populate_by_name=True, from_attributes=True)
 
     @classmethod
@@ -37,13 +37,13 @@ class PersistableEntity(IdModel, AuditModel):
         return TypeAdapter(cls).validate_json(json_data)
 
 
-class UuidPersistableEntity(PersistableEntity, UuidModel):
+class UuidPersistableEntity(UuidModel, PersistableEntity):
     """
     Entidade cuja chave é um uuid
     """
 
 
-class IntPersistableEntity(PersistableEntity, IntModel):
+class IntPersistableEntity(IntModel, PersistableEntity):
     """
     Entidiade cuja chave é um inteiro.
     """
@@ -57,13 +57,13 @@ class SellerSkuEntity(BaseModel):
         return {"seller_id": self.seller_id, "sku": self.sku}
 
 
-class SelllerSkuUuidPersistableEntity(SellerSkuEntity, UuidPersistableEntity):
+class SellerSkuUuidPersistableEntity(UuidPersistableEntity, SellerSkuEntity):
     """
     Entidade com seller_id e sku e chave uuid.
     """
 
 
-class SelllerSkuIntPersistableEntity(SellerSkuEntity, IntPersistableEntity):
+class SellerSkuIntPersistableEntity(IntPersistableEntity, SellerSkuEntity):
     """
     Entidade com seller_id e sku e chave int.
     """

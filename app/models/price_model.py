@@ -1,8 +1,6 @@
-from . import PersistableEntity
+from . import SellerSkuIntPersistableEntity
 
 
-class Price(PersistableEntity):
-    seller_id: str
-    sku: str
+class Price(SellerSkuIntPersistableEntity):
     de: int
     por: int

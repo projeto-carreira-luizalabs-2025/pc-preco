@@ -12,7 +12,8 @@ from app.integrations.database.sqlalchemy_client import SQLAlchemyClient
 class PriceBase(SellerIdSkuPersistableEntityBase):
     __tablename__ = "pc_preco"
 
-    value = Column(Integer, nullable=False)
+    de = Column(Integer, nullable=False)
+    por = Column(Integer, nullable=False)
 
 
 class PriceRepository(SQLAlchemyCrudRepository[Price, PriceBase]):
@@ -72,16 +73,6 @@ class PriceRepository(SQLAlchemyCrudRepository[Price, PriceBase]):
         result = result.model_dump() if result else None
 
         return result
-
-    async def exists_by_seller_id_and_sku(self, seller_id: str, sku: str) -> bool:
-        """
-        Verifica se existe um preço para o seller_id e sku informados.
-
-        :param seller_id: ID do vendedor.
-        :param sku: Código do produto.
-        :return: True se encontrado, False caso contrário.
-        """
-        return any(price['seller_id'] == seller_id and price['sku'] == sku for price in self.memory)
 
     async def update_by_seller_id_and_sku(self, seller_id: str, sku: str, price_update: Price) -> Dict[str, Any]:
         """

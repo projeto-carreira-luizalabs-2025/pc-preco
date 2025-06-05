@@ -1,8 +1,8 @@
 from .base import (
     IntModel,
     PersistableEntity,
-    SelllerSkuIntPersistableEntity,
-    SelllerSkuUuidPersistableEntity,
+    SellerSkuIntPersistableEntity,
+    SellerSkuUuidPersistableEntity,
     UuidModel,
     UuidPersistableEntity,
     AuditModel,
@@ -21,6 +21,6 @@ __all__ = [
     "QueryModel",
     "IntModel",
     "UuidPersistableEntity",
-    "SelllerSkuUuidPersistableEntity",
-    "SelllerSkuIntPersistableEntity",
+    "SellerSkuUuidPersistableEntity",
+    "SellerSkuIntPersistableEntity",
 ]
