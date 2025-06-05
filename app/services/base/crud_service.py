@@ -10,7 +10,7 @@ ID = TypeVar("ID")
 
 
 class CrudService(Generic[T, ID]):
-    def __init__(self, repository: AsyncCrudRepository[T, ID]):
+    def __init__(self, repository: AsyncCrudRepository[T]):
         self.repository = repository
 
     @property
