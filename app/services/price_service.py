@@ -170,8 +170,8 @@ class PriceService(CrudService[Price, str]):
         :param sku: Código do produto.
         :raises BadRequestException: Se já existir preço cadastrado.
         """
-        price_found = await self.repository.exists_by_seller_id_and_sku(seller_id, sku)
-        if price_found:
+        price_found = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
+        if price_found is not None:
             self._raise_bad_request("Preço para produto já cadastrado.", "sku")
 
     @staticmethod
