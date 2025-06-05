@@ -1,4 +1,4 @@
-from pydantic import Field
+from pydantic import Field, PostgresDsn
 
 from .base import BaseSettings
 
@@ -14,6 +14,8 @@ class AppSettings(BaseSettings):
 
     memory_min: int = Field(default=64, title="Limite mínimo de memória disponível em MB")
     disk_usage_max: int = Field(default=80, title="Limite máximo de 80% de uso de disco")
+
+    app_db_url: PostgresDsn = Field(..., title="URI para o banco Postgresql")
 
 
 settings = AppSettings()
