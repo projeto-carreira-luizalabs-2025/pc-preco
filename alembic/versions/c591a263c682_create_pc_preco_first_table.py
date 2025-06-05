@@ -24,7 +24,7 @@ def upgrade() -> None:
     """Upgrade schema."""
     op.create_table(
         'pc_preco',
-        sa.Column('id', sa.String(), primary_key=True, nullable=False),
+        sa.Column('id', sa.Integer(), primary_key=True, autoincrement=True, nullable=False),
         sa.Column('sku', sa.String(), nullable=False),
         sa.Column('de', sa.Float(), nullable=False),
         sa.Column('por', sa.Float(), nullable=False),
