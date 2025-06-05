@@ -3,7 +3,6 @@ from typing import Any, Dict, List, Optional, Callable
 from sqlalchemy import Column, Integer
 
 from ..models import Price
-from .base import AsyncMemoryRepository
 
 from .base.sqlalchemy_crud_repository import SQLAlchemyCrudRepository
 from .base.sqlalchemy_entity_base import SellerIdSkuPersistableEntityBase
@@ -16,14 +15,13 @@ class PriceBase(SellerIdSkuPersistableEntityBase):
     value = Column(Integer, nullable=False)
 
 
-class PriceRepository(AsyncMemoryRepository[Price, str], SQLAlchemyCrudRepository[Price, PriceBase]):
+class PriceRepository(SQLAlchemyCrudRepository[Price, PriceBase]):
     def __init__(self, sql_client: SQLAlchemyClient):
         """
         Inicializa o repositório de preços com o cliente SQLAlchemy.
         :param sql_client: Instância do cliente SQLAlchemy.
         """
-
-        super().__init__(sql_client=sql_client, model_class=PriceBase)
+        super().__init__(sql_client=sql_client, model_class=Price, entity_base_class=PriceBase)
 
     def _can_filter(self, data: Dict[str, Any], filters: Dict[str, Any] | None) -> bool:
         """
@@ -70,7 +68,8 @@ class PriceRepository(AsyncMemoryRepository[Price, str], SQLAlchemyCrudRepositor
         :return: Dicionário do price encontrado.
         """
 
-        result = next((price for price in self.memory if price["seller_id"] == seller_id and price["sku"] == sku), None)
+        result = await super().find_by_seller_id_and_sku(seller_id, sku)
+        result = result.model_dump() if result else None
 
         return result
 
