@@ -32,7 +32,7 @@ experiência de compra completa.
 - João Lucas Ferreira
 - Layza Nauane De Paula Silva
 
-## 📄 Documentação
+## 📄 Design e documentação
 
 <!-- Colar o design docs da sua aplicação no link abaixo -->
 
@@ -48,7 +48,7 @@ Você pode encontrar a documentação inicial referente a este projeto neste [de
 
 Este projeto foi construído usando várias tecnologias chaves para garantir performance, segurança e facilidade de uso:
 
-- **Python 3.12**: Escolhido por sua simplicidade e poderosas capacidades de programação. A versão 3.13 é a mais recente, oferecendo melhorias significativas em eficiência e recursos linguísticos.
+- **Python 3.12**: Escolhido por sua simplicidade e poderosas capacidades de programação.
 - **FastAPI**: Uma moderna e rápida (altas performances) web framework para Python, que é ideal para a construção de APIs.
 - O restante das dependências estão em `requirements`.
 
@@ -58,7 +58,7 @@ Todos os comandos serão via terminal (Linux 🐧).
 
 Este projeto trabalha com [Python 3.12](https://docs.python.org/3.12/), confirme se o mesmo está instalado em sua máquina.
 
-Clone o projeto em sua máquina:
+👉 Clone o projeto em sua máquina:
 
 ```bash
 git clone https://github.com/projeto-carreira-luizalabs-2025/pc-preco.git
@@ -67,20 +67,18 @@ git clone https://github.com/projeto-carreira-luizalabs-2025/pc-preco.git
 Depois de clonar o projeto, acesse o diretório:
 
 ```bash
-cd ps-preco
+cd pc-preco
 ```
 
-Crie o [ambiente virtual](https://docs.python.org/3.12/tutorial/venv.html)
-para instalar as bibliotecas e trabalharmos com o projeto:
+👉 Crie o [ambiente virtual](https://docs.python.org/3.12/tutorial/venv.html):
 
 ```bash
-make build-venv
+make build-venv # Instala as bibliotecas para trabalhar com o projeto
 # Ou:
 # python3.12 -m venv venv
 ```
 
-Uma vez criado o ambiente virtual do Python, você precisa ativá-lo
-(estou supondo que você está no Linux 🐧):
+👉 Ative o [ambiente virtual](https://docs.python.org/3.12/tutorial/venv.html):
 
 ```bash
 . ./venv/bin/activate
@@ -91,55 +89,37 @@ Uma vez criado o ambiente virtual do Python, você precisa ativá-lo
 Quaisquer comandos daqui para frente, iremos considerar que você está dentro
 do ambiente virtual `(venv)`.
 
-Instale as dependências usando os requirements
+👉 Instale as dependências usando os requirements:
 
 ```bash
 make requirements-dev
 ```
 
-## ▶️ Execução
+## 🛠️ Execução local
 
-Após configuração do ambiente local, caso desejar executar o projeto localmente, configure o arquive de env:
+Após configurar o ambiente local com o Python e ativar o ambiente virtual, você pode rodar a aplicação localmente com os seguintes comandos:
 
 ```bash
 make load-test-env
 ```
 
-Use o comando para subir a api:
+👉 Para rodar a API em modo desenvolvimento:
 
 ```bash
 make run-dev
 ```
 
-Acesse a doc da API em: [localhost:8000/api/docs](http://0.0.0.0:8000/api/docs) ou em [localhost:8000/redoc](http://0.0.0.0:8000/redoc)
+Após iniciar a aplicação, consulte a seção [📘 Acesso à documentação da API](#-acesso-a-documentação-da-api) para saber como acessá-la.
 
-## 📦 Pré-requisitos (ambiente Python)
+## 🐳 Execução com Docker
 
-Antes de rodar os testes, executar a aplicação localmente ou realizar a análise de qualidade com o SonarQube, certifique-se de:
-
-```bash
-make build-venv
-make requirements-dev
-```
-
-Esses comandos criam o ambiente virtual e instalam as dependências necessárias para o funcionamento do projeto.
-
-## 🧪 Testes
-
-Para rodar os testes automatizados do projeto, use o comando abaixo:
-
-```bash
-make test
-```
-## 🐳 Docker
-
-Para construir a imagem Docker da aplicação, execute:
+👉 Para construir a imagem Docker da aplicação, execute:
 
 ``` bash
 make docker-build # Criará uma imagem com o nome pc/preco.
 ```
 
-Para rodar a aplicação em um contêiner Docker:
+👉 Para rodar a aplicação em um contêiner Docker:
 
 ``` bash
 make docker-run # Iniciará um contêiner chamado pc-preco, expondo a porta 8000 do contêiner para a porta 8000 do seu host.
@@ -150,10 +130,26 @@ Se precisar acessar o shell do contêiner para depuração ou outras operações
 ```bash
 make docker-shell # Isso abrirá uma sessão bash interativa dentro do contêiner.
 ```
+Após iniciar a aplicação, consulte a seção [📘 Acesso à documentação da API](#-acesso-a-documentação-da-api) para saber como acessá-la.
 
-## 🔍 Análise de Qualidade com SonarQube
+## 📘 Acesso à documentação da API
 
-Para subir o ambiente do SonarQube com Docker Compose, execute:
+Após iniciar a aplicação (localmente ou via Docker), a documentação da API estará disponível nos seguintes endereços:
+
+- Swagger UI: [localhost:8000/api/docs](http://0.0.0.0:8000/api/docs)
+- ReDoc: [localhost:8000/redoc](http://0.0.0.0:8000/redoc)
+
+## 🧪 Testes
+
+👉 Para rodar os testes automatizados do projeto, use o comando abaixo:
+
+```bash
+make test
+```
+
+## 🔍 Análise de qualidade com SonarQube
+
+👉 Para subir o ambiente do SonarQube com Docker Compose, execute:
 
 ``` bash
 make docker-compose-sonar-up # Inicia o servidor SonarQube e seus serviços dependentes (como o banco de dados) via Docker Compose
@@ -161,7 +157,7 @@ make docker-compose-sonar-up # Inicia o servidor SonarQube e seus serviços depe
 
 Após a execução, acesse a interface web do SonarQube em: http://localhost:9000
 
-Se em algum momento quiser parar o ambiente do SonarQube, execute:
+Obs.: Se em algum momento quiser parar o ambiente do SonarQube, execute:
 
 ```bash
 make docker-compose-sonar-down # Desligará o ambiente do SonarQube e removerá os contêineres
@@ -175,7 +171,7 @@ make docker-compose-sonar-down # Desligará o ambiente do SonarQube e removerá 
 
 3. Gere um token de autenticação pessoal. Guarde-o bem, pois você não terá acesso a ele novamente.
 
-4. Exporte as variáveis de ambiente com o token gerado:
+4. No terminal, exporte as variáveis de ambiente com o token gerado:
 
 ``` bash
 export SONAR_TOKEN=<seu_token>
@@ -188,26 +184,25 @@ Após isso, o SonarQube exibirá um relatório completo de qualidade do código 
 
 ```bash
 .
-├── README.md                   # Documentação principal do projeto: informações do projeto, instruções de setup, uso e execução
-├── app/                        # Diretório principal do código-fonte da aplicação (em construção)
+├── README.md                   
+├── app/                        # Código-fonte principal da aplicação (Em construção)
 │   └── api/                    # Rotas, controladores e interfaces REST da aplicação
-│   └── common/                 # Utilitários, constantes, exceções e helpers compartilhados entre os módulos
+│   └── common/                 # Utilitários e código compartilhado
 │   └── integrations/           # Integrações com sistemas externos
 │   └── models/                 # Definições de modelos para rotas
-│   └── repositories/           # Módulos para interação com o banco de dados e persistência de dados
-│   └── services/               # Camada de lógica de negócio da aplicação
+│   └── repositories/           # Persistência e acesso a banco de dados
+│   └── services/               # Regras de negócio da aplicação
 │   └── settings/               # Configurações da aplicação
 │   └── worker/                 
 ├── devtools/                   # Ferramentas e scripts auxiliares para desenvolvimento
 │   └── docker                  # Arquivos e configurações para Docker (ex: Dockerfile, docker-compose-sonar.yml)
 │   └── scripts/                # Scripts automatizados usados no `makefile` (ex: configuração de ambiente)
-│   └── info-projeto.md         # Documento de levantamento da informação base
-├── requirements/               # Pasta com arquivos de dependências específicas (ex: develop.txt, base.txt)
+│   └── info-projeto.md         # Documento de levantamento de requisitos
+├── requirements/               
 ├── tests                       # Pasta para testes da aplicação
-│   └── unit                    # Testes unitários para módulos e funções específicas
-├── venv                        # Ambiente virtual Python para isolamento de dependências
-├── makefile                    # Automatiza tarefas comuns do projeto (ex: build, test, run)
-├── pyproject.toml              # Arquivo de configuração do projeto Python
-├── requirements.txt            # Lista geral de dependências do projeto
-├── sonar-project.properties    # Configurações para o SonarQube Scanner
+│   └── unit                    # Testes unitários
+├── makefile                    # Comandos automatizados (ex: build, run, test)
+├── pyproject.toml             
+├── requirements.txt        
+├── sonar-project.properties    # Configurações do SonarQube
 ```
