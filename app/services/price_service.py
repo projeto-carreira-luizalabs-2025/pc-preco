@@ -1,7 +1,7 @@
 from typing import Any, Dict
 
 from ..common.exceptions.price_exceptions import PriceBadRequestException, PriceNotFoundException
-from ..models import Price
+from ..models import Price, PriceFilter
 from ..repositories import PriceRepository
 from .base import CrudService
 from app.api.common.schemas import Paginator
@@ -35,7 +35,9 @@ class PriceService(CrudService[Price, str]):
         # Cria o dicionário de filtros apenas com os valores que não são None
         current_filters = {key: value for key, value in filters.items() if value is not None}
 
-        return await self.find(filters=current_filters, paginator=paginator)
+        filter_model = PriceFilter(**current_filters)
+
+        return await self.find(filters=filter_model, paginator=paginator)
 
     async def get_by_seller_id_and_sku(self, seller_id: str, sku: str) -> Price:
         """
