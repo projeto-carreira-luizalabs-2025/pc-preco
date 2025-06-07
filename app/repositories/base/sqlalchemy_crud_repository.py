@@ -85,10 +85,49 @@ class SQLAlchemyCrudRepository(AsyncCrudRepository[T], Generic[T, B]):
 
         return model
 
+    def _apply_sort(self, stmt, sort: dict):
+        for field, direction in sort.items():
+            if hasattr(self.entity_base_class, field):
+                column = getattr(self.entity_base_class, field)
+                stmt = stmt.order_by(column.desc() if direction == -1 else column.asc())
+        return stmt
+
     async def find(self, filters: Q, limit: int = 20, offset: int = 0, sort: dict | None = None) -> list[T]:
         """
         Busca uma lista de entidades com base nos filtros, limite, offset e ordenação.
         """
+
+        def apply_operator(stmt, column, op, v):
+            if op == "$lt":
+                return stmt.where(column < v)
+            elif op == "$lte":
+                return stmt.where(column <= v)
+            elif op == "$gt":
+                return stmt.where(column > v)
+            elif op == "$gte":
+                return stmt.where(column >= v)
+            return stmt
+
+        async with self.sql_client.make_session() as session:
+            stmt = self.sql_client.init_select_preco(self.entity_base_class)
+
+            for field, value in filters.to_query_dict().items():
+                if not hasattr(self.entity_base_class, field):
+                    continue
+                column = getattr(self.entity_base_class, field)
+                if isinstance(value, dict):
+                    for op, v in value.items():
+                        stmt = apply_operator(stmt, column, op, v)
+                else:
+                    stmt = stmt.where(column == value)
+
+            if sort:
+                stmt = self._apply_sort(stmt, sort)
+
+            stmt = stmt.limit(limit).offset(offset)
+            result = await session.execute(stmt)
+            bases = result.scalars().all()
+            return [self.to_model(base) for base in bases]
 
     async def patch_by_seller_id_and_sku(self, seller_id, sku, patch_entity):
         """

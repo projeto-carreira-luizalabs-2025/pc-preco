@@ -13,15 +13,6 @@ class CrudService(Generic[T, ID]):
     def __init__(self, repository: AsyncCrudRepository[T]):
         self.repository = repository
 
-    @property
-    def context(self):
-        return None
-
-    @property
-    def author(self):
-        # XXX Pegar depois
-        return None
-
     async def create(self, entity: Any) -> T:
         return await self.repository.create(entity)
 
@@ -32,9 +23,10 @@ class CrudService(Generic[T, ID]):
         return data
 
     async def find(self, paginator: Paginator, filters: dict) -> list[T]:
-        return await self.repository.find(
+        models_list = await self.repository.find(
             filters=filters, limit=paginator.limit, offset=paginator.offset, sort=paginator.get_sort_order()
         )
+        return models_list
 
     async def update(self, entity_id: ID, entity: Any) -> T:
         return await self.repository.update(entity_id, entity)
