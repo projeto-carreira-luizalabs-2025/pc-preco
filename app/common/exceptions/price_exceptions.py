@@ -24,7 +24,7 @@ class PriceNotFoundException(NotFoundException):
 
 
 class PriceBadRequestException(BadRequestException):
-    def __init__(self, message: str, field: str, value=None, details: list["ErrorDetail"] | None = None):
+    def __init__(self, message: str, field: str = None, value=None, details: list["ErrorDetail"] | None = None):
         if details is None:
             from app.api.common.schemas.response import ErrorDetail
 

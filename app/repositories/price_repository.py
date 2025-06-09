@@ -83,13 +83,8 @@ class PriceRepository(SQLAlchemyCrudRepository[Price, PriceBase]):
         :param price_update: Dicionário com os dados a serem atualizados.
         :return: True se encontrado, False caso contrário.
         """
-        for i, price in enumerate(self.memory):
-            if price["seller_id"] == seller_id and price["sku"] == sku:
-                self.memory[i].update(price_update.model_dump())
-                return self.memory[i]
-
-        # Se não encontrar o registro, retorna None ou lança erro
-        raise ValueError(f"Preço não encontrado para seller_id={seller_id}, sku={sku}")
+        result = await super().update_by_seller_id_and_sku(seller_id, sku, price_update)
+        return result
 
     async def delete_by_seller_id_and_sku(self, seller_id: str, sku: str) -> None:
         """
@@ -99,7 +94,8 @@ class PriceRepository(SQLAlchemyCrudRepository[Price, PriceBase]):
         :param sku: Código do produto.
         :return: None
         """
-        self.memory = [price for price in self.memory if not (price["seller_id"] == seller_id and price["sku"] == sku)]
+        deleted = await super().delete_by_seller_id_and_sku(seller_id, sku)
+        return deleted
 
 
 __all__ = ["PriceRepository"]

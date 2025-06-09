@@ -8,6 +8,8 @@ from app.models import PersistableEntity, QueryModel, Price
 from .async_crud_repository import AsyncCrudRepository
 from .sqlalchemy_entity_base import PersistableEntityBase
 
+from app.common.datetime import utcnow
+
 T = TypeVar("T", bound=PersistableEntity)  # Modelo Pydantic
 B = TypeVar("B", bound=PersistableEntityBase)  # Entidade base do SQLAlchemy
 Q = TypeVar("Q", bound=QueryModel)
@@ -81,8 +83,6 @@ class SQLAlchemyCrudRepository(AsyncCrudRepository[T], Generic[T, B]):
             base = await self._find_base_by_seller_id_sku_on_session(seller_id, sku, session)
         model = self.to_model(base)
 
-        print(model)
-
         return model
 
     def _apply_sort(self, stmt, sort: dict):
@@ -129,7 +129,50 @@ class SQLAlchemyCrudRepository(AsyncCrudRepository[T], Generic[T, B]):
             bases = result.scalars().all()
             return [self.to_model(base) for base in bases]
 
+    async def delete_by_seller_id_and_sku(self, seller_id: str, sku: str) -> bool:
+        """
+        Deleta uma entidade pelo seller_id e sku.
+        """
+        async with self.sql_client.make_session() as session:
+            async with session.begin():
+                stmt = self.sql_client.init_delete_preco(self.entity_base_class)
+                stmt = stmt.where(self.entity_base_class.seller_id == seller_id).where(
+                    self.entity_base_class.sku == sku
+                )
+                result = await session.execute(stmt)
+            deleted = result.rowcount > 0
+            return deleted
+
+    async def update_by_seller_id_and_sku(self, seller_id: str, sku: str, model: T) -> T | None:
+        async with self.sql_client.make_session() as session:
+            async with session.begin():
+                base = await self._find_base_by_seller_id_sku_on_session(seller_id, sku, session)
+                if can_update := base is not None:
+                    base.updated_at = utcnow()
+                    for key, value in model.model_dump().items():
+                        # XXX Precisamos tomar cuidado com `id`
+                        if key not in self.pk_fields:
+                            setattr(base, key, value)
+                    base.updated_at = utcnow()
+            if can_update:
+                await session.commit()
+        model = self.to_model(base)
+
+        return model
+
     async def patch_by_seller_id_and_sku(self, seller_id, sku, patch_entity):
         """
-        Atualiza uma entidade pelo seller_id e sku.
+        Atualiza uma entidade parcialmente pelo seller_id e sku.
         """
+        async with self.sql_client.make_session() as session:
+            async with session.begin():
+                base = await self._find_base_by_seller_id_sku_on_session(seller_id, sku, session)
+                if not base:
+                    return None
+
+                for field, value in patch_entity.model_dump().items():
+                    if value is not None and hasattr(base, field):
+                        setattr(base, field, value)
+
+            updated_model = self.to_model(base)
+            return updated_model

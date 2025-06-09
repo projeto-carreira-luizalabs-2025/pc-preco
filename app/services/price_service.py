@@ -106,7 +106,7 @@ class PriceService(CrudService[Price, str]):
 
         self._validate_positive_prices(merged_price)
         updated = await self.repository.update_by_seller_id_and_sku(seller_id, sku, merged_price)
-        return Price(**updated)
+        return updated
 
     async def update(self, entity_id: str, entity: Price) -> Price:
         """
@@ -126,11 +126,11 @@ class PriceService(CrudService[Price, str]):
                 field="entity_id",
                 value=entity_id,
             )
-        price_found = await self.repository.exists_by_seller_id_and_sku(seller_id, sku)
-        self._raise_not_found(seller_id, sku, not price_found)
+        price_found = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
+        self._raise_not_found(seller_id, sku, price_found is None)
         self._validate_positive_prices(entity)
         updated = await self.repository.update_by_seller_id_and_sku(seller_id, sku, entity)
-        return Price(**updated)
+        return updated
 
     async def delete(self, seller_id: str, sku: str):
         """
@@ -142,7 +142,12 @@ class PriceService(CrudService[Price, str]):
         """
         price_found = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
         self._raise_not_found(seller_id, sku, price_found is None)
-        await self.repository.delete_by_seller_id_and_sku(seller_id, sku)
+        deleted = await self.repository.delete_by_seller_id_and_sku(seller_id, sku)
+        if not deleted:
+            self._raise_bad_request(
+                message="Erro ao deletar preço.",
+                value=sku,
+            )
 
     def _validate_positive_prices(self, price):
         """
@@ -188,7 +193,7 @@ class PriceService(CrudService[Price, str]):
         if condition:
             raise PriceNotFoundException(seller_id=seller_id, sku=sku)
 
-    def _raise_bad_request(self, message: str, field: str, value=None):
+    def _raise_bad_request(self, message: str, field: str = None, value=None):
         """
         Lança exceção de BadRequestException com detalhes do erro.
 
