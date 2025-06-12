@@ -100,7 +100,7 @@ docker-build:
 	docker build -f $(DOCKERFILE_PATH) -t $(DOCKER_IMAGE_NAME) .
 
 docker-run:
-	docker run --rm --name $(CONTAINER_NAME) -e ENV=dev -p 8000:8000 $(DOCKER_IMAGE_NAME)
+	docker run --rm --name $(CONTAINER_NAME) -e ENV=dev  -e app_db_url=$(APP_DB_URL) \-p 8000:8000 $(DOCKER_IMAGE_NAME)
 
 docker-shell:
 	docker run --rm -it --name $(CONTAINER_NAME) -e ENV=dev $(DOCKER_IMAGE_NAME) /bin/bash
