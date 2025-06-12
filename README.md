@@ -2,28 +2,22 @@
 
 ## 📌 O que é este projeto?
 
-O `pc-preco` é um microsserviço responsável por gerenciar e expor as **informações de preço** dos produtos vendidos por
-varejistas no marketplace.
-
-Esse serviço tem como função principal fornecer os valores exibidos ao consumidor final, considerando diferentes
-condições de pagamento, como:
+O `pc-preco` é um microsserviço que gerencia e fornece os **preços de produtos** exibidos ao consumidor final no marketplace, considerando:
 
 - Preço à vista (com ou sem desconto)
 - Preço a prazo (com ou sem juros)
-- Variações por vendedor (mesmo produto, diferentes preços)
+- Variação de preços por vendedor (mesmo produto, diferentes preços)
 
-Ele se integra diretamente com os microsserviços de:
+Ele se integra com outros microsserviços para garantir que o preço exibido ao consumidor final seja o mais preciso possível.
+
+### 🔗 Integrações
 
 - `pc-catalogo`: para identificar a qual produto o preço se refere.
 - `pc-identidade`: para saber qual varejista está ofertando o preço.
-
-Além disso, o `pc-preco` atua em conjunto com:
-
 - `pc-estoque`: para que o preço exibido esteja alinhado à disponibilidade do produto.
 - `pc-frete`: que junto ao preço, compõe o custo final percebido pelo consumidor.
 
-Cada microsserviço mantém responsabilidades bem definidas, mas trabalham de forma integrada para oferecer uma
-experiência de compra completa.
+Cada microsserviço mantém responsabilidades bem definidas, mas trabalham de forma integrada para oferecer uma experiência de compra completa.
 
 ## 👥 Equipe
 
@@ -41,36 +35,39 @@ Você pode encontrar a documentação inicial referente a este projeto neste [de
 ```bash
 .
 ├── devtools/
-    └── info-projeto.md     # Documento de levantamento da informação base
+    └── info-projeto.md # Documento de levantamento da informação base
 ```
 
 ## 💻 Tecnologias
 
-Este projeto foi construído usando várias tecnologias chaves para garantir performance, segurança e facilidade de uso:
+- **Linguagem**: [Python 3.12](https://docs.python.org/3.12/)
+- **Framework**: [FastAPI](https://fastapi.tiangolo.com/)
+- **ORM**: [SQLAlchemy](https://www.sqlalchemy.org/)
+- **Banco de Dados**: [PostgreSQL](https://www.postgresql.org/)
+- **Docker**: Containers para app, banco e SonarQube
+- **Testes**: [Pytest](https://docs.pytest.org/)
+- **Code Quality**: [SonarQube](https://www.sonarsource.com/products/sonarqube/)
+- **Gerenciador de dependências**: Pip + `requirements.txt`
+- **Makefile**: Automação de tarefas comuns
+- **Documentação de API**: Swagger (via FastAPI)
 
-- **Python 3.12**: Escolhido por sua simplicidade e poderosas capacidades de programação.
-- **FastAPI**: Uma moderna e rápida (altas performances) web framework para Python, que é ideal para a construção de APIs.
-- O restante das dependências estão em `requirements`.
-
-## ✨ Configuração do ambiente local
+## 🧰 Configuração do ambiente local
 
 Todos os comandos serão via terminal (Linux 🐧).
 
-Este projeto trabalha com [Python 3.12](https://docs.python.org/3.12/), confirme se o mesmo está instalado em sua máquina.
-
-👉 Clone o projeto em sua máquina:
+1️⃣ Clone o projeto em sua máquina:
 
 ```bash
 git clone https://github.com/projeto-carreira-luizalabs-2025/pc-preco.git
 ```
 
-Depois de clonar o projeto, acesse o diretório:
+2️⃣ Acesse o diretório:
 
 ```bash
 cd pc-preco
 ```
 
-👉 Crie o [ambiente virtual](https://docs.python.org/3.12/tutorial/venv.html):
+3️⃣ Crie o [ambiente virtual](https://docs.python.org/3.12/tutorial/venv.html):
 
 ```bash
 make build-venv # Instala as bibliotecas para trabalhar com o projeto
@@ -78,7 +75,7 @@ make build-venv # Instala as bibliotecas para trabalhar com o projeto
 # python3.12 -m venv venv
 ```
 
-👉 Ative o [ambiente virtual](https://docs.python.org/3.12/tutorial/venv.html):
+4️⃣ Ative o [ambiente virtual](https://docs.python.org/3.12/tutorial/venv.html):
 
 ```bash
 . ./venv/bin/activate
@@ -89,21 +86,50 @@ make build-venv # Instala as bibliotecas para trabalhar com o projeto
 Quaisquer comandos daqui para frente, iremos considerar que você está dentro
 do ambiente virtual `(venv)`.
 
-👉 Instale as dependências usando os requirements:
+5️⃣ Instale as dependências
 
 ```bash
 make requirements-dev
 ```
 
+## ⚠️ Configuração da URL do banco de dados
+
+Antes de iniciar a aplicação, é necessário definir a variável de ambiente `APP_DB_URL`, que informa à aplicação como se conectar ao banco PostgreSQL.  
+Caso ela não esteja definida, a aplicação exibirá o seguinte erro:
+
+```bash
+KeyError: 'APP_DB_URL'
+```
+### 🔧 Formas de Configuração
+
+#### ✅ Terminal (rápido)
+
+Execute o comando abaixo no mesmo terminal onde irá rodar o `make docker-run`:
+
+```bash
+export APP_DB_URL=postgresql://usuario:senha@host:porta/banco
+```
+
+#### ✅ Arquivo .env (persistente)
+
+Crie um arquivo `.env` na raiz do projeto com o seguinte conteúdo:
+
+```bash
+APP_DB_URL=postgresql://usuario:senha@host:porta/banco
+```
+*🔁 Importante: ajuste usuario, senha, host, porta e banco conforme sua configuração.*
+
 ## 🛠️ Execução local
 
-Após configurar o ambiente local com o Python e ativar o ambiente virtual, você pode rodar a aplicação localmente com os seguintes comandos:
+Após configurar o ambiente local e ativar o ambiente virtual, você pode rodar a aplicação localmente com os seguintes comandos:
+
+1️⃣ Carregue as variáveis de ambiente para o modo de teste:
 
 ```bash
 make load-test-env
 ```
 
-👉 Para rodar a API em modo desenvolvimento:
+2️⃣ Inicie a API em modo desenvolvimento:
 
 ```bash
 make run-dev
@@ -113,24 +139,41 @@ Após iniciar a aplicação, consulte a seção [📘 Acesso à documentação d
 
 ## 🐳 Execução com Docker
 
-👉 Para construir a imagem Docker da aplicação, execute:
+1️⃣ Construir a imagem
 
 ``` bash
-make docker-build # Criará uma imagem com o nome pc/preco.
+make docker-build # Esse comando criará uma imagem Docker chamada pc/preco.
 ```
 
-👉 Para rodar a aplicação em um contêiner Docker:
+2️⃣ Executar a aplicação
 
 ``` bash
-make docker-run # Iniciará um contêiner chamado pc-preco, expondo a porta 8000 do contêiner para a porta 8000 do seu host.
+make docker-run # Inicia um contêiner chamado pc-preco
 ```
+
+3️⃣ Executar com serviços auxiliares (como PostgreSQL)
+
+```bash
+make docker-compose-up # Sobe o BD PostgreSQL e demais serviços definidos no docker-compose.yml
+```
+
+**🛑 ATENÇÃO: Execute o comando abaixo apenas se quiser:**
+
+1️⃣ Parar e remover contêineres
+
+```bash
+make docker-compose-down # Encerra e remove os contêineres gerenciados pelo Docker Compose.
+```
+
+2️⃣ Acessar o shell do contêiner
 
 Se precisar acessar o shell do contêiner para depuração ou outras operações:
 
 ```bash
-make docker-shell # Isso abrirá uma sessão bash interativa dentro do contêiner.
+make docker-shell # Abre uma sessão bash interativa dentro do contêiner para depuração ou comandos manuais.
 ```
-Após iniciar a aplicação, consulte a seção [📘 Acesso à documentação da API](#-acesso-a-documentação-da-api) para saber como acessá-la.
+
+🔗 Após iniciar a aplicação, consulte a seção [📘 Acesso à documentação da API](#-acesso-a-documentação-da-api) para instruções detalhadas de como acessá-la.
 
 ## 📘 Acesso à documentação da API
 
@@ -141,7 +184,7 @@ Após iniciar a aplicação (localmente ou via Docker), a documentação da API 
 
 ## 🧪 Testes
 
-👉 Para rodar os testes automatizados do projeto, use o comando abaixo:
+Para rodar os testes automatizados do projeto, use o comando abaixo:
 
 ```bash
 make test
@@ -149,36 +192,92 @@ make test
 
 ## 🔍 Análise de qualidade com SonarQube
 
-👉 Para subir o ambiente do SonarQube com Docker Compose, execute:
+Para subir o ambiente do SonarQube, execute:
 
 ``` bash
-make docker-compose-sonar-up # Inicia o servidor SonarQube e seus serviços dependentes (como o banco de dados) via Docker Compose
+make docker-compose-sonar-up # Inicia o servidor SonarQube e seus serviços dependentes.
 ```
 
-Após a execução, acesse a interface web do SonarQube em: http://localhost:9000
+### ⚠️ Possível erro: vm.max_map_count
 
-Obs.: Se em algum momento quiser parar o ambiente do SonarQube, execute:
+Durante a inicialização do SonarQube, você pode se deparar com o seguinte erro:
 
 ```bash
-make docker-compose-sonar-down # Desligará o ambiente do SonarQube e removerá os contêineres
+vm.max_map_count [65530] is too low
 ```
 
-🔐 Gerar Token de Autenticação
+Esse problema ocorre porque o Elasticsearch (utilizado pelo SonarQube) exige que `vm.max_map_count` seja pelo menos `262144`.
 
-1. Acesse o SonarQube: http://localhost:9000
+### ✅ Como resolver
 
-2. Vá em: **My Account** > **Security**
+Siga os passos abaixo para ajustar esse parâmetro no seu sistema:
 
-3. Gere um token de autenticação pessoal. Guarde-o bem, pois você não terá acesso a ele novamente.
+1️⃣ Verifique o valor atual:
 
-4. No terminal, exporte as variáveis de ambiente com o token gerado:
+```bash
+sysctl vm.max_map_count
+```
+
+Se o valor for menor que 262144, prossiga com os próximos passos.
+
+2️⃣ Aumente temporariamente (até o próximo reboot):
+
+```bash
+sudo sysctl -w vm.max_map_count=262144
+```
+
+3️⃣ Torne o valor permanente:
+
+Abra o arquivo de configurações:
+
+```bash
+sudo nano /etc/sysctl.conf
+```
+
+Adicione a seguinte linha ao final do arquivo:
+
+```bash
+vm.max_map_count=262144
+```
+
+Salve o arquivo e aplique a configuração:
+
+```bash
+sudo sysctl -p
+```
+
+### 🌐 Acessando o SonarQube
+
+Após o ambiente estar no ar, acesse a interface web pelo endereço: `http://localhost:9000`
+
+Para encerrar o ambiente, utilize:
+
+```bash
+make docker-compose-sonar-down # Esse comando irá desligar e remover os contêineres do SonarQube.
+```
+
+### 🔐 Gerando Token de Autenticação
+
+1️⃣ Acesse o SonarQube: http://localhost:9000
+
+2️⃣ Vá até: **My Account** > **Security**
+
+3️⃣ Gere um token de autenticação pessoal ( *Guarde-o com segurança — ele não poderá ser visualizado novamente.* )
+
+4️⃣ No terminal, exporte as variáveis de ambiente:
 
 ``` bash
 export SONAR_TOKEN=<seu_token>
-export SONAR_HOST_URL=http://localhost:9000 pysonar-scanner
+export SONAR_HOST_URL=http://localhost:9000
 ```
 
-Após isso, o SonarQube exibirá um relatório completo de qualidade do código na interface web.
+5️⃣ Execute o Scanner:
+
+```bash
+pysonar-scanner
+```
+
+Ao finalizar, o SonarQube exibirá um relatório completo de qualidade do código na interface web.
 
 ## 📁 Estrutura do projeto
 
