@@ -142,8 +142,9 @@ class PriceService(CrudService[Price, str]):
         """
         price_found = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
         self._raise_not_found(seller_id, sku, price_found is None)
+          
         deleted = await self.repository.delete_by_seller_id_and_sku(seller_id, sku)
-        if not deleted:
+        if deleted is False:
             self._raise_bad_request(
                 message="Erro ao deletar preço.",
                 value=sku,

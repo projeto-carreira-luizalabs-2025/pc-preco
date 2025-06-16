@@ -10,17 +10,22 @@ ID = TypeVar("ID")
 
 
 class CrudService(Generic[T, ID]):
-    def __init__(self, repository: AsyncCrudRepository[T]):
+    def __init__(self, repository: AsyncCrudRepository[T], context=None, author=None):
         self.repository = repository
+        self._context = context
+        self._author = author
+        
+    @property
+    def context(self):
+        return None
 
+    @property
+    def author(self):
+        # XXX Pegar depois
+        return None
+        
     async def create(self, entity: Any) -> T:
         return await self.repository.create(entity)
-
-    async def find_by_id(self, entity_id: ID, can_raise_exception: bool = True) -> T | None:
-        data = await self.repository.find_by_id(entity_id)
-        if data is None and can_raise_exception:
-            raise NotFoundException()
-        return data
 
     async def find(self, paginator: Paginator, filters: dict) -> list[T]:
         models_list = await self.repository.find(
@@ -28,8 +33,17 @@ class CrudService(Generic[T, ID]):
         )
         return models_list
 
-    async def update(self, entity_id: ID, entity: Any) -> T:
-        return await self.repository.update(entity_id, entity)
+    async def find_by_seller_id_and_sku(self, seller_id: str, sku: str, can_raise_exception: bool = True) -> T | None:
+        entity = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
+        if entity is None and can_raise_exception:
+            raise NotFoundException()
+        return entity
+    
+    async def update_by_seller_id_and_sku(self, seller_id: str, sku: str, entity: T) -> T:
+        return await self.repository.update_by_seller_id_and_sku(seller_id, sku, entity)
 
-    async def delete_by_id(self, entity_id: ID) -> None:
-        await self.repository.delete_by_id(entity_id)
+    async def patch_by_seller_id_and_sku(self, seller_id: str, sku: str, patch_data: dict) -> T:
+        return await self.repository.patch_by_seller_id_and_sku(seller_id, sku, patch_data)
+
+    async def delete_by_seller_id_and_sku(self, seller_id: str, sku: str):
+        return await self.repository.delete_by_seller_id_and_sku(seller_id, sku)
