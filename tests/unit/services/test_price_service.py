@@ -14,6 +14,10 @@ class TestPriceService:
         """Cria um mock do repositório para os testes."""
         repository = AsyncMock(spec=PriceRepository)
 
+        # Mock para create
+        async def create(entity):
+            return entity
+        
         # Mock para find_by_seller_id_and_sku
         async def find_by_seller_id_and_sku(seller_id, sku):
             if seller_id == "1" and sku == "A":
@@ -25,8 +29,6 @@ class TestPriceService:
                     "por": 90,
                 }
             return None
-
-        repository.find_by_seller_id_and_sku.side_effect = find_by_seller_id_and_sku
 
         # Mock para update_by_seller_id_and_sku
         async def update_by_seller_id_and_sku(seller_id, sku, price_update):
@@ -40,18 +42,14 @@ class TestPriceService:
                 }
             raise ValueError(f"Preço não encontrado para seller_id={seller_id}, sku={sku}")
 
-        repository.update_by_seller_id_and_sku.side_effect = update_by_seller_id_and_sku
-
-        # Mock para create
-        async def create(entity):
-            return entity
-
-        repository.create.side_effect = create
-
         # Mock para delete_by_seller_id_and_sku
         async def delete_by_seller_id_and_sku(seller_id, sku):
             return None
 
+        # Patch dos métodos da classe pai
+        repository.create.side_effect = create
+        repository.find_by_seller_id_and_sku.side_effect = find_by_seller_id_and_sku
+        repository.update_by_seller_id_and_sku.side_effect = update_by_seller_id_and_sku
         repository.delete_by_seller_id_and_sku.side_effect = delete_by_seller_id_and_sku
 
         return repository
