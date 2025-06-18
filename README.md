@@ -92,33 +92,6 @@ do ambiente virtual `(venv)`.
 make requirements-dev
 ```
 
-## ⚠️ Configuração da URL do banco de dados
-
-Antes de iniciar a aplicação, é necessário definir a variável de ambiente `APP_DB_URL`, que informa à aplicação como se conectar ao banco PostgreSQL.  
-Caso ela não esteja definida, a aplicação exibirá o seguinte erro:
-
-```bash
-KeyError: 'APP_DB_URL'
-```
-### 🔧 Formas de Configuração
-
-#### ✅ Terminal (rápido)
-
-Execute o comando abaixo no mesmo terminal onde irá rodar o `make docker-run`:
-
-```bash
-export APP_DB_URL=postgresql://usuario:senha@host:porta/banco
-```
-
-#### ✅ Arquivo .env (persistente)
-
-Crie um arquivo `.env` na raiz do projeto com o seguinte conteúdo:
-
-```bash
-APP_DB_URL=postgresql://usuario:senha@host:porta/banco
-```
-*🔁 Importante: ajuste usuario, senha, host, porta e banco conforme sua configuração.*
-
 ## 🛠️ Execução local
 
 Após configurar o ambiente local e ativar o ambiente virtual, você pode rodar a aplicação localmente com os seguintes comandos:
@@ -141,13 +114,13 @@ Após iniciar a aplicação, consulte a seção [📘 Acesso à documentação d
 
 1️⃣ Construir a imagem
 
-``` bash
+```bash
 make docker-build # Esse comando criará uma imagem Docker chamada pc/preco.
 ```
 
 2️⃣ Executar a aplicação
 
-``` bash
+```bash
 make docker-run # Inicia um contêiner chamado pc-preco
 ```
 
@@ -194,7 +167,7 @@ make test
 
 Para subir o ambiente do SonarQube, execute:
 
-``` bash
+```bash
 make docker-compose-sonar-up # Inicia o servidor SonarQube e seus serviços dependentes.
 ```
 
@@ -262,11 +235,11 @@ make docker-compose-sonar-down # Esse comando irá desligar e remover os contêi
 
 2️⃣ Vá até: **My Account** > **Security**
 
-3️⃣ Gere um token de autenticação pessoal ( *Guarde-o com segurança — ele não poderá ser visualizado novamente.* )
+3️⃣ Gere um token de autenticação pessoal ( _Guarde-o com segurança — ele não poderá ser visualizado novamente._ )
 
 4️⃣ No terminal, exporte as variáveis de ambiente:
 
-``` bash
+```bash
 export SONAR_TOKEN=<seu_token>
 export SONAR_HOST_URL=http://localhost:9000
 ```
@@ -283,7 +256,7 @@ Ao finalizar, o SonarQube exibirá um relatório completo de qualidade do códig
 
 ```bash
 .
-├── README.md                   
+├── README.md
 ├── app/                        # Código-fonte principal da aplicação (Em construção)
 │   └── api/                    # Rotas, controladores e interfaces REST da aplicação
 │   └── common/                 # Utilitários e código compartilhado
@@ -292,16 +265,16 @@ Ao finalizar, o SonarQube exibirá um relatório completo de qualidade do códig
 │   └── repositories/           # Persistência e acesso a banco de dados
 │   └── services/               # Regras de negócio da aplicação
 │   └── settings/               # Configurações da aplicação
-│   └── worker/                 
+│   └── worker/
 ├── devtools/                   # Ferramentas e scripts auxiliares para desenvolvimento
 │   └── docker                  # Arquivos e configurações para Docker (ex: Dockerfile, docker-compose-sonar.yml)
 │   └── scripts/                # Scripts automatizados usados no `makefile` (ex: configuração de ambiente)
 │   └── info-projeto.md         # Documento de levantamento de requisitos
-├── requirements/               
+├── requirements/
 ├── tests                       # Pasta para testes da aplicação
 │   └── unit                    # Testes unitários
 ├── makefile                    # Comandos automatizados (ex: build, run, test)
-├── pyproject.toml             
-├── requirements.txt        
+├── pyproject.toml
+├── requirements.txt
 ├── sonar-project.properties    # Configurações do SonarQube
 ```
