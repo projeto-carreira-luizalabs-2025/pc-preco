@@ -36,8 +36,6 @@ class CrudService(ABC, Generic[T]):
 
     async def find_by_seller_id_and_sku(self, seller_id: str, sku: str, can_raise_exception: bool = True) -> T | None:
         entity = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
-        if entity is None and can_raise_exception:
-            raise NotFoundException()
         return entity
 
     async def update_by_seller_id_and_sku(self, seller_id: str, sku: str, entity: T) -> T:

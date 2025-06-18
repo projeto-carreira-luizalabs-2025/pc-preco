@@ -68,7 +68,7 @@ class SQLAlchemyCrudRepository(AsyncCrudRepository[T], Generic[T, B]):
         """
         Busca uma entidade base pelo seller_id e sku.
         """
-        preco = self.sql_client.init_select_preco(self.entity_base_class)
+        preco = self.sql_client.init_select(self.entity_base_class)
         preco = preco.where(self.entity_base_class.seller_id == seller_id).where(self.entity_base_class.sku == sku)
         scalar = await session.execute(preco)
         base = scalar.scalar_one_or_none()
@@ -109,7 +109,7 @@ class SQLAlchemyCrudRepository(AsyncCrudRepository[T], Generic[T, B]):
             return stmt
 
         async with self.sql_client.make_session() as session:
-            stmt = self.sql_client.init_select_preco(self.entity_base_class)
+            stmt = self.sql_client.init_select(self.entity_base_class)
 
             for field, value in filters.to_query_dict().items():
                 if not hasattr(self.entity_base_class, field):
@@ -135,7 +135,7 @@ class SQLAlchemyCrudRepository(AsyncCrudRepository[T], Generic[T, B]):
         """
         async with self.sql_client.make_session() as session:
             async with session.begin():
-                stmt = self.sql_client.init_delete_preco(self.entity_base_class)
+                stmt = self.sql_client.init_delete(self.entity_base_class)
                 stmt = stmt.where(self.entity_base_class.seller_id == seller_id).where(
                     self.entity_base_class.sku == sku
                 )

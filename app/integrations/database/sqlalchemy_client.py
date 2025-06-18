@@ -36,7 +36,7 @@ class SQLAlchemyClient:
             yield session
 
     @staticmethod
-    def init_select_preco(base_class) -> select:
+    def init_select(base_class) -> select:
         """
         Inicializa uma consulta SELECT para a tabela de preços.
         :param base_class: Classe base do modelo de dados.
@@ -46,7 +46,7 @@ class SQLAlchemyClient:
         return s
 
     @staticmethod
-    def init_delete_preco(base_class) -> delete:
+    def init_delete(base_class) -> delete:
         """
         Inicializa uma consulta DELETE para a tabela de preços.
         :param base_class: Classe base do modelo de dados.
