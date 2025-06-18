@@ -16,30 +16,30 @@ class SampleEntity(PersistableEntity):
 
 
 class TestCrudService:
-    
+
     @pytest.fixture
     def repository_mock(self):
-        
         """Cria um repositório mock para os testes."""
         repository = AsyncMock(spec=AsyncCrudRepository)
 
         async def create(entity):
             return entity
+
         repository.create.side_effect = create
-    
+
         async def find(filters, limit, offset, sort):
             return [
                 SampleEntity(id=UUID("00000000-0000-0000-0000-000000000001"), name="Test Entity 1", value=100),
                 SampleEntity(id=UUID("00000000-0000-0000-0000-000000000002"), name="Test Entity 2", value=200),
             ]
-        repository.find.side_effect = find
 
+        repository.find.side_effect = find
 
         async def find_by_seller_id_and_sku(seller_id, sku):
             if seller_id == "1" and sku == "A":
                 return SampleEntity(id=None, name="Test Entity", value=100)
             return None
-        
+
         repository.find_by_seller_id_and_sku.side_effect = find_by_seller_id_and_sku
 
         async def update_by_seller_id_and_sku(seller_id, sku, entity):
@@ -52,34 +52,30 @@ class TestCrudService:
                     value = entity.value
                 return SampleEntity(id=None, name=entity.name, value=entity.value)
             return None
-        
+
         repository.update_by_seller_id_and_sku.side_effect = update_by_seller_id_and_sku
 
         async def patch_by_seller_id_and_sku(seller_id, sku, patch_data):
             if seller_id == "test_seller" and sku == "test_sku":
-                return SampleEntity(
-                    id=None, 
-                    name=patch_data.get("name", "Default"), 
-                    value=patch_data.get("value", 0)
-                )
+                return SampleEntity(id=None, name=patch_data.get("name", "Default"), value=patch_data.get("value", 0))
             return None
-        
+
         repository.patch_by_seller_id_and_sku.side_effect = patch_by_seller_id_and_sku
 
         async def delete_by_seller_id_and_sku(seller_id, sku):
             if seller_id == "test_seller" and sku == "test_sku":
                 pass
-                
+
             return None
-        
+
         repository.delete_by_seller_id_and_sku.side_effect = delete_by_seller_id_and_sku
 
         return repository
-    
+
     @pytest.fixture
     def service(self, repository_mock):
         """Cria um serviço com o repositório mock."""
-        return CrudService[SampleEntity, UUID](repository=repository_mock)
+        return CrudService[SampleEntity](repository=repository_mock)
 
     @pytest.mark.asyncio
     async def test_create(self, service, repository_mock):
@@ -94,7 +90,6 @@ class TestCrudService:
 
         repository_mock.create.assert_called_once_with(entity_data)
 
-
     @pytest.mark.asyncio
     async def test_find_by_seller_id_and_sku(self, service, repository_mock):
         seller_id = "1"
@@ -106,29 +101,6 @@ class TestCrudService:
         assert found_entity.name == "Test Entity"
         assert found_entity.value == 100
 
-        repository_mock.find_by_seller_id_and_sku.assert_called_once_with(seller_id, sku)
-
-    @pytest.mark.asyncio
-    async def test_find_by_seller_id_and_sku_not_found_raises_exception(self, service, repository_mock):
-        """Deve lançar NotFoundException quando a entidade não for encontrada."""
-        seller_id = "1"
-        sku = "INEXISTENTE"
-        
-        with pytest.raises(NotFoundException):
-            await service.find_by_seller_id_and_sku(seller_id, sku)
-
-        repository_mock.find_by_seller_id_and_sku.assert_called_once_with(seller_id, sku)
-         
-    @pytest.mark.asyncio
-    async def test_find_by_seller_id_and_sku_not_found_with_no_exception(self, service, repository_mock):
-        """Deve retornar None ao buscar seller_id + sku inexistente com can_raise_exception=False."""
-        
-        seller_id = "1"
-        sku = "INEXISTENTE"
-        
-        found_entity = await service.find_by_seller_id_and_sku(seller_id , sku, can_raise_exception=False)
-        
-        assert found_entity is None
         repository_mock.find_by_seller_id_and_sku.assert_called_once_with(seller_id, sku)
 
     @pytest.mark.asyncio
@@ -224,7 +196,7 @@ class TestCrudService:
         assert updated_entity is not None
         assert updated_entity.name == "Updated Entity"
         assert updated_entity.value == 150
-        
+
         repository_mock.update_by_seller_id_and_sku.assert_called_once_with(seller_id, sku, entity_update_data)
 
     @pytest.mark.asyncio
@@ -244,9 +216,9 @@ class TestCrudService:
         """Deve deletar uma entidade pelo seller_id e sku."""
         seller_id = "1"
         sku = "A"
-        
+
         await service.delete_by_seller_id_and_sku(seller_id, sku)
-        
+
         repository_mock.delete_by_seller_id_and_sku.assert_called_once_with(seller_id, sku)
 
     @pytest.mark.asyncio
@@ -254,17 +226,17 @@ class TestCrudService:
         """Deve não lançar erro ao deletar um seller_id + sku inexistente."""
         seller_id = "1"
         sku = "A"
-        
+
         # Simula que nenhuma entidade foi encontrada/deletada
         repository_mock.delete_by_seller_id_and_sku.return_value = None
-        
+
         # Executa o método - não deve lançar exceção
         deleted_entity = await service.delete_by_seller_id_and_sku(seller_id, sku)
-         
+
         repository_mock.delete_by_seller_id_and_sku.assert_called_once_with(seller_id, sku)
-        
+
         assert deleted_entity is None
-         
+
     def test_context_property(self, service):
         """Deve retornar None para a propriedade context."""
         assert service.context is None

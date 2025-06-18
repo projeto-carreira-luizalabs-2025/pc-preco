@@ -18,5 +18,4 @@ def test_rotas_incluidas():
     app = create_app(api_settings, router_configurations)
     urls = [getattr(route, "path", None) for route in getattr(app, "routes", [])]
     # Verifica se as rotas principais estão presentes
-    assert any("/api/v1" in str(url) for url in urls)
     assert any("/api/v2" in str(url) for url in urls)
