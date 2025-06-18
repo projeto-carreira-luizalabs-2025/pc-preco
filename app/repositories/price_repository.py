@@ -24,42 +24,6 @@ class PriceRepository(SQLAlchemyCrudRepository[Price, PriceBase]):
         """
         super().__init__(sql_client=sql_client, model_class=Price, entity_base_class=PriceBase)
 
-    def _can_filter(self, data: Dict[str, Any], filters: Dict[str, Any] | None) -> bool:
-        """
-        Verifica se o dicionário de dados atende aos filtros fornecidos.
-
-        :param data: Dicionário representando um objeto Price.
-        :param filters: Dicionário de filtros a serem aplicados.
-        :return: True se os dados atenderem aos filtros, False caso contrário.
-        """
-        if not filters:
-            return True
-
-        def is_valid_number(value: Any) -> bool:
-            return isinstance(value, (int, float))
-
-        # Filtros de comparação para preços
-        comparisons: Dict[str, tuple[str, Callable[[float, float], bool]]] = {
-            "preco_de_less_than": ("de", lambda x, y: x < y),
-            "preco_de_greater_than": ("de", lambda x, y: x > y),
-            "preco_por_less_than": ("por", lambda x, y: x < y),
-            "preco_por_greater_than": ("por", lambda x, y: x > y),
-        }
-
-        # Verifica se todos os filtros de comparação são válidos
-        for filter_key, (data_key, comparator) in comparisons.items():
-            if filter_key in filters:
-                value = data.get(data_key)
-                if not is_valid_number(value) or not comparator(value, filters[filter_key]):
-                    return False
-
-        # Filtro sku (busca exata)
-        if "sku" in filters and data.get("sku") != filters["sku"]:
-            return False
-
-        # Se passou por todos os filtros aplicáveis, o item é válido
-        return True
-
     async def find_by_seller_id_and_sku(self, seller_id: str, sku: str) -> Optional[Dict[str, Any]]:
         """
         Busca um preço pela junção de seller_id + sku

@@ -7,7 +7,7 @@ from .base import CrudService
 from app.api.common.schemas import Paginator
 
 
-class PriceService(CrudService[Price, str]):
+class PriceService(CrudService[Price]):
     """
     Serviço responsável pelas regras de negócio relacionadas à entidade Preco.
     Fornece métodos para criação, atualização, busca e validação de preços.
@@ -48,7 +48,7 @@ class PriceService(CrudService[Price, str]):
         :return: Instância de Preco encontrada.
         :raises NotFoundException: Se não encontrar o preço.
         """
-        price_dict = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
+        price_dict = await super().find_by_seller_id_and_sku(seller_id, sku)
 
         self._raise_not_found(seller_id, sku, price_dict is None)
 
@@ -87,7 +87,7 @@ class PriceService(CrudService[Price, str]):
                 field="entity_id",
                 value=entity_id,
             )
-        price_dict = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
+        price_dict = await super().find_by_seller_id_and_sku(seller_id, sku)
         self._raise_not_found(seller_id, sku, price_dict is None)
 
         existing_price = Price.model_validate(price_dict)
@@ -105,7 +105,7 @@ class PriceService(CrudService[Price, str]):
             )
 
         self._validate_positive_prices(merged_price)
-        updated = await self.repository.update_by_seller_id_and_sku(seller_id, sku, merged_price)
+        updated = await super().update_by_seller_id_and_sku(seller_id, sku, merged_price)
         return updated
 
     async def update(self, entity_id: str, entity: Price) -> Price:
@@ -126,10 +126,10 @@ class PriceService(CrudService[Price, str]):
                 field="entity_id",
                 value=entity_id,
             )
-        price_found = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
+        price_found = await super().find_by_seller_id_and_sku(seller_id, sku)
         self._raise_not_found(seller_id, sku, price_found is None)
         self._validate_positive_prices(entity)
-        updated = await self.repository.update_by_seller_id_and_sku(seller_id, sku, entity)
+        updated = await super().update_by_seller_id_and_sku(seller_id, sku, entity)
         return updated
 
     async def delete(self, seller_id: str, sku: str):
@@ -140,10 +140,10 @@ class PriceService(CrudService[Price, str]):
         :param sku: Código do produto.
         :raises NotFoundException: Se o preço não for encontrado.
         """
-        price_found = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
+        price_found = await super().find_by_seller_id_and_sku(seller_id, sku)
         self._raise_not_found(seller_id, sku, price_found is None)
-          
-        deleted = await self.repository.delete_by_seller_id_and_sku(seller_id, sku)
+
+        deleted = await super().delete_by_seller_id_and_sku(seller_id, sku)
         if deleted is False:
             self._raise_bad_request(
                 message="Erro ao deletar preço.",
@@ -178,7 +178,7 @@ class PriceService(CrudService[Price, str]):
         :param sku: Código do produto.
         :raises BadRequestException: Se já existir preço cadastrado.
         """
-        price_found = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
+        price_found = await super().find_by_seller_id_and_sku(seller_id, sku)
         if price_found is not None:
             self._raise_bad_request("Preço para produto já cadastrado.", "sku")
 

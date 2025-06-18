@@ -1,20 +1,21 @@
+from abc import ABC, abstractmethod
 from typing import Any, Generic, TypeVar
 
 from app.api.common.schemas import Paginator
 from app.common.exceptions import NotFoundException
 from app.models.base import PersistableEntity
 from app.repositories import AsyncCrudRepository
+from app.models import QueryModel
 
 T = TypeVar("T", bound=PersistableEntity)
-ID = TypeVar("ID")
 
 
-class CrudService(Generic[T, ID]):
+class CrudService(ABC, Generic[T]):
     def __init__(self, repository: AsyncCrudRepository[T], context=None, author=None):
         self.repository = repository
         self._context = context
         self._author = author
-        
+
     @property
     def context(self):
         return None
@@ -23,7 +24,7 @@ class CrudService(Generic[T, ID]):
     def author(self):
         # XXX Pegar depois
         return None
-        
+
     async def create(self, entity: Any) -> T:
         return await self.repository.create(entity)
 
@@ -38,7 +39,7 @@ class CrudService(Generic[T, ID]):
         if entity is None and can_raise_exception:
             raise NotFoundException()
         return entity
-    
+
     async def update_by_seller_id_and_sku(self, seller_id: str, sku: str, entity: T) -> T:
         return await self.repository.update_by_seller_id_and_sku(seller_id, sku, entity)
 
