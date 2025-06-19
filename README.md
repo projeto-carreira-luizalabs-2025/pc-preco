@@ -157,10 +157,38 @@ Após iniciar a aplicação (localmente ou via Docker), a documentação da API 
 
 ## 🧪 Testes
 
+### 📂 Estrutura dos testes
+
+Os testes estão organizados na pasta `tests/`:
+
+```bash
+tests/
+└── unit/         # Testes unitários de funções, serviços, modelos e repositórios
+└── factories/    # Fábricas e mocks para facilitar a criação de objetos de teste
+└── conftest.py   # Fixtures globais do pytest
+```
+
+### 📝 O que é testado
+
+- **Modelos:** Validação, criação e atualização de entidades.
+- **Serviços:** Regras de negócio e fluxos principais.
+- **Repositórios:** Operações de CRUD e acesso ao banco de dados.
+- **APIs:** Testes de integração das rotas principais.
+
+### 🚀 Como executar os testes
+
 Para rodar os testes automatizados do projeto, use o comando abaixo:
 
 ```bash
 make test
+```
+
+### 📈 Cobertura de testes
+
+Para verificar a cobertura dos testes, execute:
+
+```bash
+make coverage
 ```
 
 ## 🔍 Análise de qualidade com SonarQube
