@@ -7,6 +7,14 @@ from uuid_extensions import uuid7
 from app.common.datetime import utcnow
 
 
+class IdModel(BaseModel):
+    id: UuidType | int | None = Field(None, description="Chave")
+
+
+class IntModel(BaseModel):
+    id: int | None = Field(None, description="Identificador")
+
+
 class UuidModel(BaseModel):
     id: UuidType = Field(default_factory=uuid7, alias="_id")
 
@@ -21,9 +29,41 @@ class AuditModel(BaseModel):
     audit_updated_at: datetime | None = Field(None, description="Data e hora da efetiva atualização do registro")
 
 
-class PersistableEntity(UuidModel, AuditModel):
+class PersistableEntity(AuditModel):
     model_config = ConfigDict(populate_by_name=True, from_attributes=True)
 
     @classmethod
     def from_json(cls, json_data: str):
         return TypeAdapter(cls).validate_json(json_data)
+
+
+class UuidPersistableEntity(UuidModel, PersistableEntity):
+    """
+    Entidade cuja chave é um uuid
+    """
+
+
+class IntPersistableEntity(IntModel, PersistableEntity):
+    """
+    Entidiade cuja chave é um inteiro.
+    """
+
+
+class SellerSkuEntity(BaseModel):
+    seller_id: str = Field(..., description="ID do seller")
+    sku: str = Field(..., description="ID do produto")
+
+    def get_sellerid_sku(self) -> dict:
+        return {"seller_id": self.seller_id, "sku": self.sku}
+
+
+class SellerSkuUuidPersistableEntity(UuidPersistableEntity, SellerSkuEntity):
+    """
+    Entidade com seller_id e sku e chave uuid.
+    """
+
+
+class SellerSkuIntPersistableEntity(IntPersistableEntity, SellerSkuEntity):
+    """
+    Entidade com seller_id e sku e chave int.
+    """

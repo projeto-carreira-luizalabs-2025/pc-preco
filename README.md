@@ -2,28 +2,22 @@
 
 ## 📌 O que é este projeto?
 
-O `pc-preco` é um microsserviço responsável por gerenciar e expor as **informações de preço** dos produtos vendidos por
-varejistas no marketplace.
-
-Esse serviço tem como função principal fornecer os valores exibidos ao consumidor final, considerando diferentes
-condições de pagamento, como:
+O `pc-preco` é um microsserviço que gerencia e fornece os **preços de produtos** exibidos ao consumidor final no marketplace, considerando:
 
 - Preço à vista (com ou sem desconto)
 - Preço a prazo (com ou sem juros)
-- Variações por vendedor (mesmo produto, diferentes preços)
+- Variação de preços por vendedor (mesmo produto, diferentes preços)
 
-Ele se integra diretamente com os microsserviços de:
+Ele se integra com outros microsserviços para garantir que o preço exibido ao consumidor final seja o mais preciso possível.
+
+### 🔗 Integrações
 
 - `pc-catalogo`: para identificar a qual produto o preço se refere.
 - `pc-identidade`: para saber qual varejista está ofertando o preço.
-
-Além disso, o `pc-preco` atua em conjunto com:
-
 - `pc-estoque`: para que o preço exibido esteja alinhado à disponibilidade do produto.
 - `pc-frete`: que junto ao preço, compõe o custo final percebido pelo consumidor.
 
-Cada microsserviço mantém responsabilidades bem definidas, mas trabalham de forma integrada para oferecer uma
-experiência de compra completa.
+Cada microsserviço mantém responsabilidades bem definidas, mas trabalham de forma integrada para oferecer uma experiência de compra completa.
 
 ## 👥 Equipe
 
@@ -32,7 +26,7 @@ experiência de compra completa.
 - João Lucas Ferreira
 - Layza Nauane De Paula Silva
 
-## 📄 Documentação
+## 📄 Design e documentação
 
 <!-- Colar o design docs da sua aplicação no link abaixo -->
 
@@ -41,46 +35,47 @@ Você pode encontrar a documentação inicial referente a este projeto neste [de
 ```bash
 .
 ├── devtools/
-    └── info-projeto.md     # Documento de levantamento da informação base
+    └── info-projeto.md # Documento de levantamento da informação base
 ```
 
 ## 💻 Tecnologias
 
-Este projeto foi construído usando várias tecnologias chaves para garantir performance, segurança e facilidade de uso:
+- **Linguagem**: [Python 3.12](https://docs.python.org/3.12/)
+- **Framework**: [FastAPI](https://fastapi.tiangolo.com/)
+- **ORM**: [SQLAlchemy](https://www.sqlalchemy.org/)
+- **Banco de Dados**: [PostgreSQL](https://www.postgresql.org/)
+- **Docker**: Containers para app, banco e SonarQube
+- **Testes**: [Pytest](https://docs.pytest.org/)
+- **Code Quality**: [SonarQube](https://www.sonarsource.com/products/sonarqube/)
+- **Gerenciador de dependências**: Pip + `requirements.txt`
+- **Makefile**: Automação de tarefas comuns
+- **Documentação de API**: Swagger (via FastAPI)
 
-- **Python 3.12**: Escolhido por sua simplicidade e poderosas capacidades de programação. A versão 3.13 é a mais recente, oferecendo melhorias significativas em eficiência e recursos linguísticos.
-- **FastAPI**: Uma moderna e rápida (altas performances) web framework para Python, que é ideal para a construção de APIs.
-- O restante das dependências estão em `requirements`.
-
-## ✨ Configuração do ambiente local
+## 🧰 Configuração do ambiente local
 
 Todos os comandos serão via terminal (Linux 🐧).
 
-Este projeto trabalha com [Python 3.12](https://docs.python.org/3.12/), confirme se o mesmo está instalado em sua máquina.
-
-Clone o projeto em sua máquina:
+1️⃣ Clone o projeto em sua máquina:
 
 ```bash
 git clone https://github.com/projeto-carreira-luizalabs-2025/pc-preco.git
 ```
 
-Depois de clonar o projeto, acesse o diretório:
+2️⃣ Acesse o diretório:
 
 ```bash
-cd ps-preco
+cd pc-preco
 ```
 
-Crie o [ambiente virtual](https://docs.python.org/3.12/tutorial/venv.html)
-para instalar as bibliotecas e trabalharmos com o projeto:
+3️⃣ Crie o [ambiente virtual](https://docs.python.org/3.12/tutorial/venv.html):
 
 ```bash
-make build-venv
+make build-venv # Instala as bibliotecas para trabalhar com o projeto
 # Ou:
 # python3.12 -m venv venv
 ```
 
-Uma vez criado o ambiente virtual do Python, você precisa ativá-lo
-(estou supondo que você está no Linux 🐧):
+4️⃣ Ative o [ambiente virtual](https://docs.python.org/3.12/tutorial/venv.html):
 
 ```bash
 . ./venv/bin/activate
@@ -91,123 +86,223 @@ Uma vez criado o ambiente virtual do Python, você precisa ativá-lo
 Quaisquer comandos daqui para frente, iremos considerar que você está dentro
 do ambiente virtual `(venv)`.
 
-Instale as dependências usando os requirements
+5️⃣ Instale as dependências
 
 ```bash
 make requirements-dev
 ```
 
-## ▶️ Execução
+## 🛠️ Execução local
 
-Após configuração do ambiente local, caso desejar executar o projeto localmente, configure o arquive de env:
+Após configurar o ambiente local e ativar o ambiente virtual, você pode rodar a aplicação localmente com os seguintes comandos:
+
+1️⃣ Carregue as variáveis de ambiente para o modo de teste:
 
 ```bash
 make load-test-env
 ```
 
-Use o comando para subir a api:
+2️⃣ Inicie a API em modo desenvolvimento:
 
 ```bash
 make run-dev
 ```
 
-Acesse a doc da API em: [localhost:8000/api/docs](http://0.0.0.0:8000/api/docs) ou em [localhost:8000/redoc](http://0.0.0.0:8000/redoc)
+Após iniciar a aplicação, consulte a seção [📘 Acesso à documentação da API](#-acesso-a-documentação-da-api) para saber como acessá-la.
 
-## 📦 Pré-requisitos (ambiente Python)
+## 🐳 Execução com Docker
 
-Antes de rodar os testes, executar a aplicação localmente ou realizar a análise de qualidade com o SonarQube, certifique-se de:
+1️⃣ Construir a imagem
 
 ```bash
-make build-venv
-make requirements-dev
+make docker-build # Esse comando criará uma imagem Docker chamada pc/preco.
 ```
 
-Esses comandos criam o ambiente virtual e instalam as dependências necessárias para o funcionamento do projeto.
+2️⃣ Executar a aplicação
+
+```bash
+make docker-run # Inicia um contêiner chamado pc-preco
+```
+
+3️⃣ Executar com serviços auxiliares (como PostgreSQL)
+
+```bash
+make docker-compose-up # Sobe o BD PostgreSQL e demais serviços definidos no docker-compose.yml
+```
+
+**🛑 ATENÇÃO: Execute o comando abaixo apenas se quiser:**
+
+1️⃣ Parar e remover contêineres
+
+```bash
+make docker-compose-down # Encerra e remove os contêineres gerenciados pelo Docker Compose.
+```
+
+2️⃣ Acessar o shell do contêiner
+
+Se precisar acessar o shell do contêiner para depuração ou outras operações:
+
+```bash
+make docker-shell # Abre uma sessão bash interativa dentro do contêiner para depuração ou comandos manuais.
+```
+
+🔗 Após iniciar a aplicação, consulte a seção [📘 Acesso à documentação da API](#-acesso-a-documentação-da-api) para instruções detalhadas de como acessá-la.
+
+## 📘 Acesso à documentação da API
+
+Após iniciar a aplicação (localmente ou via Docker), a documentação da API estará disponível nos seguintes endereços:
+
+- Swagger UI: [localhost:8000/api/docs](http://0.0.0.0:8000/api/docs)
+- ReDoc: [localhost:8000/redoc](http://0.0.0.0:8000/redoc)
 
 ## 🧪 Testes
+
+### 📂 Estrutura dos testes
+
+Os testes estão organizados na pasta `tests/`:
+
+```bash
+tests/
+└── unit/         # Testes unitários de funções, serviços, modelos e repositórios
+└── factories/    # Fábricas e mocks para facilitar a criação de objetos de teste
+└── conftest.py   # Fixtures globais do pytest
+```
+
+### 📝 O que é testado
+
+- **Modelos:** Validação, criação e atualização de entidades.
+- **Serviços:** Regras de negócio e fluxos principais.
+- **Repositórios:** Operações de CRUD e acesso ao banco de dados.
+- **APIs:** Testes de integração das rotas principais.
+
+### 🚀 Como executar os testes
 
 Para rodar os testes automatizados do projeto, use o comando abaixo:
 
 ```bash
 make test
 ```
-## 🐳 Docker
 
-Para construir a imagem Docker da aplicação, execute:
+### 📈 Cobertura de testes
 
-``` bash
-make docker-build # Criará uma imagem com o nome pc/preco.
-```
-
-Para rodar a aplicação em um contêiner Docker:
-
-``` bash
-make docker-run # Iniciará um contêiner chamado pc-preco, expondo a porta 8000 do contêiner para a porta 8000 do seu host.
-```
-
-Se precisar acessar o shell do contêiner para depuração ou outras operações:
+Para verificar a cobertura dos testes, execute:
 
 ```bash
-make docker-shell # Isso abrirá uma sessão bash interativa dentro do contêiner.
+make coverage
 ```
 
-## 🔍 Análise de Qualidade com SonarQube
+## 🔍 Análise de qualidade com SonarQube
 
-Para subir o ambiente do SonarQube com Docker Compose, execute:
-
-``` bash
-make docker-compose-sonar-up # Inicia o servidor SonarQube e seus serviços dependentes (como o banco de dados) via Docker Compose
-```
-
-Após a execução, acesse a interface web do SonarQube em: http://localhost:9000
-
-Se em algum momento quiser parar o ambiente do SonarQube, execute:
+Para subir o ambiente do SonarQube, execute:
 
 ```bash
-make docker-compose-sonar-down # Desligará o ambiente do SonarQube e removerá os contêineres
+make docker-compose-sonar-up # Inicia o servidor SonarQube e seus serviços dependentes.
 ```
 
-🔐 Gerar Token de Autenticação
+### ⚠️ Possível erro: vm.max_map_count
 
-1. Acesse o SonarQube: http://localhost:9000
+Durante a inicialização do SonarQube, você pode se deparar com o seguinte erro:
 
-2. Vá em: **My Account** > **Security**
+```bash
+vm.max_map_count [65530] is too low
+```
 
-3. Gere um token de autenticação pessoal. Guarde-o bem, pois você não terá acesso a ele novamente.
+Esse problema ocorre porque o Elasticsearch (utilizado pelo SonarQube) exige que `vm.max_map_count` seja pelo menos `262144`.
 
-4. Exporte as variáveis de ambiente com o token gerado:
+### ✅ Como resolver
 
-``` bash
+Siga os passos abaixo para ajustar esse parâmetro no seu sistema:
+
+1️⃣ Verifique o valor atual:
+
+```bash
+sysctl vm.max_map_count
+```
+
+Se o valor for menor que 262144, prossiga com os próximos passos.
+
+2️⃣ Aumente temporariamente (até o próximo reboot):
+
+```bash
+sudo sysctl -w vm.max_map_count=262144
+```
+
+3️⃣ Torne o valor permanente:
+
+Abra o arquivo de configurações:
+
+```bash
+sudo nano /etc/sysctl.conf
+```
+
+Adicione a seguinte linha ao final do arquivo:
+
+```bash
+vm.max_map_count=262144
+```
+
+Salve o arquivo e aplique a configuração:
+
+```bash
+sudo sysctl -p
+```
+
+### 🌐 Acessando o SonarQube
+
+Após o ambiente estar no ar, acesse a interface web pelo endereço: `http://localhost:9000`
+
+Para encerrar o ambiente, utilize:
+
+```bash
+make docker-compose-sonar-down # Esse comando irá desligar e remover os contêineres do SonarQube.
+```
+
+### 🔐 Gerando Token de Autenticação
+
+1️⃣ Acesse o SonarQube: http://localhost:9000
+
+2️⃣ Vá até: **My Account** > **Security**
+
+3️⃣ Gere um token de autenticação pessoal ( _Guarde-o com segurança — ele não poderá ser visualizado novamente._ )
+
+4️⃣ No terminal, exporte as variáveis de ambiente:
+
+```bash
 export SONAR_TOKEN=<seu_token>
-export SONAR_HOST_URL=http://localhost:9000 pysonar-scanner
+export SONAR_HOST_URL=http://localhost:9000
 ```
 
-Após isso, o SonarQube exibirá um relatório completo de qualidade do código na interface web.
+5️⃣ Execute o Scanner:
+
+```bash
+pysonar-scanner
+```
+
+Ao finalizar, o SonarQube exibirá um relatório completo de qualidade do código na interface web.
 
 ## 📁 Estrutura do projeto
 
 ```bash
 .
-├── README.md                   # Documentação principal do projeto: informações do projeto, instruções de setup, uso e execução
-├── app/                        # Diretório principal do código-fonte da aplicação (em construção)
+├── README.md
+├── app/                        # Código-fonte principal da aplicação (Em construção)
 │   └── api/                    # Rotas, controladores e interfaces REST da aplicação
-│   └── common/                 # Utilitários, constantes, exceções e helpers compartilhados entre os módulos
+│   └── common/                 # Utilitários e código compartilhado
 │   └── integrations/           # Integrações com sistemas externos
 │   └── models/                 # Definições de modelos para rotas
-│   └── repositories/           # Módulos para interação com o banco de dados e persistência de dados
-│   └── services/               # Camada de lógica de negócio da aplicação
+│   └── repositories/           # Persistência e acesso a banco de dados
+│   └── services/               # Regras de negócio da aplicação
 │   └── settings/               # Configurações da aplicação
-│   └── worker/                 
+│   └── worker/
 ├── devtools/                   # Ferramentas e scripts auxiliares para desenvolvimento
 │   └── docker                  # Arquivos e configurações para Docker (ex: Dockerfile, docker-compose-sonar.yml)
 │   └── scripts/                # Scripts automatizados usados no `makefile` (ex: configuração de ambiente)
-│   └── info-projeto.md         # Documento de levantamento da informação base
-├── requirements/               # Pasta com arquivos de dependências específicas (ex: develop.txt, base.txt)
+│   └── info-projeto.md         # Documento de levantamento de requisitos
+├── requirements/
 ├── tests                       # Pasta para testes da aplicação
-│   └── unit                    # Testes unitários para módulos e funções específicas
-├── venv                        # Ambiente virtual Python para isolamento de dependências
-├── makefile                    # Automatiza tarefas comuns do projeto (ex: build, test, run)
-├── pyproject.toml              # Arquivo de configuração do projeto Python
-├── requirements.txt            # Lista geral de dependências do projeto
-├── sonar-project.properties    # Configurações para o SonarQube Scanner
+│   └── unit                    # Testes unitários
+├── makefile                    # Comandos automatizados (ex: build, run, test)
+├── pyproject.toml
+├── requirements.txt
+├── sonar-project.properties    # Configurações do SonarQube
 ```

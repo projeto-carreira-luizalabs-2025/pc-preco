@@ -14,25 +14,21 @@ class TestPriceService:
         """Cria um mock do repositório para os testes."""
         repository = AsyncMock(spec=PriceRepository)
 
+        # Mock para create
+        async def create(entity):
+            return entity
+        
         # Mock para find_by_seller_id_and_sku
         async def find_by_seller_id_and_sku(seller_id, sku):
             if seller_id == "1" and sku == "A":
                 return {
-                    "id": "00000000-0000-0000-0000-000000000001",
+                    "id": 1,
                     "seller_id": "1",
                     "sku": "A",
                     "de": 100,
                     "por": 90,
                 }
             return None
-
-        repository.find_by_seller_id_and_sku.side_effect = find_by_seller_id_and_sku
-
-        # Mock para exists_by_seller_id_and_sku
-        async def exists_by_seller_id_and_sku(seller_id, sku):
-            return seller_id == "1" and sku == "A"
-
-        repository.exists_by_seller_id_and_sku.side_effect = exists_by_seller_id_and_sku
 
         # Mock para update_by_seller_id_and_sku
         async def update_by_seller_id_and_sku(seller_id, sku, price_update):
@@ -46,18 +42,14 @@ class TestPriceService:
                 }
             raise ValueError(f"Preço não encontrado para seller_id={seller_id}, sku={sku}")
 
-        repository.update_by_seller_id_and_sku.side_effect = update_by_seller_id_and_sku
-
-        # Mock para create
-        async def create(entity):
-            return entity
-
-        repository.create.side_effect = create
-
         # Mock para delete_by_seller_id_and_sku
         async def delete_by_seller_id_and_sku(seller_id, sku):
             return None
 
+        # Patch dos métodos da classe pai
+        repository.create.side_effect = create
+        repository.find_by_seller_id_and_sku.side_effect = find_by_seller_id_and_sku
+        repository.update_by_seller_id_and_sku.side_effect = update_by_seller_id_and_sku
         repository.delete_by_seller_id_and_sku.side_effect = delete_by_seller_id_and_sku
 
         return repository
@@ -97,7 +89,7 @@ class TestPriceService:
         assert created_price.sku == "B"
         assert created_price.de == 200
         assert created_price.por == 180
-        repository_mock.exists_by_seller_id_and_sku.assert_called_once_with("2", "B")
+        repository_mock.find_by_seller_id_and_sku.assert_called_once_with("2", "B")
         repository_mock.create.assert_called_once()
 
     @pytest.mark.asyncio
@@ -105,7 +97,7 @@ class TestPriceService:
         price_create = Price(seller_id="1", sku="A", de=100, por=90)
         with pytest.raises(BadRequestException):
             await service.create(price_create)
-        repository_mock.exists_by_seller_id_and_sku.assert_called_once_with("1", "A")
+        repository_mock.find_by_seller_id_and_sku.assert_called_once_with("1", "A")
         repository_mock.create.assert_not_called()
 
     @pytest.mark.asyncio
@@ -127,21 +119,21 @@ class TestPriceService:
         entity_id = "1|A"
         updated_price = await service.update(entity_id, price_update)
         assert updated_price is not None
-        assert updated_price.seller_id == "1"
-        assert updated_price.sku == "A"
-        assert updated_price.de == 150
-        assert updated_price.por == 120
-        repository_mock.exists_by_seller_id_and_sku.assert_called_once_with("1", "A")
+        assert updated_price['seller_id'] == "1"
+        assert updated_price['sku'] == "A"
+        assert updated_price['de'] == 150
+        assert updated_price['por'] == 120
+        repository_mock.find_by_seller_id_and_sku.assert_called_once_with("1", "A")
         repository_mock.update_by_seller_id_and_sku.assert_called_once_with("1", "A", price_update)
 
     @pytest.mark.asyncio
     async def test_update_price_not_found(self, service, repository_mock):
-        repository_mock.exists_by_seller_id_and_sku.return_value = False
+        repository_mock.find_by_seller_id_and_sku.return_value = False
         price_update = Price(seller_id="1", sku="Z", de=150, por=120)
         entity_id = "1|Z"
         with pytest.raises(NotFoundException):
             await service.update(entity_id, price_update)
-        repository_mock.exists_by_seller_id_and_sku.assert_called_once_with("1", "Z")
+        repository_mock.find_by_seller_id_and_sku.assert_called_once_with("1", "Z")
         repository_mock.update_by_seller_id_and_sku.assert_not_called()
 
     @pytest.mark.asyncio
@@ -175,18 +167,18 @@ class TestPriceService:
     @pytest.mark.asyncio
     async def test_create_price_limite_superior_valores(self, service, repository_mock):
         price_create = Price(seller_id="3", sku="C", de=2**31 - 1, por=2**31 - 1)
-        repository_mock.exists_by_seller_id_and_sku.return_value = False
+        repository_mock.find_by_seller_id_and_sku.return_value = False
         created_price = await service.create(price_create)
         assert created_price is not None
         assert created_price.de == 2**31 - 1
         assert created_price.por == 2**31 - 1
-        repository_mock.exists_by_seller_id_and_sku.assert_called_once_with("3", "C")
+        repository_mock.find_by_seller_id_and_sku.assert_called_once_with("3", "C")
         repository_mock.create.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_update_price_limite_superior_valores(self, service, repository_mock):
         price_update = Price(seller_id="1", sku="A", de=2**31 - 1, por=2**31 - 1)
-        repository_mock.exists_by_seller_id_and_sku.return_value = True
+        repository_mock.find_by_seller_id_and_sku.return_value = True
         repository_mock.update_by_seller_id_and_sku.return_value = {
             "id": "00000000-0000-0000-0000-000000000001",
             "seller_id": "1",
@@ -197,7 +189,7 @@ class TestPriceService:
         entity_id = "1|A"
         updated_price = await service.update(entity_id, price_update)
         assert updated_price is not None
-        assert updated_price.de == 2**31 - 1
-        assert updated_price.por == 2**31 - 1
-        repository_mock.exists_by_seller_id_and_sku.assert_called_once_with("1", "A")
+        assert updated_price['de'] == 2**31 - 1
+        assert updated_price['por'] == 2**31 - 1
+        repository_mock.find_by_seller_id_and_sku.assert_called_once_with("1", "A")
         repository_mock.update_by_seller_id_and_sku.assert_called_once_with("1", "A", price_update)

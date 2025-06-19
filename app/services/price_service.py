@@ -1,13 +1,13 @@
 from typing import Any, Dict
 
 from ..common.exceptions.price_exceptions import PriceBadRequestException, PriceNotFoundException
-from ..models import Price
+from ..models import Price, PriceFilter
 from ..repositories import PriceRepository
 from .base import CrudService
 from app.api.common.schemas import Paginator
 
 
-class PriceService(CrudService[Price, str]):
+class PriceService(CrudService[Price]):
     """
     Serviço responsável pelas regras de negócio relacionadas à entidade Preco.
     Fornece métodos para criação, atualização, busca e validação de preços.
@@ -35,7 +35,9 @@ class PriceService(CrudService[Price, str]):
         # Cria o dicionário de filtros apenas com os valores que não são None
         current_filters = {key: value for key, value in filters.items() if value is not None}
 
-        return await self.find(filters=current_filters, paginator=paginator)
+        filter_model = PriceFilter(**current_filters)
+
+        return await self.find(filters=filter_model, paginator=paginator)
 
     async def get_by_seller_id_and_sku(self, seller_id: str, sku: str) -> Price:
         """
@@ -46,7 +48,7 @@ class PriceService(CrudService[Price, str]):
         :return: Instância de Preco encontrada.
         :raises NotFoundException: Se não encontrar o preço.
         """
-        price_dict = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
+        price_dict = await super().find_by_seller_id_and_sku(seller_id, sku)
 
         self._raise_not_found(seller_id, sku, price_dict is None)
 
@@ -85,7 +87,7 @@ class PriceService(CrudService[Price, str]):
                 field="entity_id",
                 value=entity_id,
             )
-        price_dict = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
+        price_dict = await super().find_by_seller_id_and_sku(seller_id, sku)
         self._raise_not_found(seller_id, sku, price_dict is None)
 
         existing_price = Price.model_validate(price_dict)
@@ -103,8 +105,8 @@ class PriceService(CrudService[Price, str]):
             )
 
         self._validate_positive_prices(merged_price)
-        updated = await self.repository.update_by_seller_id_and_sku(seller_id, sku, merged_price)
-        return Price(**updated)
+        updated = await super().update_by_seller_id_and_sku(seller_id, sku, merged_price)
+        return updated
 
     async def update(self, entity_id: str, entity: Price) -> Price:
         """
@@ -124,11 +126,11 @@ class PriceService(CrudService[Price, str]):
                 field="entity_id",
                 value=entity_id,
             )
-        price_found = await self.repository.exists_by_seller_id_and_sku(seller_id, sku)
-        self._raise_not_found(seller_id, sku, not price_found)
+        price_found = await super().find_by_seller_id_and_sku(seller_id, sku)
+        self._raise_not_found(seller_id, sku, price_found is None)
         self._validate_positive_prices(entity)
-        updated = await self.repository.update_by_seller_id_and_sku(seller_id, sku, entity)
-        return Price(**updated)
+        updated = await super().update_by_seller_id_and_sku(seller_id, sku, entity)
+        return updated
 
     async def delete(self, seller_id: str, sku: str):
         """
@@ -138,9 +140,15 @@ class PriceService(CrudService[Price, str]):
         :param sku: Código do produto.
         :raises NotFoundException: Se o preço não for encontrado.
         """
-        price_found = await self.repository.find_by_seller_id_and_sku(seller_id, sku)
+        price_found = await super().find_by_seller_id_and_sku(seller_id, sku)
         self._raise_not_found(seller_id, sku, price_found is None)
-        await self.repository.delete_by_seller_id_and_sku(seller_id, sku)
+
+        deleted = await super().delete_by_seller_id_and_sku(seller_id, sku)
+        if deleted is False:
+            self._raise_bad_request(
+                message="Erro ao deletar preço.",
+                value=sku,
+            )
 
     def _validate_positive_prices(self, price):
         """
@@ -170,8 +178,8 @@ class PriceService(CrudService[Price, str]):
         :param sku: Código do produto.
         :raises BadRequestException: Se já existir preço cadastrado.
         """
-        price_found = await self.repository.exists_by_seller_id_and_sku(seller_id, sku)
-        if price_found:
+        price_found = await super().find_by_seller_id_and_sku(seller_id, sku)
+        if price_found is not None:
             self._raise_bad_request("Preço para produto já cadastrado.", "sku")
 
     @staticmethod
@@ -186,7 +194,7 @@ class PriceService(CrudService[Price, str]):
         if condition:
             raise PriceNotFoundException(seller_id=seller_id, sku=sku)
 
-    def _raise_bad_request(self, message: str, field: str, value=None):
+    def _raise_bad_request(self, message: str, field: str = None, value=None):
         """
         Lança exceção de BadRequestException com detalhes do erro.
 

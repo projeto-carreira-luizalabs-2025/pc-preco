@@ -2,10 +2,10 @@ from abc import ABC, abstractmethod
 from typing import Any, Generic, TypeVar
 
 T = TypeVar("T")
-ID = TypeVar("ID")
+Q = TypeVar("Q")
 
 
-class AsyncCrudRepository(ABC, Generic[T, ID]):
+class AsyncCrudRepository(ABC, Generic[T]):
     """
     Interface genérica para operações de repositório CRUD.
     """
@@ -17,25 +17,31 @@ class AsyncCrudRepository(ABC, Generic[T, ID]):
         """
 
     @abstractmethod
-    async def find_by_id(self, entity_id: ID) -> T | None:
+    async def find_by_seller_id_and_sku(self, seller_id: str, sku: str) -> T | None:
         """
-        Busca uma entidade pelo seu identificador único.
+        Busca uma entidade pelo seller_id e sku.
         """
 
     @abstractmethod
-    async def find(self, filters: dict, limit: int, offset: int, sort: dict | None = None) -> list[T]:
+    async def find(self, filters: Q, limit: int = 20, offset: int = 0, sort: dict | None = None) -> list[T]:
         """
         Busca entidades no repositório, utilizando filtros e paginação.
         """
 
     @abstractmethod
-    async def update(self, entity_id: ID, entity: Any) -> T:
+    async def update_by_seller_id_and_sku(self, seller_id: str, sku: str, entity: T) -> T:
         """
         Atualiza uma entidade existente no repositório.
         """
 
     @abstractmethod
-    async def delete_by_id(self, entity_id: ID) -> None:
+    async def patch_by_seller_id_and_sku(self, seller_id: str, sku: str, patch_entity: dict) -> T:
+        """
+        Atualiza uma entidade somente com os campos informados no dicionário.
+        """
+
+    @abstractmethod
+    async def delete_by_seller_id_and_sku(self, seller_id: str, sku: str) -> bool:
         """
         Remove uma entidade pelo seu identificador único.
         """

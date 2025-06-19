@@ -4,10 +4,7 @@ from app.repositories import PriceRepository
 from app.services import HealthCheckService, PriceService
 from app.settings import AppSettings
 
-memory_prices = [
-    {"seller_id": "1", "sku": "A", "de": 100, "por": 90},
-    {"seller_id": "2", "sku": "B", "de": 200, "por": 180},
-]
+from app.integrations.database.sqlalchemy_client import SQLAlchemyClient
 
 
 class Container(containers.DeclarativeContainer):
@@ -15,8 +12,11 @@ class Container(containers.DeclarativeContainer):
 
     settings = providers.Singleton(AppSettings)
 
+    # Cliente SQLAlchemy
+    sql_client = providers.Singleton(SQLAlchemyClient, config.app_db_url)
+
     # Repositórios
-    price_repository = providers.Singleton(PriceRepository, memory=memory_prices)
+    price_repository = providers.Singleton(PriceRepository, sql_client)
 
     # Serviços
     health_check_service = providers.Singleton(

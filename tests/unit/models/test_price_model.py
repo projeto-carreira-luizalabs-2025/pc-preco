@@ -1,8 +1,7 @@
-from datetime import datetime
-from uuid import UUID
-
 import pytest
 from pydantic import ValidationError
+
+from datetime import datetime
 
 from app.models import Price
 
@@ -10,13 +9,13 @@ from app.models import Price
 class TestPriceModel:
     def test_create_preco(self):
         """Testa a criação de uma instância de Price com os campos obrigatórios."""
-        preco = Price(seller_id="1", sku="A", de=100, por=90)
+        preco = Price(id=123, seller_id="1", sku="A", de=100, por=90)
 
         assert preco.seller_id == "1"
         assert preco.sku == "A"
         assert preco.de == 100
         assert preco.por == 90
-        assert isinstance(preco.id, UUID)
+        assert isinstance(preco.id, int)
         assert isinstance(preco.created_at, datetime)
         assert preco.updated_at is None
         assert preco.created_by is None
@@ -37,14 +36,14 @@ class TestPriceModel:
 
     def test_from_json(self):
         """Testa a criação de uma instância de Price a partir de um JSON."""
-        json_data = '{"seller_id": "1", "sku": "A", "de": 100, "por": 90}'
+        json_data = '{"id":123, "seller_id": "1", "sku": "A", "de": 100, "por": 90}'
         preco = Price.from_json(json_data)
 
         assert preco.seller_id == "1"
         assert preco.sku == "A"
         assert preco.de == 100
         assert preco.por == 90
-        assert isinstance(preco.id, UUID)
+        assert isinstance(preco.id, int)
 
     def test_create_preco_with_missing_fields_raises_error(self):
         """Testa se a criação de Price sem campos obrigatórios levanta erro."""

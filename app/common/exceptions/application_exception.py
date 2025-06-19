@@ -15,6 +15,7 @@ class ApplicationException(HTTPException):
         error_info: ErrorInfo,
         details: list["ErrorDetail"] | None = None,
     ):
+        super().__init__(status_code=error_info.http_code, detail=error_info.message)
         self.slug = error_info.slug
         self.message = error_info.message
         self.status_code = error_info.http_code

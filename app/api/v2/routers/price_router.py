@@ -50,10 +50,10 @@ async def get(
     sku: Optional[str] = Query(None, description="Filtrar por SKU específico"),
 ):
     filters = {
-        "preco_de_less_than": preco_de_less_than,
-        "preco_de_greater_than": preco_de_greater_than,
-        "preco_por_less_than": preco_por_less_than,
-        "preco_por_greater_than": preco_por_greater_than,
+        "de__lt": preco_de_less_than,
+        "de__gt": preco_de_greater_than,
+        "por__lt": preco_por_less_than,
+        "por__gt": preco_por_greater_than,
         "sku": sku,
     }
 
