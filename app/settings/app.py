@@ -1,4 +1,4 @@
-from pydantic import Field, PostgresDsn
+from pydantic import Field, PostgresDsn, HttpUrl
 
 from .base import BaseSettings
 
@@ -16,6 +16,8 @@ class AppSettings(BaseSettings):
     disk_usage_max: int = Field(default=80, title="Limite máximo de 80% de uso de disco")
 
     app_db_url: PostgresDsn = Field(..., title="URI para o banco Postgresql")
+
+    app_openid_wellknown: HttpUrl = Field(..., title="URL para well known de um openid")
 
 
 settings = AppSettings()
