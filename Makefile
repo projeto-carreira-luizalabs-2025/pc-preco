@@ -112,10 +112,10 @@ docker-compose-sonar-down:
 	docker compose -f ./devtools/docker/docker-compose-sonar.yml down
 
 docker-compose-up:
-	docker compose -f ./devtools/docker/docker-compose.yml up -d
+	docker compose -f ./docker-compose.yml up -d
 
 docker-compose-down:
-	docker compose -f ./devtools/docker/docker-compose.yml down
+	docker compose -f ./docker-compose.yml down
 
 coverage:
 ifeq ($(OS),Windows_NT)
