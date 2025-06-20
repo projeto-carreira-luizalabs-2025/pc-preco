@@ -4,7 +4,7 @@ from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, status
 
 from app.api.common.schemas import ListResponse, Paginator, get_request_pagination
-from app.api.common.schemas.price.price_schema import (
+from app.api.v2.schemas.price_schema import (
     PriceCreate,
     PriceErrorResponse,
     PricePatch,

@@ -1,12 +1,20 @@
+from pydantic import BaseModel, Field
+
 from app.api.common.schemas import ResponseEntity, SchemaType
 from app.api.common.schemas.response import ErrorResponse
 
+from .base_schema import SellerSkuBaseModel, SkuBaseModel
 
-class PriceSchema(SchemaType):
-    seller_id: str
-    sku: str
-    de: int
-    por: int
+
+class BasePriceModel(BaseModel):
+    """Modelo base para precificações"""
+
+    de: int = Field(..., description="Preço de custo do produto")
+    por: int = Field(..., description="Preço de venda do produto")
+
+
+class PriceSchema(SellerSkuBaseModel, BasePriceModel):
+    """Schema base para precificações"""
 
     class Config:
         json_schema_extra = {"example": {"seller_id": "abc123", "sku": "sku001", "de": 1000, "por": 500}}
@@ -31,11 +39,11 @@ class PriceResponse(PriceSchema, ResponseEntity):
         }
 
 
-class PriceCreate(PriceSchema):
+class PriceCreate(SkuBaseModel, BasePriceModel):
     """Schema para criação de precificações"""
 
     class Config:
-        json_schema_extra = {"example": {"seller_id": "abc123", "sku": "sku001", "de": 1000, "por": 500}}
+        json_schema_extra = {"example": {"sku": "sku001", "de": 1000, "por": 500}}
 
 
 class PriceUpdate(SchemaType):
