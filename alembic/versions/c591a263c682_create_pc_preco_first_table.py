@@ -26,8 +26,8 @@ def upgrade() -> None:
         'pc_preco',
         sa.Column('id', sa.Integer(), primary_key=True, autoincrement=True, nullable=False),
         sa.Column('sku', sa.String(), nullable=False),
-        sa.Column('de', sa.Float(), nullable=False),
-        sa.Column('por', sa.Float(), nullable=False),
+        sa.Column('de', sa.Integer(), nullable=False),
+        sa.Column('por', sa.Integer(), nullable=False),
         sa.Column('seller_id', sa.String(), nullable=False),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
         sa.Column(

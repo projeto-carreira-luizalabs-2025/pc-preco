@@ -69,24 +69,16 @@ class PriceService(CrudService[Price]):
         price = Price(**price_create.model_dump())
         return await super().create(price)
 
-    async def patch(self, entity_id: str, update_data: Dict[str, Any]) -> Price:
+    async def patch(self, seller_id: str, sku: str, update_data: Dict[str, Any]) -> Price:
         """
         Atualiza campos de uma precificação.
-        :param entity_id: Chave composta seller_id|sku (formato: seller_id|sku)
+        :param seller_id: Identificador do vendedor.
+        :param sku: Código do produto.
         :update_data: Dicionário contendo os campos a serem atualizados.
         :return: Instância de Preco atualizada.
         :raises NotFoundException: Se não encontrar o preço.
         :raises BadRequestException: Se valores inválidos forem informados.
         """
-        # Espera-se que entity_id seja 'seller_id|sku'
-        try:
-            seller_id, sku = entity_id.split("|", 1)
-        except ValueError:
-            raise PriceBadRequestException(
-                message="entity_id deve ser no formato 'seller_id|sku'",
-                field="entity_id",
-                value=entity_id,
-            )
         price_dict = await super().find_by_seller_id_and_sku(seller_id, sku)
         self._raise_not_found(seller_id, sku, price_dict is None)
 
@@ -108,24 +100,16 @@ class PriceService(CrudService[Price]):
         updated = await super().update_by_seller_id_and_sku(seller_id, sku, merged_price)
         return updated
 
-    async def update(self, entity_id: str, entity: Price) -> Price:
+    async def update(self, seller_id: str, sku: str, entity: Price) -> Price:
         """
         Atualiza uma precificação existente com novos valores.
-        :param entity_id: Chave composta seller_id|sku (formato: seller_id|sku)
+        :param seller_id: Identificador do vendedor.
+        :param sku: Código do produto.
         :param entity: Objeto contendo os novos dados do preço.
         :return: Instância de Preco atualizada.
         :raises NotFoundException: Se não encontrar o preço.
         :raises BadRequestException: Se valores inválidos forem informados.
         """
-        # Espera-se que entity_id seja 'seller_id|sku'
-        try:
-            seller_id, sku = entity_id.split("|", 1)
-        except ValueError:
-            raise PriceBadRequestException(
-                message="entity_id deve ser no formato 'seller_id|sku'",
-                field="entity_id",
-                value=entity_id,
-            )
         price_found = await super().find_by_seller_id_and_sku(seller_id, sku)
         self._raise_not_found(seller_id, sku, price_found is None)
         self._validate_positive_prices(entity)
