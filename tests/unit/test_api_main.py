@@ -85,7 +85,6 @@ def test_init_function_behavior(mock_init_dependencies, mocker):
 
     expected_wire_calls = [
         mocker.call(modules=["app.api.common.routers.health_check_routers"]),
-        mocker.call(modules=["app.api.v1.routers.price_router"]),
         mocker.call(modules=["app.api.v2.routers.price_router"]),
     ]
 
@@ -158,7 +157,6 @@ def test_module_loading_and_global_app_initialization(mocker, env_value, expecte
 
     expected_wire_calls_global = [
         mocker.call(modules=["app.api.common.routers.health_check_routers"]),
-        mocker.call(modules=["app.api.v1.routers.price_router"]),
         mocker.call(modules=["app.api.v2.routers.price_router"]),
     ]
     mock_container_instance_global.wire.assert_has_calls(expected_wire_calls_global, any_order=False)

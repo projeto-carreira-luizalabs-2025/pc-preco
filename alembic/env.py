@@ -31,6 +31,7 @@ target_metadata = Base.metadata
 
 if (url_db := getenv("APP_DB_URL_ALEMBIC")) is not None:
     print("URL DB carregada da memoria")
+    print(f"URL completa: {url_db}")  # Adicione esta linha
     config.set_main_option("sqlalchemy.url", url_db)
 
 

@@ -8,6 +8,9 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: pc-preco
+      POSTGRES_INITDB_ARGS: "--auth-host=md5 --auth-local=md5"
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
 
   keycloak:
     image: quay.io/keycloak/keycloak:24.0.5 # Use uma versão LTS ou a mais recente estável
@@ -51,7 +54,7 @@ services:
       # Monta o diretório local com seu arquivo JSON para importação
       - ./devtools/keycloak-config:/opt/keycloak/data/import
       # Volume para persistir os dados do Keycloak (sessions, caches, etc.)
-      # - keycloak_data:/opt/keycloak/data
+      - keycloak_data:/opt/keycloak/data
     depends_on:
       - keycloak-db
     command: ["start-dev", "--import-realm"] # Comando para iniciar o Keycloak em modo de desenvolvimento
@@ -68,6 +71,35 @@ services:
       POSTGRES_DB: keycloak
       POSTGRES_USER: keycloak
       POSTGRES_PASSWORD: password # ATENÇÃO: Altere esta senha para produção!
-    #volumes:
-    #  - keycloak_postgres_data:/var/lib/postgresql/data
+    volumes:
+      - keycloak_postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
+
+  app:
+    build:
+      context: .
+      dockerfile: devtools/docker/dockerfile
+    container_name: pc-preco
+    ports:
+      - "8000:8000"
+    environment:
+      - ENV=dev
+    env_file:
+      - devtools/dotenv.dev
+    depends_on:
+      - postgresql
+    working_dir: /pc-preco
+    command: ["uvicorn", "app.api_main:app", "--host", "0.0.0.0", "--port", "8000"]
+    restart: unless-stopped
+    networks:
+      - pc-preco-network
+
+volumes:
+  postgresql_data:
+  keycloak_postgres_data:
+  keycloak_data:
+
+networks:
+  pc-preco-network:
+    driver: bridge
+
