@@ -13,7 +13,7 @@ GET {{url}}/api/health
 ###
 # 
 # Endpoint para `preços`
-@api_preco={{url}}/seller/v1/precos
+@api_preco={{url}}/seller/v2/precos
 
 ###
 # Cadastro 1 - Criação de preço

@@ -110,8 +110,7 @@ async def replace(
 ):
 
     price_model = Price(seller_id=seller_id, sku=sku, **price.model_dump())
-    entity_id = f"{seller_id}|{sku}"
-    return await price_service.update(entity_id, price_model)
+    return await price_service.update(seller_id, sku, price_model)
 
 
 # Atualiza parcialmente uma precificação por "seller_id" e "sku"
@@ -130,8 +129,7 @@ async def patch(
     seller_id: str = Depends(get_required_seller_id),
 ):
     update_data = price_update_data.model_dump(exclude_unset=True)
-    entity_id = f"{seller_id}|{sku}"
-    return await price_service.patch(entity_id, update_data)
+    return await price_service.patch(seller_id, sku, update_data)
 
 
 # Deleta uma precificação por "seller_id" e "sku"
