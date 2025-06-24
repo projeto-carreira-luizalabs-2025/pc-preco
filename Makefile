@@ -9,7 +9,7 @@ HOST?=0.0.0.0
 PORT?=8000
 INIT?=uvicorn ${API_MODULE_MAIN}:app --host $(HOST) --port $(PORT)
 DOCKER_IMAGE_NAME=pc/preco
-DOCKERFILE_PATH=./devtools/docker/Dockerfile
+DOCKERFILE_PATH=./devtools/docker/dockerfile
 CONTAINER_NAME?=pc-preco
 
 clean:
@@ -25,9 +25,11 @@ clean:
 	@rm -f *.log
 	@rm -f .env.bkp*
 
+# Criar o diretório venv
 build-venv:
 	python3.12 -m venv venv
 
+# Instalar os pacotes
 requirements-dev:
 	pip install --upgrade pip
 	@pip install -r requirements/develop.txt
@@ -38,6 +40,7 @@ lint:
 	black ${APP_DIR} ${ROOT_TESTS_DIR}
 	flake8 --max-line-length=120 ${APP_DIR} ${ROOT_TESTS_DIR}
 
+# Verificar o código
 check-lint:
 	isort -c ${APP_DIR} ${ROOT_TESTS_DIR}
 	bandit -c pyproject.toml -r -f custom ${APP_DIR} ${ROOT_TESTS_DIR}
@@ -78,6 +81,7 @@ else
 	@env=dev make $(MAKE_ARGS) load-env
 endif
 
+# Carregar a variável 
 load-test-env:
 ifeq ($(OS),Windows_NT)
 	@cmd /C "set env=test&& make $(MAKE_ARGS) load-env"
@@ -100,7 +104,7 @@ docker-build:
 	docker build -f $(DOCKERFILE_PATH) -t $(DOCKER_IMAGE_NAME) .
 
 docker-run:
-	docker run --rm --name $(CONTAINER_NAME) -e ENV=dev  -e app_db_url=$(APP_DB_URL) \-p 8000:8000 $(DOCKER_IMAGE_NAME)
+	docker run --rm --name $(CONTAINER_NAME) -e ENV=dev -e app_db_url=$(APP_DB_URL) -p 8000:8000 $(DOCKER_IMAGE_NAME)
 
 docker-shell:
 	docker run --rm -it --name $(CONTAINER_NAME) -e ENV=dev $(DOCKER_IMAGE_NAME) /bin/bash
@@ -116,25 +120,37 @@ docker-compose-up:
 
 docker-compose-down:
 	docker compose -f ./devtools/docker/docker-compose.yml down
+# Subir o docker para os testes
 
+docker-tests-up:
+	docker-compose up -d
+
+# Descer e remover o docker dos testes
+docker-tests-down:
+	docker-compose down -v
+
+# Testar fazendo a cobertura do código
 coverage:
 ifeq ($(OS),Windows_NT)
-	@cmd /C "set ENV=test&& pytest --cov=app --cov-report=term-missing --cov-report=xml ./tests/ --cov-fail-under=90 --durations=5"
+	@cmd /C "set ENV=test&& pytest --cov=${APP_DIR} --cov-report=term-missing --cov-report=xml ${ROOT_TESTS_DIR} --cov-fail-under=90 --durations=5"
 else
-	@ENV=test pytest --cov=app --cov-report=term-missing --cov-report=xml ./tests/ --cov-fail-under=90 --durations=5
+	@ENV=test pytest --cov=${APP_DIR} --cov-report=term-missing --cov-report=xml ${ROOT_TESTS_DIR} --cov-fail-under=90 --durations=5
 endif
 
 coverage-no-fail:
 ifeq ($(OS),Windows_NT)
-	@cmd /C "set ENV=test&& pytest --cov=app --cov-report=term-missing --cov-report=xml ./tests/"
+	@cmd /C "set ENV=test&& pytest --cov=${APP_DIR} --cov-report=term-missing --cov-report=xml ${ROOT_TESTS_DIR}"
 else
-	@ENV=test pytest --cov=app --cov-report=term-missing --cov-report=xml ./tests/
+	@ENV=test pytest --cov=${APP_DIR} --cov-report=term-missing --cov-report=xml ${ROOT_TESTS_DIR}
 endif
 
 coverage-html:
 ifeq ($(OS),Windows_NT)
-	@cmd /C "set ENV=test&& pytest --cov=app --cov-report=term-missing --cov-report=html ./tests/"
+	@cmd /C "set ENV=test&& pytest --cov=${APP_DIR} --cov-report=term-missing --cov-report=html ${ROOT_TESTS_DIR}"
 else
-	@ENV=test pytest --cov=app --cov-report=term-missing --cov-report=html ./tests/
+	@ENV=test pytest --cov=${APP_DIR} --cov-report=term-missing --cov-report=html ${ROOT_TESTS_DIR}
 endif
 
+# Realizar a migração do banco de dadosAdd commentMore actions
+migration:
+	alembic revision --autogenerate -m "$(MSG)" && alembic upgrade head
