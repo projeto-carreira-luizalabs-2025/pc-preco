@@ -33,11 +33,8 @@ async def do_auth(
     try:
         info_token = await openid_adapter.validate_token(token)
     except OAuthException as exception:
-        # XXX Poderíamos especializar as exceções
         raise UnauthorizedException from exception
 
-    # Nossa autorização (permissão):
-    # O usuário pode operar com o seller informado?
     if sellers := info_token.get("sellers", None):
         sellers = sellers.split(",")
     else:
