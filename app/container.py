@@ -6,6 +6,8 @@ from app.settings import AppSettings
 
 from app.integrations.database.sqlalchemy_client import SQLAlchemyClient
 
+from app.integrations.auth.keycloak_adapter import KeycloakAdapter
+
 
 class Container(containers.DeclarativeContainer):
     config = providers.Configuration()
@@ -14,6 +16,10 @@ class Container(containers.DeclarativeContainer):
 
     # Cliente SQLAlchemy
     sql_client = providers.Singleton(SQLAlchemyClient, config.app_db_url)
+
+    # Keycloak
+
+    keycloak_adapter = providers.Singleton(KeycloakAdapter, config.app_openid_wellknown)
 
     # Repositórios
     price_repository = providers.Singleton(PriceRepository, sql_client)

@@ -1,4 +1,4 @@
-from app.api.common.schemas.price.price_schema import PriceErrorResponse
+from app.api.v2.schemas.price_schema import PriceErrorResponse
 
 APPLICATION_JSON = "application/json"
 

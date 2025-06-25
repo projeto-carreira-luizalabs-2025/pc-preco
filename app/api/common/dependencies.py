@@ -8,7 +8,7 @@ from app.common.exceptions import BadRequestException
 
 async def get_required_seller_id(
     seller_id: Optional[str] = Header(
-        None, alias="seller-id", description="ID do vendedor obrigatório", convert_underscores=False
+        None, alias="x-seller-id", description="ID do vendedor obrigatório", convert_underscores=False
     )
 ) -> str:
     if seller_id is None:
@@ -17,7 +17,7 @@ async def get_required_seller_id(
                 message="Header 'seller-id' obrigatório",
                 location="header",
                 slug="missing_required_header",
-                field="seller-id",
+                field="x-seller-id",
             )
         ]
         raise BadRequestException(details=details)
