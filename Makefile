@@ -11,6 +11,7 @@ INIT?=uvicorn ${API_MODULE_MAIN}:app --host $(HOST) --port $(PORT)
 DOCKER_IMAGE_NAME=pc/preco
 DOCKERFILE_PATH=./devtools/docker/dockerfile
 CONTAINER_NAME?=pc-preco
+MSG?=create_pc_preco_first_table
 
 clean:
 	@find . -name "*.pyc" | xargs rm -rf
@@ -104,7 +105,7 @@ docker-build:
 	docker build -f $(DOCKERFILE_PATH) -t $(DOCKER_IMAGE_NAME) .
 
 docker-run:
-	docker run --rm --name $(CONTAINER_NAME) -e ENV=dev -e app_db_url=$(APP_DB_URL) -p 8000:8000 $(DOCKER_IMAGE_NAME)
+	docker run --rm --name $(CONTAINER_NAME) -e ENV=dev -e app_db_url=$(shell dotenv get APP_DB_URL) -p 8000:8000 $(DOCKER_IMAGE_NAME)
 
 docker-shell:
 	docker run --rm -it --name $(CONTAINER_NAME) -e ENV=dev $(DOCKER_IMAGE_NAME) /bin/bash
@@ -120,8 +121,8 @@ docker-compose-up:
 
 docker-compose-down:
 	docker compose -f ./devtools/docker/docker-compose.yml down
-# Subir o docker para os testes
 
+# Subir o docker para os testes
 docker-tests-up:
 	docker-compose up -d
 
@@ -151,6 +152,6 @@ else
 	@ENV=test pytest --cov=${APP_DIR} --cov-report=term-missing --cov-report=html ${ROOT_TESTS_DIR}
 endif
 
-# Realizar a migração do banco de dadosAdd commentMore actions
+# Realizar a migração do banco de dados
 migration:
 	alembic revision --autogenerate -m "$(MSG)" && alembic upgrade head
