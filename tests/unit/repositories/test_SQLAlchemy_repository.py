@@ -3,15 +3,41 @@ from app.models import Price
 from app.repositories.base.sqlalchemy_crud_repository import SQLAlchemyCrudRepository
 
 
+class DummyColumn:
+    def asc(self):
+        return self
+
+    def desc(self):
+        return self
+
+    def __lt__(self, other):
+        return True
+
+    def __le__(self, other):
+        return True
+
+    def __gt__(self, other):
+        return True
+
+    def __ge__(self, other):
+        return True
+
+    def __eq__(self, other):
+        return True
+
+    def __ne__(self, other):
+        return False
+
+
 # Dummy SQLAlchemy entity base para Price
 class DummyPriceBase:
-    id = None
-    seller_id = None
-    sku = None
-    de = None
-    por = None
-    created_at = None
-    updated_at = None
+    id = DummyColumn()
+    seller_id = DummyColumn()
+    sku = DummyColumn()
+    de = DummyColumn()
+    por = DummyColumn()
+    created_at = DummyColumn()
+    updated_at = DummyColumn()
 
     def __init__(self):
         self.id = None
@@ -58,6 +84,9 @@ class DummySQLAlchemyClient:
         return self
 
     def offset(self, value):
+        return self
+
+    def order_by(self, *args, **kwargs):
         return self
 
     def make_session(self):
@@ -117,6 +146,7 @@ def repository():
 
 @pytest.mark.asyncio
 async def test_to_base_and_to_model(repository):
+    # Testa to_base e to_model com uma entidade Price
     entity = Price(seller_id="seller", sku="sku", de=100, por=90)
     base = repository.to_base(entity)
     assert base.seller_id == "seller"
@@ -133,7 +163,15 @@ async def test_to_base_and_to_model(repository):
 
 
 @pytest.mark.asyncio
+async def test_to_model_none(repository):
+    # Testa to_model com base=None
+    assert repository.to_model(None) is None
+
+
+@pytest.mark.asyncio
 async def test_create_returns_model(repository):
+    # Testa se create retorna um modelo
+
     entity = Price(seller_id="seller", sku="sku", de=200, por=150)
     result = await repository.create(entity)
     assert isinstance(result, Price)
@@ -144,26 +182,87 @@ async def test_create_returns_model(repository):
 
 
 @pytest.mark.asyncio
+async def test_apply_sort(repository):
+    # Testa se _apply_sort não quebra e retorna o stmt
+    class DummyStmt:
+        def order_by(self, *args, **kwargs):
+            return self
+
+    stmt = DummyStmt()
+    sort = {"de": 1, "por": -1, "not_a_field": 1}
+    result = repository._apply_sort(stmt, sort)
+    assert result is stmt
+
+
+@pytest.mark.asyncio
+async def test_find_with_sort_and_operator(repository):
+    # Testa find com sort e operadores ($gt, $lt, etc)
+    class Filter:
+        def to_query_dict(self):
+            return {"de": {"$gt": 10, "$lt": 100}, "sku": "sku"}
+
+    results = await repository.find(Filter(), limit=5, offset=0, sort={"de": -1})
+    assert isinstance(results, list)
+
+
+@pytest.mark.asyncio
 async def test_find_returns_empty_list(repository):
+    # Testa find quando não encontra base
     results = await repository.find(DummyFilter(), limit=10, offset=0)
     assert results == []
 
 
 @pytest.mark.asyncio
 async def test_find_by_seller_id_and_sku_returns_none(repository):
+    # Testa find_by_seller_id_and_sku quando não encontra base
     result = await repository.find_by_seller_id_and_sku("seller", "sku")
     assert result is None
 
 
 @pytest.mark.asyncio
 async def test_update_by_seller_id_and_sku_returns_none(repository):
+    # Testa update_by_seller_id_and_sku quando não encontra base
     entity = Price(seller_id="seller", sku="sku", de=300, por=250)
     result = await repository.update_by_seller_id_and_sku("seller", "sku", entity)
     assert result is None
 
 
 @pytest.mark.asyncio
+async def test_update_by_seller_id_and_sku_no_base(repository):
+    # Testa update_by_seller_id_and_sku quando não encontra base
+    entity = Price(seller_id="seller", sku="sku", de=300, por=250)
+    result = await repository.update_by_seller_id_and_sku("notfound", "sku", entity)
+    assert result is None
+
+
+@pytest.mark.asyncio
+async def test_patch_by_seller_id_and_sku_updates_fields(repository):
+    # Testa patch_by_seller_id_and_sku quando encontra base
+    class DummyBase:
+        def __init__(self):
+            self.id = None
+            self.seller_id = "seller"
+            self.sku = "sku"
+            self.de = 10
+            self.por = 5
+            self.updated_at = None
+            self.created_at = None
+
+    async def fake_find(*args, **kwargs):
+        return DummyBase()
+
+    repository._find_base_by_seller_id_sku_on_session = fake_find
+    entity = Price(seller_id="seller", sku="sku", de=999, por=888)
+    result = await repository.patch_by_seller_id_and_sku("seller", "sku", entity)
+    assert isinstance(result, Price)
+    assert result.de == 999
+    assert result.por == 888
+
+
+@pytest.mark.asyncio
 async def test_patch_by_seller_id_and_sku_returns_none(repository):
+    # Testa patch_by_seller_id_and_sku quando não encontra base
+
     entity = Price(seller_id="seller", sku="sku", de=400, por=350)
     result = await repository.patch_by_seller_id_and_sku("seller", "sku", entity)
     assert result is None
@@ -171,5 +270,6 @@ async def test_patch_by_seller_id_and_sku_returns_none(repository):
 
 @pytest.mark.asyncio
 async def test_delete_by_seller_id_and_sku_returns_false(repository):
+    # Testa delete_by_seller_id_and_sku quando não encontra base
     result = await repository.delete_by_seller_id_and_sku("seller", "sku")
     assert result is False

@@ -3,8 +3,10 @@ from tests.factories.price_repository_mock_factory import PriceRepositoryMockFac
 
 from app.models import Price
 
+
+@pytest.mark.asyncio
 class TestPrecoRepository:
-    
+
     @pytest.fixture
     def repository_mock(self):
         """Repositório com dados simulados."""
@@ -24,7 +26,6 @@ class TestPrecoRepository:
         ]
         return PriceRepositoryMockFactory.create_mock_repository_with_custom_data(custom_prices)
 
-    @pytest.mark.asyncio
     async def test_create(self, repository_mock):
         """Deve criar um novo preço e permitir sua busca."""
         novo_preco = Price(seller_id="3", sku="C", de=300, por=270)
@@ -44,25 +45,23 @@ class TestPrecoRepository:
         assert result_dict["sku"] == "C"
         assert result_dict["de"] == 300
         assert result_dict["por"] == 270
-        
-    @pytest.mark.asyncio
+
     async def test_create_multiple_prices_with_same_seller_id_and_sku(self, repository_mock):
         """Deve permitir múltiplos preços com o mesmo seller_id e sku (caso permitido pela implementação)."""
         price1 = Price(seller_id="1", sku="A", de=150, por=140)
         price2 = Price(seller_id="1", sku="A", de=160, por=150)
-        
+
         await repository_mock.create(price1)
         await repository_mock.create(price2)
-        
+
         # O método find_by_seller_id_and_sku retorna o primeiro encontrado
         result_dict = await repository_mock.find_by_seller_id_and_sku("1", "A")
         assert result_dict is not None
         assert result_dict["seller_id"] == "1"
         assert result_dict["sku"] == "A"
-        assert result_dict["de"] == 160 
+        assert result_dict["de"] == 160
         assert result_dict["por"] == 150
-        
-    @pytest.mark.asyncio
+
     async def test_find_by_seller_id_and_sku_found(self, repository_mock):
         """Deve encontrar um preço existente pelo seller_id e sku."""
         result_dict = await repository_mock.find_by_seller_id_and_sku("1", "A")
@@ -73,22 +72,16 @@ class TestPrecoRepository:
         assert result_dict["de"] == 100
         assert result_dict["por"] == 90
 
-
-    @pytest.mark.asyncio
     async def test_find_by_seller_id_and_sku_not_found(self, repository_mock):
         """Deve retornar None ao buscar um preço inexistente."""
         result_dict = await repository_mock.find_by_seller_id_and_sku("1", "Z")
         assert result_dict is None
-        
 
-    @pytest.mark.asyncio
     async def test_find_by_seller_id_and_sku_with_empty_repository(self, empty_repository_mock):
         """Deve retornar None ao buscar em um repositório vazio."""
         result_dict = await empty_repository_mock.find_by_seller_id_and_sku("1", "A")
         assert result_dict is None
-        
-        
-    @pytest.mark.asyncio
+
     async def test_update_by_seller_id_and_sku(self, repository_mock):
         """Deve atualizar um preço existente."""
         updated_price = Price(seller_id="1", sku="A", de=120, por=110)
@@ -105,36 +98,29 @@ class TestPrecoRepository:
         assert found_price["de"] == 120
         assert found_price["por"] == 110
 
-
-    @pytest.mark.asyncio
     async def test_update_by_seller_id_and_sku_not_found(self, repository_mock):
         """Deve lançar ValueError ao tentar atualizar um preço que não existe."""
         updated_price = Price(seller_id="999", sku="ZZZ", de=120, por=110)
-        
+
         with pytest.raises(ValueError):
             await repository_mock.update_by_seller_id_and_sku("999", "ZZZ", updated_price)
-            
-            
-    @pytest.mark.asyncio
+
     async def test_delete_by_seller_id_and_sku(self, repository_mock):
         """Deve remover um preço pelo seller_id e sku."""
-        #Verifica se o preço existe antes da exclusão
+        # Verifica se o preço existe antes da exclusão
         target_price = await repository_mock.find_by_seller_id_and_sku("1", "A")
         assert target_price is not None
-        
-        #Remove o preço
+
+        # Remove o preço
         await repository_mock.delete_by_seller_id_and_sku("1", "A")
 
         # Verifica se o preço foi removido
         assert await repository_mock.find_by_seller_id_and_sku("1", "A") is None
 
-    @pytest.mark.asyncio
     async def test_delete_by_seller_id_and_sku_when_not_exists(self, repository_mock):
         """Deve manter o repositório inalterado ao tentar remover um preço inexistente."""
         await repository_mock.delete_by_seller_id_and_sku("999", "ZZZ")
-        
+
         # Tenta deletar um preço que não existe
         repository_mock.delete_by_seller_id_and_sku.assert_called_once_with("999", "ZZZ")
         assert await repository_mock.find_by_seller_id_and_sku("999", "ZZZ") is None
-
-

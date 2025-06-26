@@ -4,6 +4,7 @@ from fastapi import Query
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, status
 
+from app.api.common.auth_handler import do_auth
 from app.api.common.dependencies import get_required_seller_id
 from app.api.common.responses.price_responses import (
     BAD_REQUEST_RESPONSE,
@@ -12,7 +13,7 @@ from app.api.common.responses.price_responses import (
     UNPROCESSABLE_ENTITY_RESPONSE,
 )
 from app.api.common.schemas import ListResponse, Paginator, get_request_pagination
-from app.api.common.schemas.price.price_schema import PriceCreate, PricePatch, PriceResponse, PriceUpdate
+from app.api.v2.schemas.price_schema import PriceCreate, PricePatch, PriceResponse, PriceUpdate
 from app.container import Container
 from app.models import Price
 
@@ -22,7 +23,7 @@ if TYPE_CHECKING:
     from app.services import PriceService
 
 
-router = APIRouter(prefix=PRICE_PREFIX, tags=["Preços (v2)"])
+router = APIRouter(prefix=PRICE_PREFIX, tags=["Preços (v2)"], dependencies=[Depends(do_auth)])
 
 
 # Recupera lista de precificações
@@ -35,6 +36,7 @@ router = APIRouter(prefix=PRICE_PREFIX, tags=["Preços (v2)"])
 )
 @inject
 async def get(
+    seller_id: str = Depends(get_required_seller_id),
     paginator: Paginator = Depends(get_request_pagination),
     price_service: "PriceService" = Depends(Provide[Container.price_service]),
     preco_de_less_than: Optional[float] = Query(None, description='Filtrar preços "de" menores que o valor informado'),
@@ -88,8 +90,12 @@ async def get_by_seller_id_and_sku(
     responses={400: BAD_REQUEST_RESPONSE},
 )
 @inject
-async def create(price: PriceCreate, price_service: "PriceService" = Depends(Provide[Container.price_service])):
-    price_model = Price(**price.model_dump())
+async def create(
+    price: PriceCreate,
+    price_service: "PriceService" = Depends(Provide[Container.price_service]),
+    seller_id: str = Depends(get_required_seller_id),
+):
+    price_model = Price(**price.model_dump(), seller_id=seller_id)
     return await price_service.create(price_model)
 
 
