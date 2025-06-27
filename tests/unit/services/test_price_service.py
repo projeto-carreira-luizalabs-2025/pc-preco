@@ -116,8 +116,8 @@ class TestPriceService:
     @pytest.mark.asyncio
     async def test_update_price_success(self, service, repository_mock):
         price_update = Price(seller_id="1", sku="A", de=150, por=120)
-        entity_id = "1|A"
-        updated_price = await service.update(entity_id, price_update)
+    
+        updated_price = await service.update('1', 'A', price_update)
         assert updated_price is not None
         assert updated_price['seller_id'] == "1"
         assert updated_price['sku'] == "A"
@@ -130,23 +130,22 @@ class TestPriceService:
     async def test_update_price_not_found(self, service, repository_mock):
         repository_mock.find_by_seller_id_and_sku.return_value = False
         price_update = Price(seller_id="1", sku="Z", de=150, por=120)
-        entity_id = "1|Z"
         with pytest.raises(NotFoundException):
-            await service.update(entity_id, price_update)
+            await service.update('1', 'Z', price_update)
         repository_mock.find_by_seller_id_and_sku.assert_called_once_with("1", "Z")
         repository_mock.update_by_seller_id_and_sku.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_update_price_invalid_price(self, service, repository_mock):
         price_update = Price(seller_id="1", sku="A", de=-150, por=120)
-        entity_id = "1|A"
+    
         with pytest.raises(BadRequestException) as excinfo:
-            await service.update(entity_id, price_update)
+            await service.update('1', 'A', price_update)
         assert any("de" in str(detail.message) for detail in excinfo.value.details)
         repository_mock.update_by_seller_id_and_sku.assert_not_called()
         price_update = Price(seller_id="1", sku="A", de=150, por=0)
         with pytest.raises(BadRequestException) as excinfo:
-            await service.update(entity_id, price_update)
+            await service.update('1', 'A', price_update)
         assert any("por" in str(detail.message) for detail in excinfo.value.details)
         repository_mock.update_by_seller_id_and_sku.assert_not_called()
 
@@ -186,8 +185,8 @@ class TestPriceService:
             "de": 2**31 - 1,
             "por": 2**31 - 1,
         }
-        entity_id = "1|A"
-        updated_price = await service.update(entity_id, price_update)
+    
+        updated_price = await service.update('1', 'A', price_update)
         assert updated_price is not None
         assert updated_price['de'] == 2**31 - 1
         assert updated_price['por'] == 2**31 - 1
