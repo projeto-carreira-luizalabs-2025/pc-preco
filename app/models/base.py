@@ -19,14 +19,22 @@ class UuidModel(BaseModel):
     id: UuidType = Field(default_factory=uuid7, alias="_id")
 
 
+class UserModel(BaseModel):
+    """
+    Na _facilidade_ do JWT do Keyclok, vamos utilizar o `sub` como o `name` e
+    o `iss` como o `server`. Aí, para identificar o usuário, a pessoa que está
+    auditando irá consultar estes dados no Keycloak.
+    """
+
+    name: str | None  # sub
+    server: str | None  # iss
+
+
 class AuditModel(BaseModel):
     created_at: datetime | None = Field(default_factory=utcnow, description="Data e hora da criação")
     updated_at: datetime | None = Field(None, description="Data e hora da atualização")
-    created_by: str | None = Field(None, description="Criado por")
-    updated_by: str | None = Field(None, description="Atualizado por")
-
-    audit_created_at: datetime | None = Field(None, description="Data e hora da efetiva criação do registro")
-    audit_updated_at: datetime | None = Field(None, description="Data e hora da efetiva atualização do registro")
+    created_by: UserModel | None = Field(None, description="Criado por")
+    updated_by: UserModel | None = Field(None, description="Atualizado por")
 
 
 class PersistableEntity(AuditModel):
