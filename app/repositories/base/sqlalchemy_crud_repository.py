@@ -14,6 +14,8 @@ T = TypeVar("T", bound=PersistableEntity)  # Modelo Pydantic
 B = TypeVar("B", bound=PersistableEntityBase)  # Entidade base do SQLAlchemy
 Q = TypeVar("Q", bound=QueryModel)
 
+CAMPOS_IMUTAVEIS = {"created_by", "created_at"}
+
 
 class SQLAlchemyCrudRepository(AsyncCrudRepository[T], Generic[T, B]):
     """
@@ -150,8 +152,7 @@ class SQLAlchemyCrudRepository(AsyncCrudRepository[T], Generic[T, B]):
                 if can_update := base is not None:
                     base.updated_at = utcnow()
                     for key, value in model.model_dump().items():
-                        # XXX Precisamos tomar cuidado com `id`
-                        if key not in self.pk_fields:
+                        if key not in CAMPOS_IMUTAVEIS and key not in self.pk_fields:
                             setattr(base, key, value)
                     base.updated_at = utcnow()
             if can_update:

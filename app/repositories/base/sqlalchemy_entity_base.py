@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, Integer, String
+from sqlalchemy import Column, DateTime, Integer, String, JSON
 
 from app.common.datetime import utcnow
 from app.integrations.database.sqlalchemy_client import Base
@@ -25,6 +25,8 @@ class AuditEntityBase(Base):
 
     created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
     updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
+    created_by = Column(JSON, nullable=False)
+    updated_by = Column(JSON, nullable=False)
 
 
 class PersistableEntityBase(IdEntityBase, AuditEntityBase):
