@@ -1,10 +1,12 @@
 from typing import TYPE_CHECKING, Optional
 from fastapi import Query
+from pclogging import LoggingBuilder
+import json
 
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, status
 
-from app.api.common.auth_handler import do_auth
+from app.api.common.auth_handler import do_auth, UserAuthInfo, get_current_user
 from app.api.common.dependencies import get_required_seller_id
 from app.api.common.responses.price_responses import (
     BAD_REQUEST_RESPONSE,
@@ -24,6 +26,8 @@ if TYPE_CHECKING:
 
 
 router = APIRouter(prefix=PRICE_PREFIX, tags=["Preços (v2)"], dependencies=[Depends(do_auth)])
+
+logger = LoggingBuilder.get_logger(__name__)
 
 
 # Recupera lista de precificações
@@ -51,6 +55,13 @@ async def get(
     ),
     sku: Optional[str] = Query(None, description="Filtrar por SKU específico"),
 ):
+
+    logger.info(
+        "Recuperando lista de precificações para seller_id: %s",
+        seller_id,
+        extra={"trace-id": "N/A"},
+    )
+
     filters = {
         "de__lt": preco_de_less_than,
         "de__gt": preco_de_greater_than,
@@ -78,6 +89,13 @@ async def get_by_seller_id_and_sku(
     price_service: "PriceService" = Depends(Provide[Container.price_service]),
     seller_id: str = Depends(get_required_seller_id),
 ):
+    logger.info(
+        "Recuperando precificação para seller_id: %s, sku: %s",
+        seller_id,
+        sku,
+        extra={"trace-id": "N/A"},
+    )
+
     return await price_service.get_by_seller_id_and_sku(seller_id=seller_id, sku=sku)
 
 
@@ -94,8 +112,22 @@ async def create(
     price: PriceCreate,
     price_service: "PriceService" = Depends(Provide[Container.price_service]),
     seller_id: str = Depends(get_required_seller_id),
+    user_info: UserAuthInfo = Depends(get_current_user),
 ):
+    logger.info(
+        "Criando precificação para seller_id: %s, sku: %s",
+        seller_id,
+        price.sku,
+        extra={"preço": price, "trace-id": user_info.trace_id},
+    )
+
     price_model = Price(**price.model_dump(), seller_id=seller_id)
+
+    price_model.created_by = user_info.user
+    price_model.updated_by = user_info.user
+
+    logger.info(f"created_by: {price_model.created_by}, updated_by: {price_model.updated_by}")
+
     return await price_service.create(price_model)
 
 
@@ -113,9 +145,19 @@ async def replace(
     price: PriceUpdate,
     price_service: "PriceService" = Depends(Provide[Container.price_service]),
     seller_id: str = Depends(get_required_seller_id),
+    user_info: UserAuthInfo = Depends(get_current_user),
 ):
+    logger.info(
+        "Atualizando precificação para seller_id: %s, sku: %s",
+        seller_id,
+        sku,
+        extra={"preço": price, "trace-id": user_info.trace_id},
+    )
 
     price_model = Price(seller_id=seller_id, sku=sku, **price.model_dump())
+
+    price_model.updated_by = user_info.user
+
     return await price_service.update(seller_id, sku, price_model)
 
 
@@ -133,9 +175,16 @@ async def patch(
     price_update_data: PricePatch,
     price_service: "PriceService" = Depends(Provide[Container.price_service]),
     seller_id: str = Depends(get_required_seller_id),
+    user_info: UserAuthInfo = Depends(get_current_user),
 ):
-    update_data = price_update_data.model_dump(exclude_unset=True)
-    return await price_service.patch(seller_id, sku, update_data)
+    logger.info(
+        "Atualizando parcialmente precificação para seller_id: %s, sku: %s",
+        seller_id,
+        sku,
+        extra={"preço": price_update_data, "trace-id": user_info.trace_id},
+    )
+
+    return await price_service.patch(seller_id, sku, price_update_data, user_info)
 
 
 # Deleta uma precificação por "seller_id" e "sku"
@@ -151,4 +200,10 @@ async def delete(
     price_service: "PriceService" = Depends(Provide[Container.price_service]),
     seller_id: str = Depends(get_required_seller_id),
 ):
+    logger.info(
+        "Excluindo precificação para seller_id: %s, sku: %s",
+        seller_id,
+        sku,
+    )
+
     await price_service.delete(seller_id, sku)
