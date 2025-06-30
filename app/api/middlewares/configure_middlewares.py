@@ -2,6 +2,7 @@ from asgi_correlation_id import CorrelationIdMiddleware
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
+from app.api.common.trace_id_middleware import TraceIdMiddleware
 
 from app.api.common.trace import get_trace_id
 
@@ -26,3 +27,4 @@ def configure_middlewares(app: FastAPI, settings: ApiSettings) -> None:
         generator=lambda: get_trace_id(),
     )
     app.add_middleware(GZipMiddleware, minimum_size=1000)
+    app.add_middleware(TraceIdMiddleware)
