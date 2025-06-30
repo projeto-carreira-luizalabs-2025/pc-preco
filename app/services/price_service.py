@@ -1,5 +1,3 @@
-from typing import Any, Dict
-
 from ..common.exceptions.price_exceptions import PriceBadRequestException, PriceNotFoundException
 from ..models import Price, PriceFilter
 from ..repositories import PriceRepository
@@ -69,7 +67,7 @@ class PriceService(CrudService[Price]):
         price = Price(**price_create.model_dump())
         return await super().create(price)
 
-    async def patch(self, seller_id, sku, update_data: Dict[str, Any]) -> Price:
+    async def patch(self, seller_id, sku, update_data, user_info) -> Price:
         """
         Atualiza campos de uma precificação.
         :param seller_id: Identificador do vendedor.
@@ -79,14 +77,16 @@ class PriceService(CrudService[Price]):
         :raises NotFoundException: Se não encontrar o preço.
         :raises BadRequestException: Se valores inválidos forem informados.
         """
-        
+
         price_dict = await super().find_by_seller_id_and_sku(seller_id, sku)
         self._raise_not_found(seller_id, sku, price_dict is None)
 
         existing_price = Price.model_validate(price_dict)
 
         merged_price_data = existing_price.model_dump()
-        merged_price_data.update(update_data)
+        merged_price_data.update(update_data.model_dump(exclude_none=True))
+
+        merged_price_data["updated_by"] = user_info.user
 
         try:
             merged_price = Price.model_validate(merged_price_data)
