@@ -26,11 +26,17 @@ class PriceResponse(PriceSchema, ResponseEntity):
     class Config:
         json_schema_extra = {
             "example": {
-                "id": "uuid-da-resposta",
+                "id": 1,
                 "created_at": "2025-05-16T13:45:00Z",
                 "updated_at": "2025-05-17T08:12:00Z",
-                "created_by": "user_id",
-                "updated_by": "user_id",
+                "created_by": {
+                    "name": "37a743fc-7ce3-43b7-ace3-7cfc98699135",
+                    "server": "http://localhost:8080/realms/marketplace",
+                },
+                "updated_by": {
+                    "name": "37a743fc-7ce3-43b7-ace3-7cfc98699135",
+                    "server": "http://localhost:8080/realms/marketplace",
+                },
                 "seller_id": "abc123",
                 "sku": "sku001",
                 "de": 1000,

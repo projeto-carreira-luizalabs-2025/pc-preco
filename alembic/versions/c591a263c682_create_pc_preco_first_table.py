@@ -37,6 +37,8 @@ def upgrade() -> None:
             onupdate=sa.func.now(),
             nullable=False,
         ),
+        sa.Column('created_by', sa.JSON(), nullable=False),
+        sa.Column('updated_by', sa.JSON(), nullable=False),
         sa.PrimaryKeyConstraint('id'),
     )
 

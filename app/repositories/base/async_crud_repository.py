@@ -35,12 +35,6 @@ class AsyncCrudRepository(ABC, Generic[T]):
         """
 
     @abstractmethod
-    async def patch_by_seller_id_and_sku(self, seller_id: str, sku: str, patch_entity: dict) -> T:
-        """
-        Atualiza uma entidade somente com os campos informados no dicionário.
-        """
-
-    @abstractmethod
     async def delete_by_seller_id_and_sku(self, seller_id: str, sku: str) -> bool:
         """
         Remove uma entidade pelo seu identificador único.
