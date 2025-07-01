@@ -4,6 +4,12 @@ from ..repositories import PriceRepository
 from .base import CrudService
 from app.api.common.schemas import Paginator
 
+from pclogging import LoggingBuilder
+
+LoggingBuilder.init(log_level="DEBUG")
+
+logger = LoggingBuilder.get_logger(__name__)
+
 
 class PriceService(CrudService[Price]):
     """
@@ -63,7 +69,7 @@ class PriceService(CrudService[Price]):
         """
         await self._validate_non_existent_price(price_create.seller_id, price_create.sku)
         self._validate_positive_prices(price_create)
-        # Converte PrecoCreate para Preco, gerando o id automaticamente
+
         price = Price(**price_create.model_dump())
         return await super().create(price)
 
@@ -91,7 +97,8 @@ class PriceService(CrudService[Price]):
         try:
             merged_price = Price.model_validate(merged_price_data)
         except ValueError:
-            raise PriceBadRequestException(
+            logger.error(f"Erro ao validar dados de atualização: {update_data}")
+            self._raise_bad_request(
                 message="Dados inválidos para atualização.",
                 field="update_data",
                 value=update_data,
@@ -152,7 +159,9 @@ class PriceService(CrudService[Price]):
         :param value: Valor númerico a ser validado (opcional).
         :raises BadRequestException: Se algum valor for menor ou igual a zero.
         """
+        logger.debug(f"Validando se {field} é positivo: {value}")
         if value <= 0:
+            logger.warning(f"Valor inválido para {field}: {value}")
             self._raise_bad_request(f"{field} deve ser maior que zero.", field, value)
 
     async def _validate_non_existent_price(self, seller_id: str, sku: str):
@@ -177,6 +186,7 @@ class PriceService(CrudService[Price]):
         :raises NotFoundException: Sempre.
         """
         if condition:
+            logger.error(f"Preço não encontrado para seller_id: {seller_id}, sku: {sku}")
             raise PriceNotFoundException(seller_id=seller_id, sku=sku)
 
     def _raise_bad_request(self, message: str, field: str = None, value=None):
@@ -188,4 +198,5 @@ class PriceService(CrudService[Price]):
         :param value: Valor que causou o erro (opcional).
         :raises BadRequestException: Sempre.
         """
+        logger.error(f"BadRequest: {message} | field={field} | value={value}")
         raise PriceBadRequestException(message=message, field=field, value=value)

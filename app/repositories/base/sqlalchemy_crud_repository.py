@@ -16,6 +16,12 @@ Q = TypeVar("Q", bound=QueryModel)
 
 CAMPOS_IMUTAVEIS = {"created_by", "created_at"}
 
+from pclogging import LoggingBuilder
+
+LoggingBuilder.init(log_level="DEBUG")
+
+logger = LoggingBuilder.get_logger(__name__)
+
 
 class SQLAlchemyCrudRepository(AsyncCrudRepository[T], Generic[T, B]):
     """
@@ -58,11 +64,13 @@ class SQLAlchemyCrudRepository(AsyncCrudRepository[T], Generic[T, B]):
         """
         Salva uma entidade no repositório.
         """
+        logger.info(f"Criando entidade: {model}")
         base = self.to_base(model)  # Converte o modelo pydantic para a entidade base do SQLAlchemy
 
         async with self.sql_client.make_session() as session:
             async with session.begin():
                 session.add(base)
+        logger.debug(f"Entidade criada no banco: {base}")
         created_model = self.to_model(base)
         return created_model
 
@@ -70,21 +78,25 @@ class SQLAlchemyCrudRepository(AsyncCrudRepository[T], Generic[T, B]):
         """
         Busca uma entidade base pelo seller_id e sku.
         """
+        logger.debug(f"Buscando entidade base por seller_id={seller_id}, sku={sku}")
         preco = self.sql_client.init_select(self.entity_base_class)
         preco = preco.where(self.entity_base_class.seller_id == seller_id).where(self.entity_base_class.sku == sku)
         scalar = await session.execute(preco)
         base = scalar.scalar_one_or_none()
-
         return base
 
     async def find_by_seller_id_and_sku(self, seller_id: str, sku: str) -> T | None:
         """
         Busca uma entidade pelo seller_id e sku.
         """
+        logger.info(f"Buscando entidade por seller_id={seller_id}, sku={sku}")
         async with self.sql_client.make_session() as session:
             base = await self._find_base_by_seller_id_sku_on_session(seller_id, sku, session)
         model = self.to_model(base)
-
+        if model:
+            logger.debug(f"Entidade encontrada: {model}")
+        else:
+            logger.warning(f"Nenhuma entidade encontrada para seller_id={seller_id}, sku={sku}")
         return model
 
     def _apply_sort(self, stmt, sort: dict):
@@ -98,6 +110,7 @@ class SQLAlchemyCrudRepository(AsyncCrudRepository[T], Generic[T, B]):
         """
         Busca uma lista de entidades com base nos filtros, limite, offset e ordenação.
         """
+        logger.info(f"Buscando entidades com filtros={filters}, limit={limit}, offset={offset}, sort={sort}")
 
         def apply_operator(stmt, column, op, v):
             if op == "$lt":
@@ -115,6 +128,7 @@ class SQLAlchemyCrudRepository(AsyncCrudRepository[T], Generic[T, B]):
 
             for field, value in filters.to_query_dict().items():
                 if not hasattr(self.entity_base_class, field):
+                    logger.debug(f"Campo '{field}' não existe em {self.entity_base_class.__name__}, ignorando filtro.")
                     continue
                 column = getattr(self.entity_base_class, field)
                 if isinstance(value, dict):
@@ -129,12 +143,14 @@ class SQLAlchemyCrudRepository(AsyncCrudRepository[T], Generic[T, B]):
             stmt = stmt.limit(limit).offset(offset)
             result = await session.execute(stmt)
             bases = result.scalars().all()
+            logger.info(f"Encontradas {len(bases)} entidades para os filtros informados.")
             return [self.to_model(base) for base in bases]
 
     async def delete_by_seller_id_and_sku(self, seller_id: str, sku: str) -> bool:
         """
         Deleta uma entidade pelo seller_id e sku.
         """
+        logger.info(f"Deletando entidade por seller_id={seller_id}, sku={sku}")
         async with self.sql_client.make_session() as session:
             async with session.begin():
                 stmt = self.sql_client.init_delete(self.entity_base_class)
@@ -143,9 +159,18 @@ class SQLAlchemyCrudRepository(AsyncCrudRepository[T], Generic[T, B]):
                 )
                 result = await session.execute(stmt)
             deleted = result.rowcount > 0
+            if deleted:
+                logger.info(f"Entidade deletada para seller_id={seller_id}, sku={sku}")
+            else:
+                logger.warning(f"Nenhuma entidade deletada para seller_id={seller_id}, sku={sku}")
             return deleted
 
     async def update_by_seller_id_and_sku(self, seller_id: str, sku: str, model: T) -> T | None:
+        """
+        Atualiza uma entidade pelo seller_id e sku.
+        Se a entidade não existir, retorna None.
+        """
+        logger.info(f"Atualizando entidade por seller_id={seller_id}, sku={sku} com dados: {model}")
         async with self.sql_client.make_session() as session:
             async with session.begin():
                 base = await self._find_base_by_seller_id_sku_on_session(seller_id, sku, session)
@@ -157,23 +182,8 @@ class SQLAlchemyCrudRepository(AsyncCrudRepository[T], Generic[T, B]):
                     base.updated_at = utcnow()
             if can_update:
                 await session.commit()
+                logger.info(f"Entidade atualizada para seller_id={seller_id}, sku={sku}")
+            else:
+                logger.warning(f"Nenhuma entidade encontrada para atualizar seller_id={seller_id}, sku={sku}")
         model = self.to_model(base)
-
         return model
-
-    async def patch_by_seller_id_and_sku(self, seller_id, sku, patch_entity):
-        """
-        Atualiza uma entidade parcialmente pelo seller_id e sku.
-        """
-        async with self.sql_client.make_session() as session:
-            async with session.begin():
-                base = await self._find_base_by_seller_id_sku_on_session(seller_id, sku, session)
-                if not base:
-                    return None
-
-                for field, value in patch_entity.model_dump().items():
-                    if value is not None and hasattr(base, field):
-                        setattr(base, field, value)
-
-            updated_model = self.to_model(base)
-            return updated_model
