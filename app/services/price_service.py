@@ -4,6 +4,8 @@ from ..repositories import PriceRepository
 from .base import CrudService
 from app.api.common.schemas import Paginator
 
+from app.integrations.cache.redis_asyncio_adapter import RedisAsyncioAdapter
+
 from pclogging import LoggingBuilder
 
 LoggingBuilder.init(log_level="DEBUG")
@@ -18,14 +20,17 @@ class PriceService(CrudService[Price]):
     """
 
     repository: PriceRepository
+    redis_adapter: RedisAsyncioAdapter
 
-    def __init__(self, repository: PriceRepository):
+    def __init__(self, repository: PriceRepository, redis_adapter: RedisAsyncioAdapter):
         """
-        Inicializa o serviço de preços com o repositório fornecido.
+        Inicializa o serviço de preços com o repositório fornecido e o adaptador Redis.
 
         :param repository: Instância de PriceRepository para acesso aos dados.
+        :param redis_adapter: Instância de RedisAsyncioAdapter para cache.
         """
         super().__init__(repository)
+        self.redis_adapter = redis_adapter
 
     async def get_filtered(self, paginator=Paginator, filters=dict) -> list[Price]:
         """
@@ -46,18 +51,41 @@ class PriceService(CrudService[Price]):
     async def get_by_seller_id_and_sku(self, seller_id: str, sku: str) -> Price:
         """
         Busca um preço pelo seller_id e sku.
+        Caso o preço esteja no cache, retorna a instância diretamente.
 
         :param seller_id: Identificador do vendedor.
         :param sku: Código do produto.
         :return: Instância de Preco encontrada.
         :raises NotFoundException: Se não encontrar o preço.
         """
+        logger.debug(f"Buscando preço para seller_id: {seller_id}, sku: {sku}")
+        cache_key = f"price:{seller_id}:{sku}"
+        cached = await self.find_price_in_cache(seller_id, sku, cache_key)
+
+        if cached is not None:
+            return cached
+
         price_dict = await super().find_by_seller_id_and_sku(seller_id, sku)
 
         self._raise_not_found(seller_id, sku, price_dict is None)
 
-        # Garantimos que price_dict não é None neste ponto, podemos usá-lo com segurança
+        await self.redis_adapter.set_json(cache_key, price_dict.model_dump(mode="json"), expires_in_seconds=300)
+
         return Price.model_validate(price_dict)
+
+    async def find_price_in_cache(self, seller_id: str, sku: str, cache_key: str) -> dict:
+        """
+        Busca um preço pelo seller_id e sku, utilizando cache.
+
+        :param seller_id: Identificador do vendedor.
+        :param sku: Código do produto.
+        :return: Instância de Preco encontrada.
+        :raises NotFoundException: Se não encontrar o preço.
+        """
+        cached = await self.redis_adapter.get_json(cache_key)
+        if cached is not None:
+            logger.debug(f"Preço encontrado no cache para seller_id: {seller_id}, sku: {sku}")
+            return Price.model_validate(cached)
 
     async def create(self, price_create: Price) -> Price:
         """
