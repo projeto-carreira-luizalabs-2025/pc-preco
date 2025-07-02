@@ -9,6 +9,13 @@ services:
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: pc-preco
 
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
   keycloak:
     image: quay.io/keycloak/keycloak:24.0.5 # Use uma versão LTS ou a mais recente estável
     ports:
