@@ -134,6 +134,11 @@ class PriceService(CrudService[Price]):
 
         self._validate_positive_prices(merged_price)
         updated = await super().update_by_seller_id_and_sku(seller_id, sku, merged_price)
+
+        # Remove o cache do preço atualizado
+        cache_key = f"price:{seller_id}:{sku}"
+        await self.redis_adapter.delete(cache_key)
+
         return updated
 
     async def update(self, seller_id, sku, entity: Price) -> Price:
@@ -150,6 +155,11 @@ class PriceService(CrudService[Price]):
         self._raise_not_found(seller_id, sku, price_found is None)
         self._validate_positive_prices(entity)
         updated = await super().update_by_seller_id_and_sku(seller_id, sku, entity)
+
+        # Remove o cache do preço atualizado
+        cache_key = f"price:{seller_id}:{sku}"
+        await self.redis_adapter.delete(cache_key)
+
         return updated
 
     async def delete(self, seller_id: str, sku: str):
@@ -169,6 +179,10 @@ class PriceService(CrudService[Price]):
                 message="Erro ao deletar preço.",
                 value=sku,
             )
+
+        # Remove o cache do preço deletado
+        cache_key = f"price:{seller_id}:{sku}"
+        await self.redis_adapter.delete(cache_key)
 
     def _validate_positive_prices(self, price):
         """
