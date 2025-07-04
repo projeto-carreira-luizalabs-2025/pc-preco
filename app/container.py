@@ -8,6 +8,8 @@ from app.integrations.database.sqlalchemy_client import SQLAlchemyClient
 
 from app.integrations.auth.keycloak_adapter import KeycloakAdapter
 
+from app.integrations.cache.redis_asyncio_adapter import RedisAsyncioAdapter
+
 
 class Container(containers.DeclarativeContainer):
     config = providers.Configuration()
@@ -21,6 +23,10 @@ class Container(containers.DeclarativeContainer):
 
     keycloak_adapter = providers.Singleton(KeycloakAdapter, config.app_openid_wellknown)
 
+    # Redis
+
+    redis_adapter = providers.Singleton(RedisAsyncioAdapter, config.app_redis_url)
+
     # Repositórios
     price_repository = providers.Singleton(PriceRepository, sql_client)
 
@@ -29,4 +35,4 @@ class Container(containers.DeclarativeContainer):
         HealthCheckService, checkers=config.health_check_checkers, settings=settings
     )
 
-    price_service = providers.Singleton(PriceService, repository=price_repository)
+    price_service = providers.Singleton(PriceService, repository=price_repository, redis_adapter=redis_adapter)
