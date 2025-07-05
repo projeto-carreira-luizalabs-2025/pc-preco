@@ -31,7 +31,5 @@ class Container(containers.DeclarativeContainer):
     health_check_service = providers.Singleton(
         HealthCheckService, checkers=config.health_check_checkers, settings=settings
     )
-
-    price_history_service = providers.Singleton(PriceHistoryService,  repository=price_history_repository)
     
-    price_service = providers.Singleton(PriceService, repository=price_repository)
+    price_service = providers.Singleton(PriceService, repository=price_repository,   price_history_repo=price_history_repository)
