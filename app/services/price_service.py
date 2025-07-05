@@ -111,7 +111,8 @@ class PriceService(CrudService[Price]):
         self._validate_positive_prices(merged_price)
         updated = await super().update_by_seller_id_and_sku(seller_id, sku, merged_price)
         
-        await self.price_history_repo.create(PriceHistory(**updated.model_dump()))
+        price_history_data = updated.model_dump(exclude={"id"})
+        await self.price_history_repo.create(PriceHistory(**price_history_data))
         
         return updated
 
@@ -130,7 +131,7 @@ class PriceService(CrudService[Price]):
         self._validate_positive_prices(entity)
         updated = await super().update_by_seller_id_and_sku(seller_id, sku, entity)
         
-        price_history_data = updated.model_dump()
+        price_history_data = updated.model_dump(exclude={"id"})
         await self.price_history_repo.create(PriceHistory(**price_history_data))
         
         return updated
