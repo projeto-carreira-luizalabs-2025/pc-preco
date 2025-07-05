@@ -18,6 +18,7 @@ from app.api.common.schemas import ListResponse, Paginator, get_request_paginati
 from app.api.v2.schemas.price_schema import PriceCreate, PricePatch, PriceResponse, PriceUpdate
 from app.container import Container
 from app.models import Price
+from app.services.price_history_service import PriceHistoryService
 
 from . import PRICE_PREFIX
 
@@ -97,7 +98,6 @@ async def get_by_seller_id_and_sku(
     )
 
     return await price_service.get_by_seller_id_and_sku(seller_id=seller_id, sku=sku)
-
 
 # Cria uma precificação
 @router.post(

@@ -1,3 +1,5 @@
+from app.models.price_history_model import PriceHistory
+from app.repositories.price_history_repository import PriceHistoryRepository
 from ..common.exceptions.price_exceptions import PriceBadRequestException, PriceNotFoundException
 from ..models import Price, PriceFilter
 from ..repositories import PriceRepository
@@ -19,13 +21,10 @@ class PriceService(CrudService[Price]):
 
     repository: PriceRepository
 
-    def __init__(self, repository: PriceRepository):
-        """
-        Inicializa o serviço de preços com o repositório fornecido.
-
-        :param repository: Instância de PriceRepository para acesso aos dados.
-        """
+    def __init__(self, repository: PriceRepository, price_history_repo: PriceHistoryRepository):
         super().__init__(repository)
+        self.price_history_repo = price_history_repo
+
 
     async def get_filtered(self, paginator=Paginator, filters=dict) -> list[Price]:
         """
@@ -71,7 +70,10 @@ class PriceService(CrudService[Price]):
         self._validate_positive_prices(price_create)
 
         price = Price(**price_create.model_dump())
-        return await super().create(price)
+        created_price = await super().create(price)
+        await self.price_history_repo.create(PriceHistory(**price.model_dump()))
+        
+        return created_price
 
     async def patch(self, seller_id, sku, update_data, user_info) -> Price:
         """
@@ -106,6 +108,9 @@ class PriceService(CrudService[Price]):
 
         self._validate_positive_prices(merged_price)
         updated = await super().update_by_seller_id_and_sku(seller_id, sku, merged_price)
+        
+        await self.price_history_repo.create(PriceHistory(**updated.model_dump()))
+        
         return updated
 
     async def update(self, seller_id, sku, entity: Price) -> Price:
@@ -122,6 +127,9 @@ class PriceService(CrudService[Price]):
         self._raise_not_found(seller_id, sku, price_found is None)
         self._validate_positive_prices(entity)
         updated = await super().update_by_seller_id_and_sku(seller_id, sku, entity)
+        
+        await self.price_history_repo.create(PriceHistory(**updated.model_dump()))
+        
         return updated
 
     async def delete(self, seller_id: str, sku: str):
