@@ -1,79 +1,88 @@
-from pydantic import BaseModel, Field
 
-from app.api.common.schemas import ResponseEntity, SchemaType
+from pydantic import BaseModel, Field
+from datetime import datetime
+from typing import List
+
+from app.api.common.schemas import SchemaType
+from app.api.common.schemas.base import ResponseEntityHistory
 from app.api.common.schemas.response import ErrorResponse
 
-from .base_schema import SellerSkuBaseModel, SkuBaseModel
+
+class BasePriceHistoryModel(BaseModel):
+    """Modelo base para histórico de precificação"""
+
+    sku: str = Field(..., description="SKU do produto")
+    seller_id: str = Field(..., description="ID do seller")
+    de: int = Field(..., description="Preço anterior")
+    por: int = Field(..., description="Preço atual")
+    registered_at: datetime = Field(..., description="Data de registro do histórico")
 
 
-class BasePriceModel(BaseModel):
-    """Modelo base para precificações"""
-
-    de: int = Field(..., description="Preço de custo do produto")
-    por: int = Field(..., description="Preço de venda do produto")
-
-
-class PriceSchema(SellerSkuBaseModel, BasePriceModel):
-    """Schema base para precificações"""
-
-    class Config:
-        json_schema_extra = {"example": {"seller_id": "abc123", "sku": "sku001", "de": 1000, "por": 500}}
-
-
-class PriceResponse(PriceSchema, ResponseEntity):
-    """Resposta de uma precificação"""
+class PriceHistoryResponse(BasePriceHistoryModel, ResponseEntityHistory):
+    """Resposta do histórico de precificação"""
 
     class Config:
         json_schema_extra = {
             "example": {
                 "id": 1,
-                "created_at": "2025-05-16T13:45:00Z",
-                "updated_at": "2025-05-17T08:12:00Z",
-                "created_by": {
-                    "name": "37a743fc-7ce3-43b7-ace3-7cfc98699135",
-                    "server": "http://localhost:8080/realms/marketplace",
-                },
-                "updated_by": {
-                    "name": "37a743fc-7ce3-43b7-ace3-7cfc98699135",
-                    "server": "http://localhost:8080/realms/marketplace",
-                },
-                "seller_id": "abc123",
                 "sku": "sku001",
+                "seller_id": "abc123",
                 "de": 1000,
-                "por": 500,
+                "por": 800,
+                "registered_at": "2026-06-25T10:30:00Z"
             }
         }
 
 
-class PriceCreate(SkuBaseModel, BasePriceModel):
-    """Schema para criação de precificações"""
+class PriceHistoryCreate(SchemaType):
+    """Schema para criação de histórico de precificação"""
+
+    sku: str = Field(..., description="SKU do produto")
+    seller_id: str = Field(..., description="ID do seller")
+    de: int = Field(..., description="Preço anterior")
+    por: int = Field(..., description="Preço atual")
 
     class Config:
-        json_schema_extra = {"example": {"sku": "sku001", "de": 1000, "por": 500}}
+        json_schema_extra = {
+            "example": {
+                "sku": "sku001",
+                "seller_id": "abc123",
+                "de": 1000,
+                "por": 800
+            }
+        }
 
 
-class PriceUpdate(SchemaType):
-    """Permite apenas a atualização dos atributos 'de' e 'por'"""
+class PriceHistoryListResponse(BaseModel):
+    """Lista de históricos de precificação"""
 
-    de: int
-    por: int
-
-    class Config:
-        json_schema_extra = {"example": {"de": 1000, "por": 500}}
-
-
-class PricePatch(SchemaType):
-    """Permite atualização parcial dos atributos 'de' e 'por'"""
-
-    de: int | None = None
-    por: int | None = None
+    __root__: List[PriceHistoryResponse]
 
     class Config:
-        json_schema_extra = {"example": {"de": 1000}}
+        json_schema_extra = {
+            "example": [
+                {
+                    "id": 1,
+                    "sku": "sku001",
+                    "seller_id": "abc123",
+                    "de": 1000,
+                    "por": 800,
+                    "registered_at": "2026-06-25T10:30:00Z"
+                },
+                {
+                    "id": 2,
+                    "sku": "sku001",
+                    "seller_id": "abc123",
+                    "de": 800,
+                    "por": 700,
+                    "registered_at": "2026-05-16T09:12:00Z"
+                }
+            ]
+        }
 
 
-class PriceErrorResponse(ErrorResponse):
-    """Schema para erros de preços"""
+class PriceHistoryErrorResponse(ErrorResponse):
+    """Schema para erros de histórico de preço"""
 
     class Config:
         json_schema_extra = {
@@ -86,33 +95,20 @@ class PriceErrorResponse(ErrorResponse):
                         "location": "body",
                         "slug": "preco_invalido",
                         "field": "de",
-                        "ctx": {"value": -10},
+                        "ctx": {"value": -1},
                     }
                 ],
             },
             "not_found": {
                 "slug": "NOT_FOUND",
-                "message": "Not found",
+                "message": "Histórico não encontrado.",
                 "details": [
                     {
-                        "message": "Preço para produto não encontrado.",
+                        "message": "Histórico de preço não encontrado.",
                         "location": "path",
-                        "slug": "preco_nao_encontrado",
+                        "slug": "historico_nao_encontrado",
                         "field": "sku",
                         "ctx": {"seller_id": "abc123", "sku": "sku001"},
-                    }
-                ],
-            },
-            "unprocessable_entity": {
-                "slug": "UNPROCESSABLE_ENTITY",
-                "message": "Unprocessable Entity",
-                "details": [
-                    {
-                        "message": "Input should be less than or equal to 100",
-                        "location": "query",
-                        "slug": "less_than_equal",
-                        "field": "_limit",
-                        "ctx": {"le": 100},
                     }
                 ],
             },

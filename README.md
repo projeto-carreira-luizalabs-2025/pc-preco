@@ -42,14 +42,13 @@ Você pode encontrar a documentação inicial referente a este projeto neste [de
 
 - **Linguagem**: [Python 3.12](https://docs.python.org/3.12/)
 - **Framework**: [FastAPI](https://fastapi.tiangolo.com/)
-- **ORM**: [SQLAlchemy](https://www.sqlalchemy.org/)
 - **Banco de Dados**: [PostgreSQL](https://www.postgresql.org/)
-- **Docker**: Containers para app, banco e SonarQube
+- **ORM**: [SQLAlchemy](https://www.sqlalchemy.org/)
+- **Autenticação e Autorização**: [Keycloak](https://www.keycloak.org/)
+- **Caching**: [Redis](https://redis.io/)
+- **Filas de mensagens**: [RabbitMQ](https://www.rabbitmq.com/)
 - **Testes**: [Pytest](https://docs.pytest.org/)
 - **Code Quality**: [SonarQube](https://www.sonarsource.com/products/sonarqube/)
-- **Gerenciador de dependências**: Pip + `requirements.txt`
-- **Makefile**: Automação de tarefas comuns
-- **Documentação de API**: Swagger (via FastAPI)
 
 ## 🧰 Configuração do ambiente local
 

@@ -11,7 +11,6 @@ INIT?=uvicorn ${API_MODULE_MAIN}:app --host $(HOST) --port $(PORT)
 DOCKER_IMAGE_NAME=pc/preco
 DOCKERFILE_PATH=./devtools/docker/dockerfile
 CONTAINER_NAME?=pc-preco
-MSG?=create_pc_preco_first_table
 
 clean:
 	@find . -name "*.pyc" | xargs rm -rf
@@ -154,4 +153,4 @@ endif
 
 # Realizar a migração do banco de dados
 migration:
-	alembic revision --autogenerate -m "$(MSG)" && alembic upgrade head
+	alembic upgrade head

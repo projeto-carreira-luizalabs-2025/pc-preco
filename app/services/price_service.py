@@ -71,7 +71,9 @@ class PriceService(CrudService[Price]):
 
         price = Price(**price_create.model_dump())
         created_price = await super().create(price)
-        await self.price_history_repo.create(PriceHistory(**price.model_dump()))
+        
+        price_history_data = price.model_dump()
+        await self.price_history_repo.create(PriceHistory(**price_history_data))
         
         return created_price
 

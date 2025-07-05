@@ -75,3 +75,23 @@ class SellerSkuIntPersistableEntity(IntPersistableEntity, SellerSkuEntity):
     """
     Entidade com seller_id e sku e chave int.
     """
+
+
+class AuditHistoryModel(BaseModel):
+    registered_at: datetime | None = Field(default_factory=utcnow, description="Data e hora da criação")
+
+class PersistableHistoryEntity(AuditHistoryModel):
+    model_config = ConfigDict(populate_by_name=True, from_attributes=True)
+
+    @classmethod
+    def from_json(cls, json_data: str):
+        return TypeAdapter(cls).validate_json(json_data)
+
+class IntPersistableHistoryEntity(IntModel, PersistableHistoryEntity):
+    """
+    Entidiade cuja chave é um inteiro.
+    """
+class SellerSkuIntHistoryPersistableEntity(IntPersistableHistoryEntity, SellerSkuEntity):
+    """
+    Entidade com seller_id e sku e chave int.
+    """
