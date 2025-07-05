@@ -130,7 +130,8 @@ class PriceService(CrudService[Price]):
         self._validate_positive_prices(entity)
         updated = await super().update_by_seller_id_and_sku(seller_id, sku, entity)
         
-        await self.price_history_repo.create(PriceHistory(**updated.model_dump()))
+        price_history_data = updated.model_dump()
+        await self.price_history_repo.create(PriceHistory(**price_history_data))
         
         return updated
 
