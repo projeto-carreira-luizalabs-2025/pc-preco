@@ -64,7 +64,7 @@ class SQLAlchemyCrudRepository(AsyncCrudRepository[T], Generic[T, B]):
         """
         Salva uma entidade no repositório.
         """
-        logger.info(f"Criando entidade: {model}")
+        logger.info(f"\n\n\n\n\n\n\n\n\n\n\n\n Criando entidade para : {model} \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
         base = self.to_base(model)  # Converte o modelo pydantic para a entidade base do SQLAlchemy
 
         async with self.sql_client.make_session() as session:

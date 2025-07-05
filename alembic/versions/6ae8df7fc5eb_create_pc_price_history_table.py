@@ -27,7 +27,7 @@ def upgrade() -> None:
         sa.Column('de', sa.Integer(), nullable=False),
         sa.Column('por', sa.Integer(), nullable=False),
         sa.Column('seller_id', sa.String(), nullable=False),
-        sa.Column('registered_at', sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
+        sa.Column('registered_at', sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False)
     )
     
     
