@@ -5,8 +5,11 @@ from .base import CrudService
 from app.api.common.schemas import Paginator
 
 from app.integrations.cache.redis_asyncio_adapter import RedisAsyncioAdapter
+from app.integrations.queue.rabbitmq_adapter import RabbitMQProducer
 
 from pclogging import LoggingBuilder
+import asyncio
+
 
 LoggingBuilder.init(log_level="DEBUG")
 
@@ -21,8 +24,11 @@ class PriceService(CrudService[Price]):
 
     repository: PriceRepository
     redis_adapter: RedisAsyncioAdapter
+    queue_producer: RabbitMQProducer
 
-    def __init__(self, repository: PriceRepository, redis_adapter: RedisAsyncioAdapter):
+    def __init__(
+        self, repository: PriceRepository, redis_adapter: RedisAsyncioAdapter, queue_producer: RabbitMQProducer
+    ):
         """
         Inicializa o serviço de preços com o repositório fornecido e o adaptador Redis.
 
@@ -31,6 +37,7 @@ class PriceService(CrudService[Price]):
         """
         super().__init__(repository)
         self.redis_adapter = redis_adapter
+        self.queue_producer = queue_producer
 
     async def get_filtered(self, paginator=Paginator, filters=dict) -> list[Price]:
         """
@@ -133,6 +140,13 @@ class PriceService(CrudService[Price]):
             )
 
         self._validate_positive_prices(merged_price)
+
+        # Verificação de valor de preço
+        self._detects_variation(
+            old_por=existing_price.por,
+            entity=merged_price_data.por,
+        )
+
         updated = await super().update_by_seller_id_and_sku(seller_id, sku, merged_price)
 
         # Remove o cache do preço atualizado
@@ -154,6 +168,13 @@ class PriceService(CrudService[Price]):
         price_found = await super().find_by_seller_id_and_sku(seller_id, sku)
         self._raise_not_found(seller_id, sku, price_found is None)
         self._validate_positive_prices(entity)
+
+        # Verificação de valor de preço
+        self._detects_variation(
+            old_por=price_found.por,
+            entity=entity,
+        )
+
         updated = await super().update_by_seller_id_and_sku(seller_id, sku, entity)
 
         # Remove o cache do preço atualizado
@@ -183,6 +204,36 @@ class PriceService(CrudService[Price]):
         # Remove o cache do preço deletado
         cache_key = f"price:{seller_id}:{sku}"
         await self.redis_adapter.delete(cache_key)
+
+    def _detects_variation(self, old_por, entity):
+        """
+        Detecta se houve variação no preço 'por' (50%).
+
+        :param old_por: Valor antigo do preço 'por'.
+        :param new_por: Valor novo do preço 'por'.
+        :return: True se houver variação, False caso contrário.
+        """
+        new_por = entity.por
+        seller_id = entity.seller_id
+        sku = entity.sku
+
+        if old_por > 0 and abs(new_por - old_por) / old_por > 0.5:
+            logger.warning(f"Variação de preço superior a 50% detectada para SKU {sku}: de {old_por} para {new_por}")
+            mensagem = f"Variação de preço superior a 50% detectada para SKU {sku}: de {old_por} para {new_por}"
+            alerta = {"seller_id": seller_id, "sku": sku, "mensagem": mensagem, "status": "pendente"}
+            # Publica na fila
+
+            task = asyncio.create_task(self._call_producer(alerta))
+            logger.debug(f"Tarefa criada para enviar evento para a fila: {task.get_name()}")
+
+            # Marque alerta_pendente=True no entity
+            entity.alerta_pendente = True
+
+    async def _call_producer(self, event):
+        try:
+            self.queue_producer.produce(event)
+        except Exception:
+            logger.exception("Falha enviar evento para a fila", extra={"evt": event})
 
     def _validate_positive_prices(self, price):
         """
