@@ -4,3 +4,7 @@ APP_DB_URL_ALEMBIC=postgresql://admin:admin@localhost:5434/pc-preco
 APP_OPENID_WELLKNOWN=http://localhost:8080/realms/marketplace/.well-known/openid-configuration
 
 APP_REDIS_URL=redis://localhost:6379/0
+
+# URL para a fila do RabbitMQ
+APP_QUEUE_URL=amqp://admin:admin@localhost:5672/pc-preco
+APP_QUEUE_NAME=alertas_precos

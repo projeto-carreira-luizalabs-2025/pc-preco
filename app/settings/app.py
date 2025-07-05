@@ -24,5 +24,8 @@ class AppSettings(BaseSettings):
 
     app_redis_url: RedisDsn = Field(..., title="URL para o Redis")
 
+    app_queue_url: str = Field(..., title="URL para o RabbitMQ")
+    app_queue_name: str = Field(..., title="Nome da fila no RabbitMQ")
+
 
 settings = AppSettings()
