@@ -1,5 +1,6 @@
 from app.models.price_history_model import PriceHistory
 from app.repositories.price_history_repository import PriceHistoryRepository
+from app.services.price_history_service import PriceHistoryService
 from ..common.exceptions.price_exceptions import PriceBadRequestException, PriceNotFoundException
 from ..models import Price, PriceFilter
 from ..repositories import PriceRepository
@@ -20,10 +21,17 @@ class PriceService(CrudService[Price]):
     """
 
     repository: PriceRepository
-
-    def __init__(self, repository: PriceRepository, price_history_repo: PriceHistoryRepository):
+    price_history_service: PriceHistoryService
+    
+    def __init__(
+        self, 
+        repository: PriceRepository, 
+        price_history_repo: PriceHistoryRepository,
+        price_history_service: PriceHistoryService   # Novo parâmetro
+    ):
         super().__init__(repository)
         self.price_history_repo = price_history_repo
+        self.price_history_service = price_history_service
 
 
     async def get_filtered(self, paginator=Paginator, filters=dict) -> list[Price]:
@@ -73,7 +81,7 @@ class PriceService(CrudService[Price]):
         created_price = await super().create(price)
         
         price_history_data = price.model_dump()
-        await self.price_history_repo.create(PriceHistory(**price_history_data))
+        await self.price_history_service.create(PriceHistory(**price_history_data))
         
         return created_price
 
@@ -112,7 +120,7 @@ class PriceService(CrudService[Price]):
         updated = await super().update_by_seller_id_and_sku(seller_id, sku, merged_price)
         
         price_history_data = updated.model_dump(exclude={"id"})
-        await self.price_history_repo.create(PriceHistory(**price_history_data))
+        await self.price_history_service.create(PriceHistory(**price_history_data))
         
         return updated
 
@@ -132,7 +140,7 @@ class PriceService(CrudService[Price]):
         updated = await super().update_by_seller_id_and_sku(seller_id, sku, entity)
         
         price_history_data = updated.model_dump(exclude={"id"})
-        await self.price_history_repo.create(PriceHistory(**price_history_data))
+        await self.price_history_service.create(PriceHistory(**price_history_data))
         
         return updated
 
@@ -154,6 +162,23 @@ class PriceService(CrudService[Price]):
                 value=sku,
             )
 
+    async def get_d(self, seller_id: str, sku: str) -> Price:
+        """
+        Busca um preço pelo seller_id e sku.
+
+        :param seller_id: Identificador do vendedor.
+        :param sku: Código do produto.
+        :return: Instância de Preco encontrada.
+        :raises NotFoundException: Se não encontrar o preço.
+        """
+        price_dict = await super().find_by_seller_id_and_sku(seller_id, sku)
+
+        self._raise_not_found(seller_id, sku, price_dict is None)
+
+        # Garantimos que price_dict não é None neste ponto, podemos usá-lo com segurança
+        return Price.model_validate(price_dict)
+    
+    
     def _validate_positive_prices(self, price):
         """
         Valida se os atributos 'de' e 'por' são positivos.
@@ -212,3 +237,4 @@ class PriceService(CrudService[Price]):
         """
         logger.error(f"BadRequest: {message} | field={field} | value={value}")
         raise PriceBadRequestException(message=message, field=field, value=value)
+

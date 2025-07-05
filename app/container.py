@@ -3,6 +3,7 @@ from dependency_injector import containers, providers
 from app.repositories import PriceRepository
 from app.repositories.price_history_repository import PriceHistoryRepository
 from app.services import HealthCheckService, PriceService
+from app.services import price_history_service
 from app.services.price_history_service import PriceHistoryService
 from app.settings import AppSettings
 
@@ -32,4 +33,9 @@ class Container(containers.DeclarativeContainer):
         HealthCheckService, checkers=config.health_check_checkers, settings=settings
     )
     
-    price_service = providers.Singleton(PriceService, repository=price_repository,   price_history_repo=price_history_repository)
+    price_history_service = providers.Singleton(
+        PriceHistoryService,
+        repository=price_history_repository,
+    )
+    
+    price_service = providers.Singleton(PriceService, repository=price_repository,   price_history_repo=price_history_repository, price_history_service=price_history_service)
