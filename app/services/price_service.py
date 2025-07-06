@@ -125,6 +125,9 @@ class PriceService(CrudService[Price]):
 
         existing_price = Price.model_validate(price_dict)
 
+        # Verifica se o preço já possui alerta pendente
+        self._verify_pending_alert(existing_price)
+
         merged_price_data = existing_price.model_dump()
         merged_price_data.update(update_data.model_dump(exclude_none=True))
 
@@ -174,6 +177,9 @@ class PriceService(CrudService[Price]):
         self._raise_not_found(seller_id, sku, price_found is None)
         self._validate_positive_prices(entity)
 
+        # Verifica se há alerta pendente antes de permitir atualização
+        self._verify_pending_alert(price_found)
+
         # Verificação de valor de preço
         variation = self._detects_variation(
             old_por=price_found.por,
@@ -212,6 +218,26 @@ class PriceService(CrudService[Price]):
         cache_key = f"price:{seller_id}:{sku}"
         await self.redis_adapter.delete(cache_key)
 
+    def _verify_pending_alert(self, entity: Price) -> bool:
+        """
+        Verifica se o preço possui alerta pendente.
+
+        :param entity: Instância de Preco a ser verificada.
+        :return: True se o alerta estiver pendente, False caso contrário.
+        """
+        if entity.alerta_pendente:
+            logger.info(
+                "Alerta pendente para SKU %s do seller_id %s",
+                entity.sku,
+                entity.seller_id,
+                extra={"seller_id": entity.seller_id, "sku": entity.sku},
+            )
+            self._raise_bad_request(
+                "Não é possível atualizar o preço enquanto possuir alerta pendente.",
+                field="alerta_pendente",
+                value=True,
+            )
+
     def _detects_variation(self, old_por, entity) -> bool:
         """
         Detecta se houve variação no preço 'por' (50%).
@@ -232,7 +258,7 @@ class PriceService(CrudService[Price]):
                 new_por,
                 extra={"seller_id": seller_id, "sku": sku, "old_por": old_por, "new_por": new_por},
             )
-            mensagem = f"Variação de preço superior a 50% detectada para SKU {sku}: de {old_por} para {new_por}"
+            mensagem = f"Variação de preço superior a 50% detectada para {sku}: de {old_por} para {new_por}"
             alerta = {"seller_id": seller_id, "sku": sku, "mensagem": mensagem, "status": "pendente"}
 
             task = asyncio.create_task(self._call_producer(alerta))
