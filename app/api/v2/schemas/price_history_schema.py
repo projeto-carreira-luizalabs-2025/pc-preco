@@ -1,26 +1,21 @@
-
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, RootModel
 from datetime import datetime
 from typing import List
 
 from app.api.common.schemas import SchemaType
-from app.api.common.schemas.base import ResponseEntityHistory
+from app.api.common.schemas.base import ResponseHistoryEntity
 from app.api.common.schemas.response import ErrorResponse
-
 
 class BasePriceHistoryModel(BaseModel):
     """Modelo base para histórico de precificação"""
-
     sku: str = Field(..., description="SKU do produto")
     seller_id: str = Field(..., description="ID do seller")
     de: int = Field(..., description="Preço anterior")
     por: int = Field(..., description="Preço atual")
     registered_at: datetime = Field(..., description="Data de registro do histórico")
 
-
-class PriceHistoryResponse(BasePriceHistoryModel, ResponseEntityHistory):
+class PriceHistoryResponse(BasePriceHistoryModel, ResponseHistoryEntity):
     """Resposta do histórico de precificação"""
-
     class Config:
         json_schema_extra = {
             "example": {
@@ -33,15 +28,12 @@ class PriceHistoryResponse(BasePriceHistoryModel, ResponseEntityHistory):
             }
         }
 
-
 class PriceHistoryCreate(SchemaType):
     """Schema para criação de histórico de precificação"""
-
     sku: str = Field(..., description="SKU do produto")
     seller_id: str = Field(..., description="ID do seller")
     de: int = Field(..., description="Preço anterior")
     por: int = Field(..., description="Preço atual")
-
     class Config:
         json_schema_extra = {
             "example": {
@@ -52,14 +44,10 @@ class PriceHistoryCreate(SchemaType):
             }
         }
 
-
-class PriceHistoryListResponse(BaseModel):
+class PriceHistoryListResponse(RootModel[List[PriceHistoryResponse]]):
     """Lista de históricos de precificação"""
-
-    __root__: List[PriceHistoryResponse]
-
-    class Config:
-        json_schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": [
                 {
                     "id": 1,
@@ -79,11 +67,10 @@ class PriceHistoryListResponse(BaseModel):
                 }
             ]
         }
-
+    }
 
 class PriceHistoryErrorResponse(ErrorResponse):
     """Schema para erros de histórico de preço"""
-
     class Config:
         json_schema_extra = {
             "de": {

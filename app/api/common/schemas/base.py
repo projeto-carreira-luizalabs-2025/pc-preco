@@ -33,3 +33,15 @@ class AuditSchema(SchemaType):
 class ResponseEntity(AuditSchema, IntSchema, OwnershipSchema):
 
     model_config = ConfigDict(from_attributes=True)
+
+
+
+class AuditHistorySchema(SchemaType):
+    registered_at: datetime | None = Field(None, description="Data e hora de registro")
+    created_at: datetime | None = Field(None, description="Data e hora da criação")
+    updated_at: datetime | None = Field(None, description="Data e hora da atualização")
+
+
+class ResponseHistoryEntity(AuditHistorySchema, IntSchema, OwnershipSchema):
+
+    model_config = ConfigDict(from_attributes=True)

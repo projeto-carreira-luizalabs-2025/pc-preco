@@ -15,6 +15,7 @@ from app.api.common.responses.price_responses import (
     UNPROCESSABLE_ENTITY_RESPONSE,
 )
 from app.api.common.schemas import ListResponse, Paginator, get_request_pagination
+from app.api.v2.schemas.price_history_schema import PriceHistoryListResponse
 from app.api.v2.schemas.price_schema import PriceCreate, PricePatch, PriceResponse, PriceUpdate
 from app.container import Container
 from app.models import Price
@@ -207,3 +208,30 @@ async def delete(
     )
 
     await price_service.delete(seller_id, sku)
+
+
+
+# Busca histórico de precificação por "seller_id" e "sku"
+@router.get(
+    "/historico/{sku}",
+    response_model=PriceHistoryListResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Recuperar histórico de precificação por seller_id e sku",
+    responses={404: NOT_FOUND_RESPONSE, 400: MISSING_HEADER_RESPONSE},
+)
+@inject
+async def get_history_by_seller_id_and_sku(
+    sku: str,
+    price_history_service: "PriceHistoryService" = Depends(Provide[Container.price_history_service]),
+    seller_id: str = Depends(get_required_seller_id),
+    paginator: Paginator = Depends(get_request_pagination),
+):
+    logger.info(
+        "Recuperando histórico de precificação para seller_id: %s, sku: %s",
+        seller_id,
+        sku,
+        extra={"trace-id": "N/A"},
+    )
+
+    results = await price_history_service.get_by_seller_id_and_sku(seller_id=seller_id, sku=sku, paginator=paginator)
+    return results
