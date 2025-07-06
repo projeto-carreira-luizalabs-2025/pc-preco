@@ -32,6 +32,7 @@ class Container(containers.DeclarativeContainer):
 
     # Repositórios
     price_repository = providers.Singleton(PriceRepository, sql_client)
+    alert_repository = providers.Singleton(AlertRepository, sql_client)
 
     # Serviços
     health_check_service = providers.Singleton(
@@ -41,3 +42,5 @@ class Container(containers.DeclarativeContainer):
     price_service = providers.Singleton(
         PriceService, repository=price_repository, redis_adapter=redis_adapter, queue_producer=queue_producer
     )
+
+    alert_service = providers.Singleton(AlertService, alert_repository=alert_repository)
