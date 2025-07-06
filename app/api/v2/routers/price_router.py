@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING, Optional
 from fastapi import Query
-from pclogging import LoggingBuilder
-import json
+import logging
 
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, status
@@ -27,7 +26,7 @@ if TYPE_CHECKING:
 
 router = APIRouter(prefix=PRICE_PREFIX, tags=["Preços (v2)"], dependencies=[Depends(do_auth)])
 
-logger = LoggingBuilder.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 # Recupera lista de precificações

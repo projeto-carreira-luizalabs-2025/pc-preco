@@ -5,12 +5,12 @@ from .base import CrudService
 from app.api.common.schemas import Paginator
 
 from app.integrations.cache.redis_asyncio_adapter import RedisAsyncioAdapter
+from app.integrations.queue.rabbitmq_adapter import RabbitMQProducer
 
-from pclogging import LoggingBuilder
+import logging
+import asyncio
 
-LoggingBuilder.init(log_level="DEBUG")
-
-logger = LoggingBuilder.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class PriceService(CrudService[Price]):
@@ -21,8 +21,11 @@ class PriceService(CrudService[Price]):
 
     repository: PriceRepository
     redis_adapter: RedisAsyncioAdapter
+    queue_producer: RabbitMQProducer
 
-    def __init__(self, repository: PriceRepository, redis_adapter: RedisAsyncioAdapter):
+    def __init__(
+        self, repository: PriceRepository, redis_adapter: RedisAsyncioAdapter, queue_producer: RabbitMQProducer
+    ):
         """
         Inicializa o serviço de preços com o repositório fornecido e o adaptador Redis.
 
@@ -31,6 +34,7 @@ class PriceService(CrudService[Price]):
         """
         super().__init__(repository)
         self.redis_adapter = redis_adapter
+        self.queue_producer = queue_producer
 
     async def get_filtered(self, paginator=Paginator, filters=dict) -> list[Price]:
         """
@@ -58,7 +62,6 @@ class PriceService(CrudService[Price]):
         :return: Instância de Preco encontrada.
         :raises NotFoundException: Se não encontrar o preço.
         """
-        logger.debug(f"Buscando preço para seller_id: {seller_id}, sku: {sku}")
         cache_key = f"price:{seller_id}:{sku}"
         cached = await self.find_price_in_cache(seller_id, sku, cache_key)
 
@@ -84,7 +87,12 @@ class PriceService(CrudService[Price]):
         """
         cached = await self.redis_adapter.get_json(cache_key)
         if cached is not None:
-            logger.debug(f"Preço encontrado no cache para seller_id: {seller_id}, sku: {sku}")
+            logger.info(
+                "Preço encontrado no cache para seller_id=%s, sku=%s",
+                seller_id,
+                sku,
+                extra={"seller_id": seller_id, "sku": sku},
+            )
             return Price.model_validate(cached)
 
     async def create(self, price_create: Price) -> Price:
@@ -117,6 +125,9 @@ class PriceService(CrudService[Price]):
 
         existing_price = Price.model_validate(price_dict)
 
+        # Verifica se o preço já possui alerta pendente
+        self._verify_pending_alert(existing_price)
+
         merged_price_data = existing_price.model_dump()
         merged_price_data.update(update_data.model_dump(exclude_none=True))
 
@@ -125,7 +136,10 @@ class PriceService(CrudService[Price]):
         try:
             merged_price = Price.model_validate(merged_price_data)
         except ValueError:
-            logger.error(f"Erro ao validar dados de atualização: {update_data}")
+            logger.error(
+                "Erro ao validar dados de atualização",
+                extra={"update_data": update_data},
+            )
             self._raise_bad_request(
                 message="Dados inválidos para atualização.",
                 field="update_data",
@@ -133,6 +147,14 @@ class PriceService(CrudService[Price]):
             )
 
         self._validate_positive_prices(merged_price)
+
+        variation = self._detects_variation(
+            old_por=existing_price.por,
+            entity=merged_price,
+        )
+        if variation:
+            merged_price.alerta_pendente = True
+
         updated = await super().update_by_seller_id_and_sku(seller_id, sku, merged_price)
 
         # Remove o cache do preço atualizado
@@ -154,6 +176,18 @@ class PriceService(CrudService[Price]):
         price_found = await super().find_by_seller_id_and_sku(seller_id, sku)
         self._raise_not_found(seller_id, sku, price_found is None)
         self._validate_positive_prices(entity)
+
+        # Verifica se há alerta pendente antes de permitir atualização
+        self._verify_pending_alert(price_found)
+
+        # Verificação de valor de preço
+        variation = self._detects_variation(
+            old_por=price_found.por,
+            entity=entity,
+        )
+        if variation:
+            entity.alerta_pendente = True
+
         updated = await super().update_by_seller_id_and_sku(seller_id, sku, entity)
 
         # Remove o cache do preço atualizado
@@ -184,6 +218,64 @@ class PriceService(CrudService[Price]):
         cache_key = f"price:{seller_id}:{sku}"
         await self.redis_adapter.delete(cache_key)
 
+    def _verify_pending_alert(self, entity: Price) -> bool:
+        """
+        Verifica se o preço possui alerta pendente.
+
+        :param entity: Instância de Preco a ser verificada.
+        :return: True se o alerta estiver pendente, False caso contrário.
+        """
+        if entity.alerta_pendente:
+            logger.info(
+                "Alerta pendente para SKU %s do seller_id %s",
+                entity.sku,
+                entity.seller_id,
+                extra={"seller_id": entity.seller_id, "sku": entity.sku},
+            )
+            self._raise_bad_request(
+                "Não é possível atualizar o preço enquanto possuir alerta pendente.",
+                field="alerta_pendente",
+                value=True,
+            )
+
+    def _detects_variation(self, old_por, entity) -> bool:
+        """
+        Detecta se houve variação no preço 'por' (50%).
+
+        :param old_por: Valor antigo do preço 'por'.
+        :param new_por: Valor novo do preço 'por'.
+        :return: True se houver variação, False caso contrário.
+        """
+        new_por = entity.por
+        seller_id = entity.seller_id
+        sku = entity.sku
+
+        if old_por > 0 and abs(new_por - old_por) / old_por > 0.5:
+            logger.warning(
+                "Variação de preço superior a 50%% detectada para SKU %s: de %s para %s",
+                sku,
+                old_por,
+                new_por,
+                extra={"seller_id": seller_id, "sku": sku, "old_por": old_por, "new_por": new_por},
+            )
+            mensagem = f"Variação de preço superior a 50% detectada para {sku}: de {old_por} para {new_por}"
+            alerta = {"seller_id": seller_id, "sku": sku, "mensagem": mensagem, "status": "pendente"}
+
+            task = asyncio.create_task(self._call_producer(alerta))
+            logger.info(
+                "Tarefa criada para enviar evento para a fila: %s",
+                task.get_name(),
+                extra={"seller_id": seller_id, "sku": sku},
+            )
+            return True
+        return False
+
+    async def _call_producer(self, event):
+        try:
+            self.queue_producer.produce(event)
+        except Exception:
+            logger.exception("Falha enviar evento para a fila", extra={"evt": event})
+
     def _validate_positive_prices(self, price):
         """
         Valida se os atributos 'de' e 'por' são positivos.
@@ -201,9 +293,8 @@ class PriceService(CrudService[Price]):
         :param value: Valor númerico a ser validado (opcional).
         :raises BadRequestException: Se algum valor for menor ou igual a zero.
         """
-        logger.debug(f"Validando se {field} é positivo: {value}")
         if value <= 0:
-            logger.warning(f"Valor inválido para {field}: {value}")
+            logger.warning("Valor inválido para %s: %s", field, value, extra={"field": field, "value": value})
             self._raise_bad_request(f"{field} deve ser maior que zero.", field, value)
 
     async def _validate_non_existent_price(self, seller_id: str, sku: str):
@@ -216,6 +307,12 @@ class PriceService(CrudService[Price]):
         """
         price_found = await super().find_by_seller_id_and_sku(seller_id, sku)
         if price_found is not None:
+            logger.warning(
+                "Preço já cadastrado para seller_id: %s, sku: %s",
+                seller_id,
+                sku,
+                extra={"seller_id": seller_id, "sku": sku},
+            )
             self._raise_bad_request("Preço para produto já cadastrado.", "sku")
 
     @staticmethod
@@ -228,7 +325,12 @@ class PriceService(CrudService[Price]):
         :raises NotFoundException: Sempre.
         """
         if condition:
-            logger.error(f"Preço não encontrado para seller_id: {seller_id}, sku: {sku}")
+            logger.error(
+                "Preço não encontrado para seller_id=%s, sku=%s",
+                seller_id,
+                sku,
+                extra={"seller_id": seller_id, "sku": sku},
+            )
             raise PriceNotFoundException(seller_id=seller_id, sku=sku)
 
     def _raise_bad_request(self, message: str, field: str = None, value=None):
@@ -240,5 +342,7 @@ class PriceService(CrudService[Price]):
         :param value: Valor que causou o erro (opcional).
         :raises BadRequestException: Sempre.
         """
-        logger.error(f"BadRequest: {message} | field={field} | value={value}")
+        logger.error(
+            "BadRequest: %s | field=%s | value=%s", message, field, value, extra={"field": field, "value": value}
+        )
         raise PriceBadRequestException(message=message, field=field, value=value)

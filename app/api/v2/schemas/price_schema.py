@@ -11,6 +11,7 @@ class BasePriceModel(BaseModel):
 
     de: int = Field(..., description="Preço de custo do produto")
     por: int = Field(..., description="Preço de venda do produto")
+    alerta_pendente: bool = Field(False, description="Indica se o alerta de preço pendente foi acionado")
 
 
 class PriceSchema(SellerSkuBaseModel, BasePriceModel):

@@ -38,10 +38,36 @@ class PersistableEntityBase(IdEntityBase, AuditEntityBase):
     __abstract__ = True
 
 
+class PersistableEntitySemiAuditBase(IdEntityBase):
+    """
+    Classe base para entidades persistentes com auditoria parcial.
+    Esta classe deve ser herdada por todas as entidades que precisam ser persistidas no banco de dados,
+    mas não requerem auditoria completa.
+    """
+
+    __abstract__ = True
+
+    created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
+
+
 class SellerIdSkuPersistableEntityBase(PersistableEntityBase):
     """
     Classe base para entidades que possuem seller_id e sku.
     Esta classe deve ser herdada por todas as entidades que precisam de seller_id e sku.
+    """
+
+    __abstract__ = True
+
+    seller_id = Column(String, nullable=False, index=True)
+    sku = Column(String, nullable=False, index=True)
+
+
+class SellerIdSkuPersistableEntitySemiAuditBase(PersistableEntitySemiAuditBase):
+    """
+    Classe base para entidades que possuem seller_id e sku com auditoria parcial.
+    Esta classe deve ser herdada por todas as entidades que precisam de seller_id e sku,
+    mas não requerem auditoria completa.
     """
 
     __abstract__ = True
