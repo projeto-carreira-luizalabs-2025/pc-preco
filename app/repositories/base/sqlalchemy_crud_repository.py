@@ -35,6 +35,7 @@ class SQLAlchemyCrudRepository(AsyncCrudRepository[T], Generic[T, B]):
         self.model_class = model_class
         self.entity_base_class = entity_base_class
         self.pk_fields = self.sql_client.get_pk_fields(self.entity_base_class)
+        
 
     def to_base(self, model: T) -> B:
         """
@@ -47,6 +48,7 @@ class SQLAlchemyCrudRepository(AsyncCrudRepository[T], Generic[T, B]):
             if hasattr(base, field):
                 setattr(base, field, value)
         return base
+    
 
     def to_model(self, base: B | None) -> T | None:
         """
@@ -59,12 +61,13 @@ class SQLAlchemyCrudRepository(AsyncCrudRepository[T], Generic[T, B]):
 
         model = self.model_class.model_validate(base_dict)
         return model
+    
 
     async def create(self, model: T) -> T:
         """
         Salva uma entidade no repositório.
         """
-        logger.info(f"\n\n\n\n\n\n\n\n\n\n\n\n Criando entidade para : {model} \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
+        logger.info(f"Criando entidade para : {model}")
         base = self.to_base(model)  # Converte o modelo pydantic para a entidade base do SQLAlchemy
 
         async with self.sql_client.make_session() as session:
@@ -73,6 +76,7 @@ class SQLAlchemyCrudRepository(AsyncCrudRepository[T], Generic[T, B]):
         logger.debug(f"Entidade criada no banco: {base}")
         created_model = self.to_model(base)
         return created_model
+    
 
     async def _find_base_by_seller_id_sku_on_session(self, seller_id: str, sku: str, session) -> B | None:
         """
@@ -84,6 +88,7 @@ class SQLAlchemyCrudRepository(AsyncCrudRepository[T], Generic[T, B]):
         scalar = await session.execute(preco)
         base = scalar.scalar_one_or_none()
         return base
+
 
     async def find_by_seller_id_and_sku(self, seller_id: str, sku: str) -> T | None:
         """
@@ -99,12 +104,14 @@ class SQLAlchemyCrudRepository(AsyncCrudRepository[T], Generic[T, B]):
             logger.warning(f"Nenhuma entidade encontrada para seller_id={seller_id}, sku={sku}")
         return model
 
+
     def _apply_sort(self, stmt, sort: dict):
         for field, direction in sort.items():
             if hasattr(self.entity_base_class, field):
                 column = getattr(self.entity_base_class, field)
                 stmt = stmt.order_by(column.desc() if direction == -1 else column.asc())
         return stmt
+
 
     async def find(self, filters: Q, limit: int = 20, offset: int = 0, sort: dict | None = None) -> list[T]:
         """
@@ -146,6 +153,7 @@ class SQLAlchemyCrudRepository(AsyncCrudRepository[T], Generic[T, B]):
             logger.info(f"Encontradas {len(bases)} entidades para os filtros informados.")
             return [self.to_model(base) for base in bases]
 
+
     async def delete_by_seller_id_and_sku(self, seller_id: str, sku: str) -> bool:
         """
         Deleta uma entidade pelo seller_id e sku.
@@ -164,6 +172,7 @@ class SQLAlchemyCrudRepository(AsyncCrudRepository[T], Generic[T, B]):
             else:
                 logger.warning(f"Nenhuma entidade deletada para seller_id={seller_id}, sku={sku}")
             return deleted
+
 
     async def update_by_seller_id_and_sku(self, seller_id: str, sku: str, model: T) -> T | None:
         """

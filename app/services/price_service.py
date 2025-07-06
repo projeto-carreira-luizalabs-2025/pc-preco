@@ -27,7 +27,7 @@ class PriceService(CrudService[Price]):
         self, 
         repository: PriceRepository, 
         price_history_repo: PriceHistoryRepository,
-        price_history_service: PriceHistoryService   # Novo parâmetro
+        price_history_service: PriceHistoryService 
     ):
         super().__init__(repository)
         self.price_history_repo = price_history_repo
@@ -49,6 +49,7 @@ class PriceService(CrudService[Price]):
         filter_model = PriceFilter(**current_filters)
 
         return await self.find(filters=filter_model, paginator=paginator)
+    
 
     async def get_by_seller_id_and_sku(self, seller_id: str, sku: str) -> Price:
         """
@@ -65,6 +66,7 @@ class PriceService(CrudService[Price]):
 
         # Garantimos que price_dict não é None neste ponto, podemos usá-lo com segurança
         return Price.model_validate(price_dict)
+    
 
     async def create(self, price_create: Price) -> Price:
         """
@@ -80,14 +82,17 @@ class PriceService(CrudService[Price]):
         price = Price(**price_create.model_dump())
         created_price = await super().create(price)
         
+        # Registra o histórico de preços após a criação
         price_history_data = price.model_dump()
         await self.price_history_service.create(PriceHistory(**price_history_data))
         
         return created_price
+    
 
     async def patch(self, seller_id, sku, update_data, user_info) -> Price:
         """
         Atualiza campos de uma precificação.
+        
         :param seller_id: Identificador do vendedor.
         :param sku: Código do produto.
         :update_data: Dicionário contendo os campos a serem atualizados.
@@ -103,7 +108,6 @@ class PriceService(CrudService[Price]):
 
         merged_price_data = existing_price.model_dump()
         merged_price_data.update(update_data.model_dump(exclude_none=True))
-
         merged_price_data["updated_by"] = user_info.user
 
         try:
@@ -119,14 +123,17 @@ class PriceService(CrudService[Price]):
         self._validate_positive_prices(merged_price)
         updated = await super().update_by_seller_id_and_sku(seller_id, sku, merged_price)
         
+        # Registra o histórico de preços após a atualização
         price_history_data = updated.model_dump(exclude={"id"})
         await self.price_history_service.create(PriceHistory(**price_history_data))
         
         return updated
+    
 
     async def update(self, seller_id, sku, entity: Price) -> Price:
         """
         Atualiza uma precificação existente com novos valores.
+        
         :param seller_id: Identificador do vendedor.
         :param sku: Código do produto.
         :param entity: Objeto contendo os novos dados do preço.
@@ -139,10 +146,12 @@ class PriceService(CrudService[Price]):
         self._validate_positive_prices(entity)
         updated = await super().update_by_seller_id_and_sku(seller_id, sku, entity)
         
+        # Registra o histórico de preços após a atualização
         price_history_data = updated.model_dump(exclude={"id"})
         await self.price_history_service.create(PriceHistory(**price_history_data))
         
         return updated
+    
 
     async def delete(self, seller_id: str, sku: str):
         """
@@ -161,22 +170,6 @@ class PriceService(CrudService[Price]):
                 message="Erro ao deletar preço.",
                 value=sku,
             )
-
-    async def get_d(self, seller_id: str, sku: str) -> Price:
-        """
-        Busca um preço pelo seller_id e sku.
-
-        :param seller_id: Identificador do vendedor.
-        :param sku: Código do produto.
-        :return: Instância de Preco encontrada.
-        :raises NotFoundException: Se não encontrar o preço.
-        """
-        price_dict = await super().find_by_seller_id_and_sku(seller_id, sku)
-
-        self._raise_not_found(seller_id, sku, price_dict is None)
-
-        # Garantimos que price_dict não é None neste ponto, podemos usá-lo com segurança
-        return Price.model_validate(price_dict)
     
     
     def _validate_positive_prices(self, price):
@@ -187,6 +180,7 @@ class PriceService(CrudService[Price]):
         """
         self._validate_positives(price.de, "de")
         self._validate_positives(price.por, "por")
+        
 
     def _validate_positives(self, value, field: str):
         """
@@ -200,6 +194,7 @@ class PriceService(CrudService[Price]):
         if value <= 0:
             logger.warning(f"Valor inválido para {field}: {value}")
             self._raise_bad_request(f"{field} deve ser maior que zero.", field, value)
+            
 
     async def _validate_non_existent_price(self, seller_id: str, sku: str):
         """
@@ -212,6 +207,7 @@ class PriceService(CrudService[Price]):
         price_found = await super().find_by_seller_id_and_sku(seller_id, sku)
         if price_found is not None:
             self._raise_bad_request("Preço para produto já cadastrado.", "sku")
+            
 
     @staticmethod
     def _raise_not_found(seller_id: str, sku: str, condition: bool = True):
@@ -225,6 +221,7 @@ class PriceService(CrudService[Price]):
         if condition:
             logger.error(f"Preço não encontrado para seller_id: {seller_id}, sku: {sku}")
             raise PriceNotFoundException(seller_id=seller_id, sku=sku)
+        
 
     def _raise_bad_request(self, message: str, field: str = None, value=None):
         """
@@ -237,4 +234,3 @@ class PriceService(CrudService[Price]):
         """
         logger.error(f"BadRequest: {message} | field={field} | value={value}")
         raise PriceBadRequestException(message=message, field=field, value=value)
-

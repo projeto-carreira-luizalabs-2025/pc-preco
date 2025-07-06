@@ -27,6 +27,7 @@ class PriceHistoryResponse(BasePriceHistoryModel, ResponseHistoryEntity):
                 "registered_at": "2026-06-25T10:30:00Z"
             }
         }
+        
 
 class PriceHistoryCreate(SchemaType):
     """Schema para criação de histórico de precificação"""
@@ -43,6 +44,7 @@ class PriceHistoryCreate(SchemaType):
                 "por": 800
             }
         }
+
 
 class PriceHistoryListResponse(RootModel[List[PriceHistoryResponse]]):
     """Lista de históricos de precificação"""
@@ -68,6 +70,7 @@ class PriceHistoryListResponse(RootModel[List[PriceHistoryResponse]]):
             ]
         }
     }
+
 
 class PriceHistoryErrorResponse(ErrorResponse):
     """Schema para erros de histórico de preço"""
@@ -100,3 +103,4 @@ class PriceHistoryErrorResponse(ErrorResponse):
                 ],
             },
         }
+        

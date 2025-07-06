@@ -100,6 +100,7 @@ async def get_by_seller_id_and_sku(
 
     return await price_service.get_by_seller_id_and_sku(seller_id=seller_id, sku=sku)
 
+
 # Cria uma precificação
 @router.post(
     "",
@@ -210,13 +211,12 @@ async def delete(
     await price_service.delete(seller_id, sku)
 
 
-
 # Busca histórico de precificação por "seller_id" e "sku"
 @router.get(
     "/historico/{sku}",
     response_model=PriceHistoryListResponse,
     status_code=status.HTTP_200_OK,
-    summary="Recuperar histórico de precificação por seller_id e sku",
+    summary="Recuperar histórico de precificação de um produto por seller_id e sku",
     responses={404: NOT_FOUND_RESPONSE, 400: MISSING_HEADER_RESPONSE},
 )
 @inject
@@ -227,11 +227,10 @@ async def get_history_by_seller_id_and_sku(
     paginator: Paginator = Depends(get_request_pagination),
 ):
     logger.info(
-        "Recuperando histórico de precificação para seller_id: %s, sku: %s",
+        "Recuperando histórico de precificação de um produto para seller_id: %s, sku: %s",
         seller_id,
         sku,
         extra={"trace-id": "N/A"},
     )
 
-    results = await price_history_service.get_by_seller_id_and_sku(seller_id=seller_id, sku=sku, paginator=paginator)
-    return results
+    return await price_history_service.get_by_seller_id_and_sku(seller_id=seller_id, sku=sku, paginator=paginator)

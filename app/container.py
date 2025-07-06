@@ -3,7 +3,6 @@ from dependency_injector import containers, providers
 from app.repositories import PriceRepository
 from app.repositories.price_history_repository import PriceHistoryRepository
 from app.services import HealthCheckService, PriceService
-from app.services import price_history_service
 from app.services.price_history_service import PriceHistoryService
 from app.settings import AppSettings
 
