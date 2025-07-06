@@ -1,4 +1,4 @@
-from app.models.price_history_filter_model import PriceHistoryFilter
+from app.models.price_filter_model import PriceFilter
 from app.models.price_history_model import PriceHistory
 from app.repositories.price_history_repository import PriceHistoryRepository
 from .base import CrudService
@@ -28,7 +28,7 @@ class PriceHistoryService(CrudService[PriceHistory]):
             f"Buscando histórico de preços para seller_id: {seller_id}, sku: {sku}"
         )
 
-        filters = PriceHistoryFilter(seller_id=seller_id, sku=sku)
+        filters = PriceFilter(seller_id=seller_id, sku=sku)
         results = await self.find(filters=filters, paginator=paginator)
 
         if not results:
