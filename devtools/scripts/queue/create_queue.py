@@ -31,10 +31,6 @@ def create_queue():
     rabbitmq_adapter.create_queue(queue_name)
     print("Fila criada!")
 
-    # Posso testar()
-    if False:
-        produce_consume(app_settings)
-
 
 if __name__ == "__main__":
     create_queue()

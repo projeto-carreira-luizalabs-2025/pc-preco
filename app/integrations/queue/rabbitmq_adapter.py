@@ -67,7 +67,7 @@ class RabbitMQAdapter:
 
     def consume_data(self, queue_name: str) -> dict:
         self.connect()
-        method_frame, header_frame, body = self.channel.basic_get(queue_name, auto_ack=False)
+        method_frame, _, body = self.channel.basic_get(queue_name, auto_ack=False)
         self._last_mehod_frame = None
         if method_frame:
             self._last_mehod_frame = method_frame
