@@ -1,7 +1,12 @@
 from dependency_injector import containers, providers
 
+
+from app.repositories.price_history_repository import PriceHistoryRepository
+from app.services.price_history_service import PriceHistoryService
+
 from app.repositories import PriceRepository, AlertRepository
 from app.services import HealthCheckService, PriceService, AlertService
+
 from app.settings import AppSettings
 
 from app.integrations.database.sqlalchemy_client import SQLAlchemyClient
@@ -32,6 +37,7 @@ class Container(containers.DeclarativeContainer):
 
     # Repositórios
     price_repository = providers.Singleton(PriceRepository, sql_client)
+    price_history_repository = providers.Singleton(PriceHistoryRepository, sql_client)
     alert_repository = providers.Singleton(AlertRepository, sql_client)
 
     # Serviços
@@ -39,8 +45,18 @@ class Container(containers.DeclarativeContainer):
         HealthCheckService, checkers=config.health_check_checkers, settings=settings
     )
 
+    price_history_service = providers.Singleton(
+        PriceHistoryService,
+        repository=price_history_repository,
+    )
+
     price_service = providers.Singleton(
-        PriceService, repository=price_repository, redis_adapter=redis_adapter, queue_producer=queue_producer
+        PriceService,
+        repository=price_repository,
+        redis_adapter=redis_adapter,
+        queue_producer=queue_producer,
+        price_history_repo=price_history_repository,
+        price_history_service=price_history_service,
     )
 
     alert_service = providers.Singleton(AlertService, alert_repository=alert_repository)

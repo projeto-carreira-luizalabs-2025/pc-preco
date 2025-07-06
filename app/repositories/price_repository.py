@@ -1,5 +1,3 @@
-from typing import Any, Dict, List, Optional, Callable
-
 from sqlalchemy import Column, Integer, Boolean
 
 from ..models import Price
@@ -10,6 +8,7 @@ from app.integrations.database.sqlalchemy_client import SQLAlchemyClient
 
 
 class PriceBase(SellerIdSkuPersistableEntityBase):
+
     __tablename__ = "pc_preco"
 
     de = Column(Integer, nullable=False)
@@ -18,6 +17,7 @@ class PriceBase(SellerIdSkuPersistableEntityBase):
 
 
 class PriceRepository(SQLAlchemyCrudRepository[Price, PriceBase]):
+
     def __init__(self, sql_client: SQLAlchemyClient):
         """
         Inicializa o repositório de preços com o cliente SQLAlchemy.

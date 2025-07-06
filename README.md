@@ -90,7 +90,7 @@ cp ./devtools/dotenv.dev .env
 
 Quaisquer comandos daqui para frente, iremos considerar que você está dentro
 do ambiente virtual `(venv)`.
-    
+
 ## ⚙️ Configuração do Banco de Dados
 
 1. Configuração dos contêineres da aplicação
@@ -99,11 +99,11 @@ do ambiente virtual `(venv)`.
 # Inicie os contêineres da aplicação, postgreSQL e Keycloak
 make docker-compose-up
 
-# Ajuste o arquivo .env alterando a variável APP_DB_URL para apontar para o seu banco de dados PostgreSQL local. 
+# Ajuste o arquivo .env alterando a variável APP_DB_URL para apontar para o seu banco de dados PostgreSQL local.
 APP_DB_URL: postgresql+asyncpg://USER:PASSWORD@HOST:PORT/DATABASE_NAME.
 
-# Se desejar parar e remover os contêineres, execute: 
-make docker-compose-down 
+# Se desejar parar e remover os contêineres, execute:
+make docker-compose-down
 ```
 
 2.  Migração PostgreSQL
@@ -119,7 +119,7 @@ alembic init alembic
 Edite o arquivo env.py para carregar a variável de ambiente APP_DB_URL, tal como deixamos no arquivo dotenv.dev.txt.
 
 3. Aplique as migrações
-   
+
 ```bash
 # Inicie a primeira migração:
 alembic revision --autogenerate -m "anything-creeate"
@@ -204,13 +204,14 @@ O relatório será gerado na pasta `htmlcov/`. Você pode abrir o arquivo `index
 ```bash
 make docker-compose-sonar-up # Inicia o servidor SonarQube e seus serviços dependentes.
 ```
+
 ATENÇÃO: Se ocorrer o erro de `vm.max_map_count`, consulte [Solução de Problemas](#erro-sonar-vm-max-map-count)
 
 2. Gere o Token de Autenticação
-   
-    1. Acesse interface web do SonarQube: [SonarQube](http://localhost:9000) 
-    2. Vá até: **My Account** > **Security**
-    3. Gere um token de autenticação pessoal ( _Guarde-o com segurança — ele não poderá ser visualizado novamente._ )
+
+   1. Acesse interface web do SonarQube: [SonarQube](http://localhost:9000)
+   2. Vá até: **My Account** > **Security**
+   3. Gere um token de autenticação pessoal ( _Guarde-o com segurança — ele não poderá ser visualizado novamente._ )
 
 3. No terminal, exporte as variáveis de ambiente:
 
@@ -229,7 +230,7 @@ pysonar-scanner
 
 ```bash
 # Esse comando irá desligar e remover os contêineres do SonarQube.
-make docker-compose-sonar-down 
+make docker-compose-sonar-down
 ```
 
 Ao finalizar, o SonarQube exibirá um relatório completo de qualidade do código na interface web.
@@ -257,29 +258,32 @@ sysctl vm.max_map_count
 ```
 
 Se o valor for menor que 262144, prossiga com uma das seguintes opções:
-    
+
 2. Aumente temporariamente (até o próximo reboot)
-    
+
 ```bash
 sudo sysctl -w vm.max_map_count=262144
 ```
-    
+
 3. Torne o valor permanente
-   
+
    1. Abra o arquivo de configurações:
-    ```bash
-    sudo nano /etc/sysctl.conf
-    ```
-    
+
+   ```bash
+   sudo nano /etc/sysctl.conf
+   ```
+
    2. Adicione a seguinte linha ao final do arquivo:
+
    ```bash
     vm.max_map_count=262144
-    ```
-   
+   ```
+
    3. Salve o arquivo e aplique a configuração
+
    ```bash
     sudo sysctl -p
-    ```
+   ```
 
 ## 📁 Estrutura do projeto
 

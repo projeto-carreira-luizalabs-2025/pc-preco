@@ -1,3 +1,6 @@
+from app.models.price_history_model import PriceHistory
+from app.repositories.price_history_repository import PriceHistoryRepository
+from app.services.price_history_service import PriceHistoryService
 from ..common.exceptions.price_exceptions import PriceBadRequestException, PriceNotFoundException
 from ..models import Price, PriceFilter
 from ..repositories import PriceRepository
@@ -22,9 +25,15 @@ class PriceService(CrudService[Price]):
     repository: PriceRepository
     redis_adapter: RedisAsyncioAdapter
     queue_producer: RabbitMQProducer
+    price_history_service: PriceHistoryService
 
     def __init__(
-        self, repository: PriceRepository, redis_adapter: RedisAsyncioAdapter, queue_producer: RabbitMQProducer
+        self,
+        repository: PriceRepository,
+        price_history_repo: PriceHistoryRepository,
+        price_history_service: PriceHistoryService,
+        redis_adapter: RedisAsyncioAdapter,
+        queue_producer: RabbitMQProducer,
     ):
         """
         Inicializa o serviço de preços com o repositório fornecido e o adaptador Redis.
@@ -35,6 +44,8 @@ class PriceService(CrudService[Price]):
         super().__init__(repository)
         self.redis_adapter = redis_adapter
         self.queue_producer = queue_producer
+        self.price_history_repo = price_history_repo
+        self.price_history_service = price_history_service
 
     async def get_filtered(self, paginator=Paginator, filters=dict) -> list[Price]:
         """
@@ -107,11 +118,18 @@ class PriceService(CrudService[Price]):
         self._validate_positive_prices(price_create)
 
         price = Price(**price_create.model_dump())
-        return await super().create(price)
+        created_price = await super().create(price)
+
+        # Registra o histórico de preços após a criação
+        price_history_data = price.model_dump()
+        await self.price_history_service.create(PriceHistory(**price_history_data))
+
+        return created_price
 
     async def patch(self, seller_id, sku, update_data, user_info) -> Price:
         """
         Atualiza campos de uma precificação.
+
         :param seller_id: Identificador do vendedor.
         :param sku: Código do produto.
         :update_data: Dicionário contendo os campos a serem atualizados.
@@ -130,7 +148,6 @@ class PriceService(CrudService[Price]):
 
         merged_price_data = existing_price.model_dump()
         merged_price_data.update(update_data.model_dump(exclude_none=True))
-
         merged_price_data["updated_by"] = user_info.user
 
         try:
@@ -157,6 +174,10 @@ class PriceService(CrudService[Price]):
 
         updated = await super().update_by_seller_id_and_sku(seller_id, sku, merged_price)
 
+        # Registra o histórico de preços após a atualização
+        price_history_data = updated.model_dump(exclude={"id"})
+        await self.price_history_service.create(PriceHistory(**price_history_data))
+
         # Remove o cache do preço atualizado
         cache_key = f"price:{seller_id}:{sku}"
         await self.redis_adapter.delete(cache_key)
@@ -166,6 +187,7 @@ class PriceService(CrudService[Price]):
     async def update(self, seller_id, sku, entity: Price) -> Price:
         """
         Atualiza uma precificação existente com novos valores.
+
         :param seller_id: Identificador do vendedor.
         :param sku: Código do produto.
         :param entity: Objeto contendo os novos dados do preço.
@@ -189,6 +211,10 @@ class PriceService(CrudService[Price]):
             entity.alerta_pendente = True
 
         updated = await super().update_by_seller_id_and_sku(seller_id, sku, entity)
+
+        # Registra o histórico de preços após a atualização
+        price_history_data = updated.model_dump(exclude={"id"})
+        await self.price_history_service.create(PriceHistory(**price_history_data))
 
         # Remove o cache do preço atualizado
         cache_key = f"price:{seller_id}:{sku}"

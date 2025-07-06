@@ -15,23 +15,26 @@ class IntSchema(SchemaType):
     id: int | None = Field(None, description="Identificador único do objeto")
 
 
-class AuditSchema(SchemaType):
+class CreatedAtMixin(SchemaType):
     created_at: datetime | None = Field(None, description="Data e hora da criação")
+
+
+class UpdatedAtMixin(SchemaType):
     updated_at: datetime | None = Field(None, description="Data e hora da atualização")
+
+
+class CreatedByMixin(SchemaType):
     created_by: UserModel | None = Field(None, description="Criado por")
+
+
+class UpdatedByMixin(SchemaType):
     updated_by: UserModel | None = Field(None, description="Atualizado por")
 
 
-class SemiAuditSchema(SchemaType):
-    created_at: datetime | None = Field(None, description="Data e hora da criação")
-    updated_at: datetime | None = Field(None, description="Data e hora da atualização")
+class AuditSchema(CreatedAtMixin, UpdatedAtMixin, CreatedByMixin, UpdatedByMixin):
+    pass
 
 
 class ResponseEntity(AuditSchema, IntSchema):
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class SemiResponseEntity(SemiAuditSchema, IntSchema):
 
     model_config = ConfigDict(from_attributes=True)

@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 
 from .base_schema import SellerSkuBaseModel
-from app.api.common.schemas import SemiResponseEntity
+from app.api.common.schemas.base import IntSchema, CreatedAtMixin, UpdatedAtMixin
 
 
 class BaseAlertModel(BaseModel):
@@ -15,7 +15,7 @@ class AlertCreate(SellerSkuBaseModel, BaseAlertModel):
     """Schema para criação de alertas"""
 
 
-class AlertResponse(BaseAlertModel, SemiResponseEntity):
+class AlertResponse(BaseAlertModel, IntSchema, CreatedAtMixin, UpdatedAtMixin):
     """Resposta de uma precificação"""
 
     class Config:

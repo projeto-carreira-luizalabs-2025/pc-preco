@@ -4,73 +4,45 @@ from app.common.datetime import utcnow
 from app.integrations.database.sqlalchemy_client import Base
 
 
-class IdEntityBase(Base):
-    """
-    Classe base para entidades que possuem um ID.
-    Esta classe deve ser herdada por todas as entidades que possuem um ID.
-    """
-
-    __abstract__ = True
-
+class IdMixin:
     id = Column(Integer, primary_key=True, index=True, nullable=False, autoincrement=True)
 
 
-class AuditEntityBase(Base):
-    """
-    Classe base para entidades que possuem auditoria.
-    Esta classe deve ser herdada por todas as entidades que precisam de auditoria.
-    """
-
-    __abstract__ = True
-
-    created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
-    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
+class CreatedByMixin:
     created_by = Column(JSON, nullable=False)
+
+
+class UpdatedByMixin:
     updated_by = Column(JSON, nullable=False)
 
 
-class PersistableEntityBase(IdEntityBase, AuditEntityBase):
-    """
-    Classe base para entidades persistentes.
-    Esta classe deve ser herdada por todas as entidades que precisam ser persistidas no banco de dados.
-    """
-
-    __abstract__ = True
-
-
-class PersistableEntitySemiAuditBase(IdEntityBase):
-    """
-    Classe base para entidades persistentes com auditoria parcial.
-    Esta classe deve ser herdada por todas as entidades que precisam ser persistidas no banco de dados,
-    mas não requerem auditoria completa.
-    """
-
-    __abstract__ = True
-
+class CreatedAtMixin:
     created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
+
+
+class UpdatedAtMixin:
     updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
 
 
-class SellerIdSkuPersistableEntityBase(PersistableEntityBase):
-    """
-    Classe base para entidades que possuem seller_id e sku.
-    Esta classe deve ser herdada por todas as entidades que precisam de seller_id e sku.
-    """
-
-    __abstract__ = True
-
+class SellerIdMixin:
     seller_id = Column(String, nullable=False, index=True)
+
+
+class SkuMixin:
     sku = Column(String, nullable=False, index=True)
 
 
-class SellerIdSkuPersistableEntitySemiAuditBase(PersistableEntitySemiAuditBase):
-    """
-    Classe base para entidades que possuem seller_id e sku com auditoria parcial.
-    Esta classe deve ser herdada por todas as entidades que precisam de seller_id e sku,
-    mas não requerem auditoria completa.
-    """
-
+class AuditEntityBase(Base, CreatedAtMixin, UpdatedAtMixin, CreatedByMixin, UpdatedByMixin):
     __abstract__ = True
 
-    seller_id = Column(String, nullable=False, index=True)
-    sku = Column(String, nullable=False, index=True)
+
+class IdEntityBase(Base, IdMixin):
+    __abstract__ = True
+
+
+class PersistableEntityBase(IdEntityBase, AuditEntityBase):
+    __abstract__ = True
+
+
+class SellerIdSkuPersistableEntityBase(PersistableEntityBase, SellerIdMixin, SkuMixin):
+    __abstract__ = True
