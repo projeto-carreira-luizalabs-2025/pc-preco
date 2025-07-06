@@ -8,17 +8,6 @@ O `pc-preco` é um microsserviço que gerencia e fornece os **preços de produto
 - Preço a prazo (com ou sem juros)
 - Variação de preços por vendedor (mesmo produto, diferentes preços)
 
-Ele se integra com outros microsserviços para garantir que o preço exibido ao consumidor final seja o mais preciso possível.
-
-### 🔗 Integrações
-
-- `pc-catalogo`: para identificar a qual produto o preço se refere.
-- `pc-identidade`: para saber qual varejista está ofertando o preço.
-- `pc-estoque`: para que o preço exibido esteja alinhado à disponibilidade do produto.
-- `pc-frete`: que junto ao preço, compõe o custo final percebido pelo consumidor.
-
-Cada microsserviço mantém responsabilidades bem definidas, mas trabalham de forma integrada para oferecer uma experiência de compra completa.
-
 ## 👥 Equipe
 
 - Carlos Eduardo
@@ -40,112 +29,118 @@ Você pode encontrar a documentação inicial referente a este projeto neste [de
 
 ## 💻 Tecnologias
 
-- **Linguagem**: [Python 3.12](https://docs.python.org/3.12/)
-- **Framework**: [FastAPI](https://fastapi.tiangolo.com/)
-- **Banco de Dados**: [PostgreSQL](https://www.postgresql.org/)
-- **ORM**: [SQLAlchemy](https://www.sqlalchemy.org/)
-- **Autenticação e Autorização**: [Keycloak](https://www.keycloak.org/)
-- **Caching**: [Redis](https://redis.io/)
-- **Filas de mensagens**: [RabbitMQ](https://www.rabbitmq.com/)
-- **Testes**: [Pytest](https://docs.pytest.org/)
-- **Code Quality**: [SonarQube](https://www.sonarsource.com/products/sonarqube/)
+- **Linguagem:** [Python 3.12](https://docs.python.org/3.12/)
+- **Framework:** [FastAPI](https://fastapi.tiangolo.com/)
+- **Banco de Dados:** [PostgreSQL](https://www.postgresql.org/)
+- **ORM:** [SQLAlchemy](https://www.sqlalchemy.org/)
+- **Migração:** [Alembic](https://alembic.sqlalchemy.org/en/latest/)
+- **Autenticação e Autorização:** [Keycloak](https://www.keycloak.org/)
+- **Caching:** [Redis](https://redis.io/)
+- **Filas de mensagens:** [RabbitMQ](https://www.rabbitmq.com/)
+- **Orquestração:** [Docker](https://www.docker.com/) e [Docker Compose](https://docs.docker.com/compose/)
+- **Documentação da API:** [Swagger](https://swagger.io/)
+- **Testes:** [Pytest](https://docs.pytest.org/)
+- **Qualidade:** [SonarQube](https://www.sonarsource.com/products/sonarqube/)
 
-## 🧰 Configuração do ambiente local
+## 🧰 Configuração do ambiente virtual
 
 Todos os comandos serão via terminal (Linux 🐧).
 
-1️⃣ Clone o projeto em sua máquina:
+1. Clone o projeto em sua máquina:
 
 ```bash
 git clone https://github.com/projeto-carreira-luizalabs-2025/pc-preco.git
 ```
 
-2️⃣ Acesse o diretório:
+2. Crie o [ambiente virtual](https://docs.python.org/3.12/tutorial/venv.html):
 
 ```bash
-cd pc-preco
+# Linux
+make build-venv
+
+# Windows
+python3.12 -m venv venv
 ```
 
-3️⃣ Crie o [ambiente virtual](https://docs.python.org/3.12/tutorial/venv.html):
+3. Ative o [ambiente virtual](https://docs.python.org/3.12/tutorial/venv.html):
 
 ```bash
-make build-venv # Instala as bibliotecas para trabalhar com o projeto
-# Ou:
-# python3.12 -m venv venv
+# Linux
+source ./venv/bin/activate
+
+# Windows
+./venv/bin/activate
 ```
 
-4️⃣ Ative o [ambiente virtual](https://docs.python.org/3.12/tutorial/venv.html):
-
-```bash
-. ./venv/bin/activate
-# ou
-# source ./venv/bin/activate
-```
-
-Quaisquer comandos daqui para frente, iremos considerar que você está dentro
-do ambiente virtual `(venv)`.
-
-5️⃣ Instale as dependências
+4. Instale as dependências
 
 ```bash
 make requirements-dev
 ```
 
-## 🛠️ Execução local
-
-Após configurar o ambiente local e ativar o ambiente virtual, você pode rodar a aplicação localmente com os seguintes comandos:
-
-1️⃣ Carregue as variáveis de ambiente para o modo de teste:
+5. Copie o arquivo de ambiente
 
 ```bash
-make load-test-env
+# Linux
+make load-dev-env
+
+# Windows
+cp ./devtools/dotenv.dev .env
 ```
 
-2️⃣ Inicie a API em modo desenvolvimento:
+Quaisquer comandos daqui para frente, iremos considerar que você está dentro
+do ambiente virtual `(venv)`.
+
+## ⚙️ Configuração do Banco de Dados
+
+1. Configuração dos contêineres da aplicação
 
 ```bash
+# Inicie os contêineres da aplicação, postgreSQL e Keycloak
+make docker-compose-up
+
+# Ajuste o arquivo .env alterando a variável APP_DB_URL para apontar para o seu banco de dados PostgreSQL local.
+APP_DB_URL: postgresql+asyncpg://USER:PASSWORD@HOST:PORT/DATABASE_NAME.
+
+# Se desejar parar e remover os contêineres, execute:
+make docker-compose-down
+```
+
+2.  Migração PostgreSQL
+
+```bash
+# Instale localmente
+pip install alembic==1.16.1 psycopg2-binary==2.9.10
+
+# Crie o ambiente de migração
+alembic init alembic
+```
+
+Edite o arquivo env.py para carregar a variável de ambiente APP_DB_URL, tal como deixamos no arquivo dotenv.dev.txt.
+
+3. Aplique as migrações
+
+```bash
+# Inicie a primeira migração:
+alembic revision --autogenerate -m "anything-creeate"
+
+# Rode a migração:
+make migration
+# ou
+alembic upgrade head
+```
+
+## 🛠️ Execução
+
+Com o ambiente virtual ativado, você pode rodar a aplicação executando:
+
+```bash
+# Linux
 make run-dev
+
+# Windows
+uvicorn app.api_main:app --reload
 ```
-
-Após iniciar a aplicação, consulte a seção [📘 Acesso à documentação da API](#-acesso-a-documentação-da-api) para saber como acessá-la.
-
-## 🐳 Execução com Docker
-
-1️⃣ Construir a imagem
-
-```bash
-make docker-build # Esse comando criará uma imagem Docker chamada pc/preco.
-```
-
-2️⃣ Executar a aplicação
-
-```bash
-make docker-run # Inicia um contêiner chamado pc-preco
-```
-
-3️⃣ Executar com serviços auxiliares (como PostgreSQL)
-
-```bash
-make docker-compose-up # Sobe o BD PostgreSQL e demais serviços definidos no docker-compose.yml
-```
-
-**🛑 ATENÇÃO: Execute o comando abaixo apenas se quiser:**
-
-1️⃣ Parar e remover contêineres
-
-```bash
-make docker-compose-down # Encerra e remove os contêineres gerenciados pelo Docker Compose.
-```
-
-2️⃣ Acessar o shell do contêiner
-
-Se precisar acessar o shell do contêiner para depuração ou outras operações:
-
-```bash
-make docker-shell # Abre uma sessão bash interativa dentro do contêiner para depuração ou comandos manuais.
-```
-
-🔗 Após iniciar a aplicação, consulte a seção [📘 Acesso à documentação da API](#-acesso-a-documentação-da-api) para instruções detalhadas de como acessá-la.
 
 ## 📘 Acesso à documentação da API
 
@@ -154,7 +149,7 @@ Após iniciar a aplicação (localmente ou via Docker), a documentação da API 
 - Swagger UI: [localhost:8000/api/docs](http://0.0.0.0:8000/api/docs)
 - ReDoc: [localhost:8000/redoc](http://0.0.0.0:8000/redoc)
 
-## 🧪 Testes
+## 🧪 Testes e Qualidade de Código
 
 ### 📂 Estrutura dos testes
 
@@ -176,10 +171,14 @@ tests/
 
 ### 🚀 Como executar os testes
 
-Para rodar os testes automatizados do projeto, use o comando abaixo:
+Para rodar os testes automatizados do projeto, use os comandos abaixo:
 
 ```bash
+# Linux
 make test
+
+# Windows
+pytest
 ```
 
 ### 📈 Cobertura de testes
@@ -187,18 +186,58 @@ make test
 Para verificar a cobertura dos testes, execute:
 
 ```bash
+# Linux
 make coverage
+# ou
+make coverage-html
+
+# Windows
+pytest --cov=app --cov-report=html
 ```
+
+O relatório será gerado na pasta `htmlcov/`. Você pode abrir o arquivo `index.html` em seu navegador para visualizar os detalhes.
 
 ## 🔍 Análise de qualidade com SonarQube
 
-Para subir o ambiente do SonarQube, execute:
+1. Inicie o SonarQube:
 
 ```bash
 make docker-compose-sonar-up # Inicia o servidor SonarQube e seus serviços dependentes.
 ```
 
-### ⚠️ Possível erro: vm.max_map_count
+ATENÇÃO: Se ocorrer o erro de `vm.max_map_count`, consulte [Solução de Problemas](#erro-sonar-vm-max-map-count)
+
+2. Gere o Token de Autenticação
+
+   1. Acesse interface web do SonarQube: [SonarQube](http://localhost:9000)
+   2. Vá até: **My Account** > **Security**
+   3. Gere um token de autenticação pessoal ( _Guarde-o com segurança — ele não poderá ser visualizado novamente._ )
+
+3. No terminal, exporte as variáveis de ambiente:
+
+```bash
+export SONAR_TOKEN=<seu_token>
+export SONAR_HOST_URL=http://localhost:9000
+```
+
+4. Execute o Scanner:
+
+```bash
+pysonar-scanner
+```
+
+5. Para encerrar o ambiente, utilize:
+
+```bash
+# Esse comando irá desligar e remover os contêineres do SonarQube.
+make docker-compose-sonar-down
+```
+
+Ao finalizar, o SonarQube exibirá um relatório completo de qualidade do código na interface web.
+
+## ⚠️ Solução de Problemas
+
+### <a id="erro-sonar-vm-max-map-count"></a> 🐛 Erro sonar vm.max_map_count>
 
 Durante a inicialização do SonarQube, você pode se deparar com o seguinte erro:
 
@@ -210,80 +249,49 @@ Esse problema ocorre porque o Elasticsearch (utilizado pelo SonarQube) exige que
 
 ### ✅ Como resolver
 
-Siga os passos abaixo para ajustar esse parâmetro no seu sistema:
+Para ajustar esse parâmetro no seu sistema:
 
-1️⃣ Verifique o valor atual:
+1. Verifique o valor atual:
 
 ```bash
 sysctl vm.max_map_count
 ```
 
-Se o valor for menor que 262144, prossiga com os próximos passos.
+Se o valor for menor que 262144, prossiga com uma das seguintes opções:
 
-2️⃣ Aumente temporariamente (até o próximo reboot):
+2. Aumente temporariamente (até o próximo reboot)
 
 ```bash
 sudo sysctl -w vm.max_map_count=262144
 ```
 
-3️⃣ Torne o valor permanente:
+3. Torne o valor permanente
 
-Abra o arquivo de configurações:
+   1. Abra o arquivo de configurações:
 
-```bash
-sudo nano /etc/sysctl.conf
-```
+   ```bash
+   sudo nano /etc/sysctl.conf
+   ```
 
-Adicione a seguinte linha ao final do arquivo:
+   2. Adicione a seguinte linha ao final do arquivo:
 
-```bash
-vm.max_map_count=262144
-```
+   ```bash
+    vm.max_map_count=262144
+   ```
 
-Salve o arquivo e aplique a configuração:
+   3. Salve o arquivo e aplique a configuração
 
-```bash
-sudo sysctl -p
-```
-
-### 🌐 Acessando o SonarQube
-
-Após o ambiente estar no ar, acesse a interface web pelo endereço: `http://localhost:9000`
-
-Para encerrar o ambiente, utilize:
-
-```bash
-make docker-compose-sonar-down # Esse comando irá desligar e remover os contêineres do SonarQube.
-```
-
-### 🔐 Gerando Token de Autenticação
-
-1️⃣ Acesse o SonarQube: http://localhost:9000
-
-2️⃣ Vá até: **My Account** > **Security**
-
-3️⃣ Gere um token de autenticação pessoal ( _Guarde-o com segurança — ele não poderá ser visualizado novamente._ )
-
-4️⃣ No terminal, exporte as variáveis de ambiente:
-
-```bash
-export SONAR_TOKEN=<seu_token>
-export SONAR_HOST_URL=http://localhost:9000
-```
-
-5️⃣ Execute o Scanner:
-
-```bash
-pysonar-scanner
-```
-
-Ao finalizar, o SonarQube exibirá um relatório completo de qualidade do código na interface web.
+   ```bash
+    sudo sysctl -p
+   ```
 
 ## 📁 Estrutura do projeto
 
 ```bash
 .
 ├── README.md
+├── alembic/
+│   └── versions
 ├── app/                        # Código-fonte principal da aplicação (Em construção)
 │   └── api/                    # Rotas, controladores e interfaces REST da aplicação
 │   └── common/                 # Utilitários e código compartilhado
@@ -294,14 +302,29 @@ Ao finalizar, o SonarQube exibirá um relatório completo de qualidade do códig
 │   └── settings/               # Configurações da aplicação
 │   └── worker/
 ├── devtools/                   # Ferramentas e scripts auxiliares para desenvolvimento
-│   └── docker                  # Arquivos e configurações para Docker (ex: Dockerfile, docker-compose-sonar.yml)
+|   └── api/
+│   └── docker/                  # Arquivos e configurações para Docker (ex: Dockerfile, docker-compose-sonar.yml)
+|   └── keycloack-config/
 │   └── scripts/                # Scripts automatizados usados no `makefile` (ex: configuração de ambiente)
 │   └── info-projeto.md         # Documento de levantamento de requisitos
 ├── requirements/
-├── tests                       # Pasta para testes da aplicação
+├── tests/                       # Pasta para testes da aplicação
+│   └── factories
+│   └── fixtures
 │   └── unit                    # Testes unitários
+├── venv/
 ├── makefile                    # Comandos automatizados (ex: build, run, test)
 ├── pyproject.toml
 ├── requirements.txt
 ├── sonar-project.properties    # Configurações do SonarQube
 ```
+
+## 📫 Contribuições
+
+O projeto está aberto a contribuições. O fluxo para contribuição é o seguinte:
+
+1. Realize um fork do repositório.
+2. Crie uma branch descritiva para a sua feature ou correção.
+3. Submeta um Pull Request.
+4. Aguarde o Code Review pela equipe de desenvolvimento.
+5. Após a aprovação, sua alteração será integrada ao código principal.

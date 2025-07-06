@@ -1,4 +1,4 @@
-from pydantic import Field, PostgresDsn, HttpUrl
+from pydantic import Field, PostgresDsn, HttpUrl, RedisDsn
 
 from .base import BaseSettings
 
@@ -21,6 +21,11 @@ class AppSettings(BaseSettings):
 
     pc_logging_level: str = Field("DEBUG", description="Nível do logging")
     pc_logging_env: str = Field("prod", description="Ambiente do logging (prod ou dev ou test)")
+
+    app_redis_url: RedisDsn = Field(..., title="URL para o Redis")
+
+    app_queue_url: str = Field(..., title="URL para o RabbitMQ")
+    app_queue_name: str = Field(..., title="Nome da fila no RabbitMQ")
 
 
 settings = AppSettings()

@@ -12,6 +12,7 @@ from .base import (
 from .query import QueryModel
 from .price_model import Price
 from .price_filter_model import PriceFilter
+from .alert_model import Alert
 
 __all__ = [
     "AuditModel",
@@ -19,6 +20,7 @@ __all__ = [
     "UuidModel",
     "UuidType",
     "Price",
+    "Alert",
     "PriceFilter",
     "QueryModel",
     "IntModel",
