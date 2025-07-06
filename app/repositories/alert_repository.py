@@ -3,11 +3,11 @@ from sqlalchemy import Column, String
 from ..models import Alert
 
 from .base.sqlalchemy_crud_repository import SQLAlchemyCrudRepository
-from .base.sqlalchemy_entity_base import SellerIdSkuPersistableEntityBase
+from .base.sqlalchemy_entity_base import SellerIdSkuPersistableEntitySemiAuditBase
 from app.integrations.database.sqlalchemy_client import SQLAlchemyClient
 
 
-class AlertBase(SellerIdSkuPersistableEntityBase):
+class AlertBase(SellerIdSkuPersistableEntitySemiAuditBase):
     __tablename__ = "pc_alertas"
 
     mensagem = Column(String, nullable=False)

@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional, Callable
 
-from sqlalchemy import Column, Integer
+from sqlalchemy import Column, Integer, Boolean
 
 from ..models import Price
 
@@ -14,6 +14,7 @@ class PriceBase(SellerIdSkuPersistableEntityBase):
 
     de = Column(Integer, nullable=False)
     por = Column(Integer, nullable=False)
+    alerta_pendente = Column(Boolean, default=False, nullable=False)
 
 
 class PriceRepository(SQLAlchemyCrudRepository[Price, PriceBase]):
@@ -23,5 +24,6 @@ class PriceRepository(SQLAlchemyCrudRepository[Price, PriceBase]):
         :param sql_client: Instância do cliente SQLAlchemy.
         """
         super().__init__(sql_client=sql_client, model_class=Price, entity_base_class=PriceBase)
+
 
 __all__ = ["PriceRepository"]

@@ -1,4 +1,4 @@
-from .base import ResponseEntity, SchemaType, UuidType
+from .base import ResponseEntity, SemiResponseEntity, SchemaType, UuidType
 from .pagination import Paginator, get_request_pagination
 from .response import (
     ErrorResponse,
@@ -21,6 +21,7 @@ __all__ = [
     "Paginator",
     "PageResponse",
     "ResponseEntity",
+    "SemiResponseEntity",
     "SchemaType",
     "UuidType",
 ]

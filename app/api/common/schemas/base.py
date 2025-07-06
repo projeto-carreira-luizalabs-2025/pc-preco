@@ -15,14 +15,6 @@ class IntSchema(SchemaType):
     id: int | None = Field(None, description="Identificador único do objeto")
 
 
-class OwnershipSchema(SchemaType):
-    """
-    Em obras
-    """
-
-    ...
-
-
 class AuditSchema(SchemaType):
     created_at: datetime | None = Field(None, description="Data e hora da criação")
     updated_at: datetime | None = Field(None, description="Data e hora da atualização")
@@ -30,6 +22,16 @@ class AuditSchema(SchemaType):
     updated_by: UserModel | None = Field(None, description="Atualizado por")
 
 
-class ResponseEntity(AuditSchema, IntSchema, OwnershipSchema):
+class SemiAuditSchema(SchemaType):
+    created_at: datetime | None = Field(None, description="Data e hora da criação")
+    updated_at: datetime | None = Field(None, description="Data e hora da atualização")
+
+
+class ResponseEntity(AuditSchema, IntSchema):
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SemiResponseEntity(SemiAuditSchema, IntSchema):
 
     model_config = ConfigDict(from_attributes=True)
