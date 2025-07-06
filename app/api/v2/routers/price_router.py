@@ -11,6 +11,7 @@ from app.api.common.responses.price_responses import (
     BAD_REQUEST_RESPONSE,
     MISSING_HEADER_RESPONSE,
     NOT_FOUND_RESPONSE,
+    HISTORY_NOT_FOUND_RESPONSE,
     UNPROCESSABLE_ENTITY_RESPONSE,
 )
 from app.api.common.schemas import ListResponse, Paginator, get_request_pagination
@@ -216,7 +217,7 @@ async def delete(
     response_model=PriceHistoryListResponse,
     status_code=status.HTTP_200_OK,
     summary="Recuperar histórico de precificação de um produto por seller_id e sku",
-    responses={404: NOT_FOUND_RESPONSE, 400: MISSING_HEADER_RESPONSE},
+    responses={404: HISTORY_NOT_FOUND_RESPONSE, 400: MISSING_HEADER_RESPONSE},
 )
 @inject
 async def get_history_by_seller_id_and_sku(

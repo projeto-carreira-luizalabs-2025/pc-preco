@@ -104,6 +104,19 @@ class PriceErrorResponse(ErrorResponse):
                     }
                 ],
             },
+            "history_not_found": {
+                "slug": "NOT_FOUND",
+                "message": "Histórico de preço não encontrado.",
+                "details": [
+                    {
+                        "message": "Histórico de preço não encontrado.",
+                        "location": "path",
+                        "slug": "historico_nao_encontrado",
+                        "field": "sku",
+                        "ctx": {"seller_id": "abc123", "sku": "sku001"},
+                    }
+                ],
+            },
             "unprocessable_entity": {
                 "slug": "UNPROCESSABLE_ENTITY",
                 "message": "Unprocessable Entity",

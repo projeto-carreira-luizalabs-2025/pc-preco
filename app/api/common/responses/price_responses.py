@@ -12,6 +12,11 @@ NOT_FOUND_RESPONSE = {
     "content": {APPLICATION_JSON: {"example": PriceErrorResponse.Config.json_schema_extra["not_found"]}},
 }
 
+HISTORY_NOT_FOUND_RESPONSE = {
+    "description": "Error: Not Found",
+    "content": {APPLICATION_JSON: {"example": PriceErrorResponse.Config.json_schema_extra["history_not_found"]}},
+}
+
 BAD_REQUEST_RESPONSE = {
     "description": "Error: Bad Request",
     "content": {APPLICATION_JSON: {"example": PriceErrorResponse.Config.json_schema_extra["de"]}},
