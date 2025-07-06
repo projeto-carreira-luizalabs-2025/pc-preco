@@ -30,8 +30,7 @@ def init() -> FastAPI:
     # Autowiring
     container.wire(modules=["app.api.common.routers.health_check_routers"])
     container.wire(modules=["app.api.v2.routers.price_router"])
-
-    # Outros middlewares podem ser adicionados aqui se necessário
+    container.wire(modules=["app.api.v2.routers.alerta_router"])
 
     return app_api
 
