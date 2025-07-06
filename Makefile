@@ -101,6 +101,13 @@ else
 	@ENV=dev $(INIT) --reload
 endif
 
+.PHONY: create-queue worker
+create-queue:
+	python -m devtools.scripts.queue.create_queue
+
+worker:
+	python -m app.worker.worker_main
+
 docker-build:
 	docker build -f $(DOCKERFILE_PATH) -t $(DOCKER_IMAGE_NAME) .
 
