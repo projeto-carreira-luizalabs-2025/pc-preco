@@ -46,13 +46,13 @@ Você pode encontrar a documentação inicial referente a este projeto neste [de
 
 Todos os comandos serão via terminal (Linux 🐧).
 
-Clone o projeto em sua máquina:
+1. Clone o projeto em sua máquina:
 
 ```bash
 git clone https://github.com/projeto-carreira-luizalabs-2025/pc-preco.git
 ```
 
-Crie o [ambiente virtual](https://docs.python.org/3.12/tutorial/venv.html):
+2. Crie o [ambiente virtual](https://docs.python.org/3.12/tutorial/venv.html):
 
 ```bash
 # Linux
@@ -62,7 +62,7 @@ make build-venv
 python3.12 -m venv venv
 ```
 
-Ative o [ambiente virtual](https://docs.python.org/3.12/tutorial/venv.html):
+3. Ative o [ambiente virtual](https://docs.python.org/3.12/tutorial/venv.html):
 
 ```bash
 # Linux
@@ -72,13 +72,13 @@ source ./venv/bin/activate
 ./venv/bin/activate
 ```
 
-Instale as dependências
+4. Instale as dependências
 
 ```bash
 make requirements-dev
 ```
 
-Copie o arquivo de ambiente
+5. Copie o arquivo de ambiente
 
 ```bash
 # Linux
