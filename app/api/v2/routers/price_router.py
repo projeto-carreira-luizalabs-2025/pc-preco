@@ -16,6 +16,7 @@ from app.api.common.responses.price_responses import (
 )
 from app.api.common.schemas import ListResponse, Paginator, get_request_pagination
 from app.api.v2.schemas.price_history_schema import PriceHistoryListResponse
+from app.api.v2.schemas.price_suggestion_schema import PriceSuggestionResponse
 from app.api.v2.schemas.price_schema import PriceCreate, PricePatch, PriceResponse, PriceUpdate
 from app.container import Container
 from app.models import Price
@@ -234,3 +235,50 @@ async def get_history_by_seller_id_and_sku(
     )
 
     return await price_history_service.get_by_seller_id_and_sku(seller_id=seller_id, sku=sku, paginator=paginator)
+
+
+@router.post(
+    "/{sku}/sugerir-preco",
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Solicita sugestão de preço via IA",
+    response_model=PriceSuggestionResponse,
+    responses={
+        400: MISSING_HEADER_RESPONSE,
+    },
+)
+@inject
+async def solicitar_sugestao_preco(
+    sku: str,
+    seller_id: str = Depends(get_required_seller_id),
+    price_service: "PriceService" = Depends(Provide[Container.price_service]),
+):
+    logger.info(
+        "Solicitando sugestão de preço por análise de histórico para seller_id: %s, sku: %s",
+        seller_id,
+        sku,
+        extra={"trace-id": "N/A"},
+    )
+
+    return await price_service.request_price_suggestion(seller_id=seller_id, sku=sku)
+
+
+# Consulta status/resultado da sugestão de preço
+@router.get(
+    "/sugerir-preco/status/{job_id}",
+    summary="Consulta status da sugestão de preço via IA",
+    responses={200: {"description": "Status ou resultado da sugestão"}},
+    response_model=PriceSuggestionResponse,
+)
+@inject
+async def status_sugestao_preco(
+    job_id: str,
+    price_service: "PriceService" = Depends(Provide[Container.price_service]),
+    seller_id: str = Depends(get_required_seller_id),
+):
+    logger.info(
+        "Verificando status da sugestão de preço por análise de histórico para job_id: %s",
+        job_id,
+        extra={"trace-id": "N/A"},
+    )
+
+    return await price_service.get_price_suggestion(job_id=job_id)
