@@ -58,12 +58,20 @@ class RabbitMQAdapter:
     def create_queue(self, queue_name: str):
         self.connect()
         self.channel.queue_declare(queue=queue_name)
+        self.channel.close()
         self.connection.close()
+        self.channel = None
+        self.connection = None
 
     def publish_data(self, queue_name: str, message: dict):
         self.connect()
         self.channel.basic_publish(exchange='', routing_key=queue_name, body=json.dumps(message))
-        self.connection.close()
+        if self.channel is not None:
+            self.channel.close()
+            self.channel = None
+        if self.connection is not None:
+            self.connection.close()
+            self.connection = None
 
     def consume_data(self, queue_name: str) -> dict:
         self.connect()
@@ -85,7 +93,10 @@ class RabbitMQAdapter:
     def delete_queue(self, queue_name: str):
         self.connect()
         self.channel.queue_delete(queue=queue_name)
+        self.channel.close()
         self.connection.close()
+        self.channel = None
+        self.connection = None
 
     def commit(self, delivery_tag: int):
         self.connect()

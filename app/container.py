@@ -33,7 +33,10 @@ class Container(containers.DeclarativeContainer):
     redis_adapter = providers.Singleton(RedisAsyncioAdapter, config.app_redis_url)
 
     # Fila
-    queue_producer = providers.Factory(RabbitMQProducer, config.app_queue_url, config.app_queue_name)
+    alert_queue_producer = providers.Factory(RabbitMQProducer, config.app_queue_url, config.app_alert_queue_name)
+    suggestion_queue_producer = providers.Factory(
+        RabbitMQProducer, config.app_queue_url, config.app_price_suggestion_queue_name
+    )
 
     # Repositórios
     price_repository = providers.Singleton(PriceRepository, sql_client)
@@ -54,7 +57,8 @@ class Container(containers.DeclarativeContainer):
         PriceService,
         repository=price_repository,
         redis_adapter=redis_adapter,
-        queue_producer=queue_producer,
+        alert_queue_producer=alert_queue_producer,
+        suggestion_queue_producer=suggestion_queue_producer,
         price_history_repo=price_history_repository,
         price_history_service=price_history_service,
     )

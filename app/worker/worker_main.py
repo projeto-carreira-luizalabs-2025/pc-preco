@@ -17,6 +17,7 @@ from ..settings.worker import WorkerSettings
 from .container_event_worker import WorkerContainer
 
 from .tasks.create_alert_task import CreateAlertTask
+from .tasks.suggest_price_task import SuggestPriceTask
 
 logger = logging.getLogger(__name__)
 
@@ -37,8 +38,12 @@ class WorkerMain:
         self.container.wire([__name__])
 
     @staticmethod
-    def get_tasks(create_alert_task: CreateAlertTask = Provide[WorkerContainer.create_alert_task]) -> list:
-        tasks = (create_alert_task,)
+    def get_tasks(
+        create_alert_task: CreateAlertTask = Provide[WorkerContainer.create_alert_task],
+        suggest_price_task: SuggestPriceTask = Provide[WorkerContainer.suggest_price_task],
+    ) -> list:
+
+        tasks = (create_alert_task, suggest_price_task)
         return tasks
 
     def init(self):
