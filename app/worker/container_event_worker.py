@@ -6,8 +6,12 @@ from app.settings.worker import WorkerSettings
 from app.integrations.database.sqlalchemy_client import SQLAlchemyClient
 
 from app.worker.tasks.create_alert_task import CreateAlertTask
+from app.worker.tasks.suggest_price_task import SuggestPriceTask
+
 from app.services.alert_service import AlertService
 from app.repositories.alert_repository import AlertRepository
+
+from app.integrations.cache.redis_asyncio_adapter import RedisAsyncioAdapter
 
 
 class WorkerContainer(containers.DeclarativeContainer):
@@ -20,7 +24,12 @@ class WorkerContainer(containers.DeclarativeContainer):
 
     sql_client = providers.Singleton(SQLAlchemyClient, config.app_db_url)
 
-    queue_consumer = providers.Factory(RabbitMQConsumer, config.app_queue_url, config.app_queue_name)
+    redis_adapter = providers.Singleton(RedisAsyncioAdapter, config.app_redis_url)
+
+    alert_queue_consumer = providers.Factory(RabbitMQConsumer, config.app_queue_url, config.app_alert_queue_name)
+    suggestion_queue_consumer = providers.Factory(
+        RabbitMQConsumer, config.app_queue_url, config.app_price_suggestion_queue_name
+    )
 
     # -----------------------
     # ** Repositórios
@@ -44,4 +53,11 @@ class WorkerContainer(containers.DeclarativeContainer):
     # ** tarefas
     #
 
-    create_alert_task = providers.Singleton(CreateAlertTask, alert_service=alert_service, consumer=queue_consumer)
+    create_alert_task = providers.Singleton(CreateAlertTask, alert_service=alert_service, consumer=alert_queue_consumer)
+    suggest_price_task = providers.Singleton(
+        SuggestPriceTask,
+        redis_adapter=redis_adapter,
+        consumer=suggestion_queue_consumer,
+        ia_api_url=config.ia_api_url,
+        ia_model=config.ia_model,
+    )
