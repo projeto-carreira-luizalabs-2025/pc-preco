@@ -20,16 +20,21 @@ def produce_consume(app_settings: AppSettings):
 
 def create_queue():
     """
-    Cria fila da aplicação.
+    Cria múltiplas filas da aplicação.
     """
     app_settings = AppSettings()
 
-    queue_name = app_settings.app_queue_name
-    print("Criando a fila", queue_name)
+    queue_names = [
+        app_settings.app_alert_queue_name,
+        app_settings.app_price_suggestion_queue_name,
+    ]
 
     rabbitmq_adapter = RabbitMQAdapter(app_settings.app_queue_url)
-    rabbitmq_adapter.create_queue(queue_name)
-    print("Fila criada!")
+
+    for queue_name in queue_names:
+        print("Criando a fila", queue_name)
+        rabbitmq_adapter.create_queue(queue_name)
+        print("Fila criada!")
 
 
 if __name__ == "__main__":
