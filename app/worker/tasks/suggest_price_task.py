@@ -91,7 +91,7 @@ class SuggestPriceTask:
             response.raise_for_status()
 
             # A resposta da API do Ollama com format: "json" já é um JSON
-            response_data = response.json()
+            response_data = await response.json()
 
             ia_response = response_data.get("response", "").strip()
 

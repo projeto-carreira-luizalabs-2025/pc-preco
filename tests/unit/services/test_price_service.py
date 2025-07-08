@@ -215,3 +215,90 @@ class TestPriceService:
         assert updated_price.por == 2**31 - 1
         repository_mock.find_by_seller_id_and_sku.assert_called_once_with("1", "A")
         repository_mock.update_by_seller_id_and_sku.assert_called_once_with("1", "A", price_update)
+
+    @pytest.mark.asyncio
+    async def test_find_price_in_cache_hit(self, service):
+        cached_price = {"seller_id": "1", "sku": "A", "de": 100, "por": 90, "alerta_pendente": False}
+        service.redis_adapter.get_json.return_value = cached_price
+        result = await service.find_price_in_cache("1", "A", "price:1:A")
+        assert result.seller_id == "1"
+        assert result.sku == "A"
+
+    @pytest.mark.asyncio
+    async def test_find_price_in_cache_miss(self, service):
+        service.redis_adapter.get_json.return_value = None
+        result = await service.find_price_in_cache("1", "A", "price:1:A")
+        assert result is None
+
+    def test_raise_not_found(self):
+        from app.services.price_service import PriceService
+
+        with pytest.raises(NotFoundException):
+            PriceService._raise_not_found("1", "A", True)
+
+    def test_raise_bad_request(self):
+        from app.services.price_service import PriceService
+
+        svc = PriceService(
+            repository=AsyncMock(),
+            price_history_repo=AsyncMock(),
+            price_history_service=AsyncMock(),
+            redis_adapter=AsyncMock(),
+            alert_queue_producer=MagicMock(),
+            suggestion_queue_producer=MagicMock(),
+        )
+        with pytest.raises(BadRequestException):
+            svc._raise_bad_request("erro", "field", "value")
+
+    def test_verify_pending_alert_raises(self, service):
+        price = Price(seller_id="1", sku="A", de=100, por=90, alerta_pendente=True)
+        with pytest.raises(BadRequestException):
+            service._verify_pending_alert(price)
+
+    @pytest.mark.asyncio
+    async def test_detects_variation_triggers_alert(self, service):
+        # Deve retornar True e criar task se variação > 50%
+        entity = Price(seller_id="1", sku="A", de=100, por=200, alerta_pendente=False)
+        result = service._detects_variation(100, entity)
+        assert result is True
+
+    @pytest.mark.asyncio
+    async def test_detects_variation_no_alert(self, service):
+        entity = Price(seller_id="1", sku="A", de=100, por=120, alerta_pendente=False)
+        result = service._detects_variation(100, entity)
+        assert result is False
+
+    @pytest.mark.asyncio
+    async def test_request_price_suggestion(self, service):
+        # Simula histórico suficiente
+        service.price_history_service.get_last_n_prices.return_value = [
+            Price(seller_id="1", sku="A", de=100, por=90),
+            Price(seller_id="1", sku="A", de=100, por=100),
+            Price(seller_id="1", sku="A", de=100, por=110),
+            Price(seller_id="1", sku="A", de=100, por=120),
+            Price(seller_id="1", sku="A", de=100, por=130),
+        ]
+        resp = await service.request_price_suggestion("1", "A")
+        assert resp.status == "pending"
+        assert hasattr(resp, "job_id")
+
+    @pytest.mark.asyncio
+    async def test_request_price_suggestion_not_found(self, service):
+        service.price_history_service.get_last_n_prices.return_value = []
+        from app.services.price_service import PriceNotFoundException
+
+        with pytest.raises(PriceNotFoundException):
+            await service.request_price_suggestion("1", "A")
+
+    @pytest.mark.asyncio
+    async def test_get_price_suggestion_success(self, service):
+        service.redis_adapter.get_json.return_value = {"status": "pending", "suggested_price": None}
+        resp = await service.get_price_suggestion("fake-job-id")
+        assert resp.status == "pending"
+        assert resp.suggested_price is None
+
+    @pytest.mark.asyncio
+    async def test_get_price_suggestion_not_found(self, service):
+        service.redis_adapter.get_json.return_value = None
+        with pytest.raises(BadRequestException):
+            await service.get_price_suggestion("fake-job-id")

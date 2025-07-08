@@ -2,6 +2,19 @@ import pytest
 from httpx import AsyncClient
 import pytest_asyncio
 
+from unittest.mock import AsyncMock
+
+
+@pytest.fixture(autouse=True)
+def mock_job_status(mocker):
+    # Patcha o método get_json do RedisAsyncioAdapter para retornar um valor válido para o job_id usado no teste
+    mocker.patch(
+        "app.integrations.cache.redis_asyncio_adapter.RedisAsyncioAdapter.get_json",
+        side_effect=lambda key: (
+            {"status": "pending", "suggested_price": None} if key == "suggestion:fake-job-id" else None
+        ),
+    )
+
 
 @pytest.mark.usefixtures("mock_do_auth", "async_client")
 class TestPriceRouterV2:
@@ -56,8 +69,6 @@ class TestPriceRouterV2:
         resposta = await async_client.delete(f"/api/v2/precos/{preco.sku}", headers={"x-seller-id": preco.seller_id})
         assert resposta.status_code == 204
 
-
-"""
     @pytest.mark.asyncio
     async def test_historico_preco(self, async_client: AsyncClient, test_prices):
         preco = test_prices[0]
@@ -65,9 +76,10 @@ class TestPriceRouterV2:
             f"/api/v2/precos/historico/{preco.sku}", headers={"x-seller-id": preco.seller_id}
         )
         assert resposta.status_code == 200
-        assert "results" in resposta.json()
+        assert isinstance(resposta.json(), list)
+        assert len(resposta.json()) > 0  # or whatever you expect
 
-     @pytest.mark.asyncio
+    @pytest.mark.asyncio
     async def test_sugerir_preco(self, async_client: AsyncClient, test_prices):
         preco = test_prices[0]
         resposta = await async_client.post(
@@ -78,8 +90,7 @@ class TestPriceRouterV2:
 
     @pytest.mark.asyncio
     async def test_status_sugestao_preco(self, async_client: AsyncClient):
-        # Supondo que você tenha um job_id válido de algum mock ou fixture
         job_id = "fake-job-id"
         resposta = await async_client.get(f"/api/v2/precos/sugerir-preco/status/{job_id}", headers={"x-seller-id": "1"})
         assert resposta.status_code == 200
-        assert "status" in resposta.json() or "suggestion" in resposta.json() """
+        assert "status" in resposta.json() or "suggestion" in resposta.json()

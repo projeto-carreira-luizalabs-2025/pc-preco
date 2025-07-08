@@ -195,6 +195,42 @@ async def test_apply_sort(repository):
 
 
 @pytest.mark.asyncio
+async def test_apply_sort_with_invalid_field(repository):
+    # Testa _apply_sort ignorando campo inexistente
+    class DummyStmt:
+        def order_by(self, *args, **kwargs):
+            return self
+
+    stmt = DummyStmt()
+    sort = {"not_a_field": 1}
+    result = repository._apply_sort(stmt, sort)
+    assert result is stmt
+
+
+@pytest.mark.asyncio
+async def test_find_by_seller_id_and_sku_success(repository):
+    # Monkeypatch _find_base_by_seller_id_sku_on_session para retornar base
+    entity = Price(seller_id="seller", sku="sku", de=100, por=90)
+    base = repository.to_base(entity)
+    base.id = 1
+
+    orig_find_base = repository._find_base_by_seller_id_sku_on_session
+
+    async def fake_find_base(seller_id, sku, session):
+        return base
+
+    repository._find_base_by_seller_id_sku_on_session = fake_find_base
+
+    result = await repository.find_by_seller_id_and_sku("seller", "sku")
+    assert isinstance(result, Price)
+    assert result.seller_id == "seller"
+    assert result.sku == "sku"
+
+    # Restaura o método original
+    repository._find_base_by_seller_id_sku_on_session = orig_find_base
+
+
+@pytest.mark.asyncio
 async def test_find_with_sort_and_operator(repository):
     # Testa find com sort e operadores ($gt, $lt, etc)
     class Filter:
@@ -213,10 +249,47 @@ async def test_find_returns_empty_list(repository):
 
 
 @pytest.mark.asyncio
+async def test_find_with_empty_filters(repository):
+    # Testa find com filtros vazios
+    class Filter:
+        def to_query_dict(self):
+            return {}
+
+    results = await repository.find(Filter(), limit=5, offset=0)
+    assert isinstance(results, list)
+
+
+@pytest.mark.asyncio
 async def test_find_by_seller_id_and_sku_returns_none(repository):
     # Testa find_by_seller_id_and_sku quando não encontra base
     result = await repository.find_by_seller_id_and_sku("seller", "sku")
     assert result is None
+
+
+@pytest.mark.asyncio
+async def test_update_by_seller_id_and_sku_success(repository):
+    # Simula base encontrada e campos mutáveis atualizados
+    entity = Price(seller_id="seller", sku="sku", de=300, por=250)
+    base = repository.to_base(entity)
+    base.id = 1
+
+    # Monkeypatch o execute para retornar um DummyResult customizado
+    orig_make_session = repository.sql_client.make_session
+
+    class DummyResult:
+        def scalar_one_or_none(self_):
+            return base
+
+    class PatchedSession(orig_make_session().__class__):
+        async def execute(self, stmt):
+            return DummyResult()
+
+    repository.sql_client.make_session = lambda: PatchedSession()
+
+    result = await repository.update_by_seller_id_and_sku("seller", "sku", entity)
+    assert isinstance(result, Price)
+    assert result.seller_id == "seller"
+    assert result.sku == "sku"
 
 
 @pytest.mark.asyncio
@@ -233,6 +306,26 @@ async def test_update_by_seller_id_and_sku_no_base(repository):
     entity = Price(seller_id="seller", sku="sku", de=300, por=250)
     result = await repository.update_by_seller_id_and_sku("notfound", "sku", entity)
     assert result is None
+
+
+@pytest.mark.asyncio
+async def test_delete_by_seller_id_and_sku_success(repository):
+    # Monkeypatch o execute para simular deleção bem-sucedida
+    orig_make_session = repository.sql_client.make_session
+
+    class DummyResult:
+        @property
+        def rowcount(self):
+            return 1
+
+    class PatchedSession(orig_make_session().__class__):
+        async def execute(self, stmt):
+            return DummyResult()
+
+    repository.sql_client.make_session = lambda: PatchedSession()
+
+    result = await repository.delete_by_seller_id_and_sku("seller", "sku")
+    assert result is True
 
 
 @pytest.mark.asyncio
