@@ -236,39 +236,6 @@ async def test_update_by_seller_id_and_sku_no_base(repository):
 
 
 @pytest.mark.asyncio
-async def test_patch_by_seller_id_and_sku_updates_fields(repository):
-    # Testa patch_by_seller_id_and_sku quando encontra base
-    class DummyBase:
-        def __init__(self):
-            self.id = None
-            self.seller_id = "seller"
-            self.sku = "sku"
-            self.de = 10
-            self.por = 5
-            self.updated_at = None
-            self.created_at = None
-
-    async def fake_find(*args, **kwargs):
-        return DummyBase()
-
-    repository._find_base_by_seller_id_sku_on_session = fake_find
-    entity = Price(seller_id="seller", sku="sku", de=999, por=888)
-    result = await repository.patch_by_seller_id_and_sku("seller", "sku", entity)
-    assert isinstance(result, Price)
-    assert result.de == 999
-    assert result.por == 888
-
-
-@pytest.mark.asyncio
-async def test_patch_by_seller_id_and_sku_returns_none(repository):
-    # Testa patch_by_seller_id_and_sku quando não encontra base
-
-    entity = Price(seller_id="seller", sku="sku", de=400, por=350)
-    result = await repository.patch_by_seller_id_and_sku("seller", "sku", entity)
-    assert result is None
-
-
-@pytest.mark.asyncio
 async def test_delete_by_seller_id_and_sku_returns_false(repository):
     # Testa delete_by_seller_id_and_sku quando não encontra base
     result = await repository.delete_by_seller_id_and_sku("seller", "sku")

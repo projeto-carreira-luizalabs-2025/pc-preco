@@ -21,8 +21,10 @@ class TestPriceRouterV2:
 
     @pytest.mark.asyncio
     async def test_criar_preco(self, async_client: AsyncClient):
-        novo_preco = {"seller_id": "3", "sku": "C", "de": 300, "por": 250}
+        novo_preco = {"sku": "C", "de": 300, "por": 250}
         resposta = await async_client.post("/api/v2/precos", json=novo_preco, headers={"x-seller-id": "3"})
+        print(resposta.json())
+
         assert resposta.status_code == 201
         assert resposta.json()["seller_id"] == "3"
         assert resposta.json()["sku"] == "C"
@@ -53,3 +55,31 @@ class TestPriceRouterV2:
         preco = test_prices[0]
         resposta = await async_client.delete(f"/api/v2/precos/{preco.sku}", headers={"x-seller-id": preco.seller_id})
         assert resposta.status_code == 204
+
+
+"""
+    @pytest.mark.asyncio
+    async def test_historico_preco(self, async_client: AsyncClient, test_prices):
+        preco = test_prices[0]
+        resposta = await async_client.get(
+            f"/api/v2/precos/historico/{preco.sku}", headers={"x-seller-id": preco.seller_id}
+        )
+        assert resposta.status_code == 200
+        assert "results" in resposta.json()
+
+     @pytest.mark.asyncio
+    async def test_sugerir_preco(self, async_client: AsyncClient, test_prices):
+        preco = test_prices[0]
+        resposta = await async_client.post(
+            f"/api/v2/precos/{preco.sku}/sugerir-preco", headers={"x-seller-id": preco.seller_id}
+        )
+        assert resposta.status_code == 202
+        assert "job_id" in resposta.json() or "suggestion" in resposta.json()
+
+    @pytest.mark.asyncio
+    async def test_status_sugestao_preco(self, async_client: AsyncClient):
+        # Supondo que você tenha um job_id válido de algum mock ou fixture
+        job_id = "fake-job-id"
+        resposta = await async_client.get(f"/api/v2/precos/sugerir-preco/status/{job_id}", headers={"x-seller-id": "1"})
+        assert resposta.status_code == 200
+        assert "status" in resposta.json() or "suggestion" in resposta.json() """
