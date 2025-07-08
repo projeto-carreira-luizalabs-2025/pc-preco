@@ -7,4 +7,10 @@ APP_REDIS_URL=redis://localhost:6379/0
 
 # URL para a fila do RabbitMQ
 APP_QUEUE_URL=amqp://admin:admin@localhost:5672/pc-preco
-APP_QUEUE_NAME=alertas_precos
+APP_ALERT_QUEUE_NAME=alertas_precos
+APP_PRICE_SUGGESTION_QUEUE_NAME=sugestoes_precos
+
+# URL para a API da IA
+IA_API_URL=http://localhost:11434/api/generate
+# Model de minha IA
+IA_MODEL=llama3:8b

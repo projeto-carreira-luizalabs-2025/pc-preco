@@ -12,6 +12,7 @@ from app.integrations.queue.rabbitmq_adapter import RabbitMQProducer
 
 import logging
 import asyncio
+import uuid
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,8 @@ class PriceService(CrudService[Price]):
 
     repository: PriceRepository
     redis_adapter: RedisAsyncioAdapter
-    queue_producer: RabbitMQProducer
+    alert_queue_producer: RabbitMQProducer
+    suggestion_queue_producer: RabbitMQProducer
     price_history_service: PriceHistoryService
 
     def __init__(
@@ -33,7 +35,8 @@ class PriceService(CrudService[Price]):
         price_history_repo: PriceHistoryRepository,
         price_history_service: PriceHistoryService,
         redis_adapter: RedisAsyncioAdapter,
-        queue_producer: RabbitMQProducer,
+        alert_queue_producer: RabbitMQProducer,
+        suggestion_queue_producer: RabbitMQProducer,
     ):
         """
         Inicializa o serviço de preços com o repositório fornecido e o adaptador Redis.
@@ -43,7 +46,8 @@ class PriceService(CrudService[Price]):
         """
         super().__init__(repository)
         self.redis_adapter = redis_adapter
-        self.queue_producer = queue_producer
+        self.alert_queue_producer = alert_queue_producer
+        self.suggestion_queue_producer = suggestion_queue_producer
         self.price_history_repo = price_history_repo
         self.price_history_service = price_history_service
 
@@ -244,6 +248,78 @@ class PriceService(CrudService[Price]):
         cache_key = f"price:{seller_id}:{sku}"
         await self.redis_adapter.delete(cache_key)
 
+    async def request_price_suggestion(self, seller_id: str, sku: str) -> Price:
+        """
+        Gera uma sugestão de preço 'por' para o seller com base nos últimos 5 preços do histórico.
+        (Exemplo: média dos últimos 5 preços 'por'. Substitua pela chamada à IA se desejar.)
+
+        :param seller_id: Identificador do vendedor.
+        :param sku: Código do produto.
+        :return: Instância de Price sugerida.
+        :raises PriceNotFoundException: Se não houver histórico suficiente.
+        """
+        from app.api.v2.schemas.price_suggestion_schema import PriceSuggestionResponse
+
+        # Busca os últimos 5 preços do histórico
+        history = await self.price_history_service.get_last_n_prices(seller_id=seller_id, sku=sku, n=5)
+
+        if not history or len(history) == 0:
+            logger.warning(f"Não há histórico suficiente para sugerir preço para seller_id={seller_id}, sku={sku}")
+            raise PriceNotFoundException(seller_id=seller_id, sku=sku)
+
+        job_id = str(uuid.uuid4())
+
+        try:
+            task = asyncio.create_task(
+                self._call_producer(
+                    {"seller_id": seller_id, "sku": sku, "history": [price.por for price in history], "job_id": job_id},
+                    "suggestion",
+                )
+            )
+            logger.info(
+                "Tarefa criada para enviar evento para a fila: %s",
+                task.get_name(),
+                extra={"seller_id": seller_id, "sku": sku},
+            )
+        except Exception as exc:
+            logger.exception(
+                "Falha ao enviar evento para a fila de sugestão", extra={"seller_id": seller_id, "sku": sku}
+            )
+            self._raise_bad_request(
+                message="Falha ao enviar evento para a fila de sugestão de preço.",
+                field="fila_sugestao",
+                value=str(exc),
+            )
+
+        await self.redis_adapter.set_json(
+            f"suggestion:{job_id}", {"status": "pending", "suggested_price": None}, expires_in_seconds=300
+        )
+
+        return PriceSuggestionResponse(job_id=job_id, status="pending")
+
+    async def get_price_suggestion(self, job_id: str) -> dict:
+        """
+        Recupera o status e a sugestão de preço para um job_id específico.
+
+        :param job_id: Identificador do job de sugestão de preço.
+        :return: Dicionário contendo o status e o preço sugerido.
+        :raises BadRequestException: Se o job_id não for encontrado ou estiver inválido.
+        """
+        from app.api.v2.schemas.price_suggestion_schema import PriceSuggestionResponse
+
+        cache_key = f"suggestion:{job_id}"
+        suggestion = await self.redis_adapter.get_json(cache_key)
+
+        if suggestion is None:
+            logger.error("Job ID %s não encontrado ou inválido.", job_id, extra={"job_id": job_id})
+            self._raise_bad_request(message="Job ID não encontrado ou inválido.", field="job_id", value=job_id)
+
+        return PriceSuggestionResponse(
+            job_id=job_id,
+            status=suggestion.get("status", "pending"),
+            suggested_price=suggestion.get("suggested_price", None),
+        )
+
     def _verify_pending_alert(self, entity: Price) -> bool:
         """
         Verifica se o preço possui alerta pendente.
@@ -287,7 +363,7 @@ class PriceService(CrudService[Price]):
             mensagem = f"Variação de preço superior a 50% detectada para {sku}: de {old_por} para {new_por}"
             alerta = {"seller_id": seller_id, "sku": sku, "mensagem": mensagem, "status": "pendente"}
 
-            task = asyncio.create_task(self._call_producer(alerta))
+            task = asyncio.create_task(self._call_producer(alerta, "alert"))
             logger.info(
                 "Tarefa criada para enviar evento para a fila: %s",
                 task.get_name(),
@@ -296,11 +372,16 @@ class PriceService(CrudService[Price]):
             return True
         return False
 
-    async def _call_producer(self, event):
+    async def _call_producer(self, event, producer_name: str):
         try:
-            self.queue_producer.produce(event)
+            if producer_name == "alert":
+                self.alert_queue_producer.produce(event)
+            elif producer_name == "suggestion":
+                self.suggestion_queue_producer.produce(event)
+            else:
+                logger.warning("Producer name desconhecido: %s", producer_name, extra={"evt": event})
         except Exception:
-            logger.exception("Falha enviar evento para a fila", extra={"evt": event})
+            logger.exception("Falha ao enviar evento para a fila", extra={"evt": event})
 
     def _validate_positive_prices(self, price):
         """
