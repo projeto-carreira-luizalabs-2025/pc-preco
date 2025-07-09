@@ -1,6 +1,7 @@
-import pytest
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from app.worker.tasks.create_alert_task import CreateAlertTask
 

@@ -1,21 +1,14 @@
 from dependency_injector import containers, providers
 
-
-from app.repositories.price_history_repository import PriceHistoryRepository
-from app.services.price_history_service import PriceHistoryService
-
-from app.repositories import PriceRepository, AlertRepository
-from app.services import HealthCheckService, PriceService, AlertService
-
-from app.settings import AppSettings
-
-from app.integrations.database.sqlalchemy_client import SQLAlchemyClient
-
 from app.integrations.auth.keycloak_adapter import KeycloakAdapter
-
 from app.integrations.cache.redis_asyncio_adapter import RedisAsyncioAdapter
-
+from app.integrations.database.sqlalchemy_client import SQLAlchemyClient
 from app.integrations.queue.rabbitmq_adapter import RabbitMQProducer
+from app.repositories import AlertRepository, PriceRepository
+from app.repositories.price_history_repository import PriceHistoryRepository
+from app.services import AlertService, HealthCheckService, PriceService
+from app.services.price_history_service import PriceHistoryService
+from app.settings import AppSettings
 
 
 class Container(containers.DeclarativeContainer):

@@ -1,9 +1,10 @@
 import pytest
 from fastapi import FastAPI, HTTPException, status
 from fastapi.testclient import TestClient
+
 from app.api.common.error_handlers import add_error_handlers
-from app.common.exceptions import ApplicationException
 from app.common.error_codes import ErrorInfo
+from app.common.exceptions import ApplicationException
 
 
 def test_http_exception_handler():

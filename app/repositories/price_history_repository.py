@@ -1,10 +1,10 @@
-from sqlalchemy import Column, Integer
+from sqlalchemy import Column, Date, Integer
 
-from app.models.price_history_model import PriceHistory
-from .base.sqlalchemy_crud_repository import SQLAlchemyCrudRepository
-from .base.sqlalchemy_entity_base import IdEntityBase, CreatedByMixin, UpdatedByMixin, SellerIdMixin, SkuMixin
 from app.integrations.database.sqlalchemy_client import SQLAlchemyClient
-from sqlalchemy import Column, Integer, Date
+from app.models.price_history_model import PriceHistory
+
+from .base.sqlalchemy_crud_repository import SQLAlchemyCrudRepository
+from .base.sqlalchemy_entity_base import CreatedByMixin, IdEntityBase, SellerIdMixin, SkuMixin, UpdatedByMixin
 
 
 class PriceHistoryBase(IdEntityBase, CreatedByMixin, UpdatedByMixin, SellerIdMixin, SkuMixin):

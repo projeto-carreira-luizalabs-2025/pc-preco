@@ -1,16 +1,13 @@
+import logging
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 
+from app.common.datetime import utcnow
 from app.integrations.database.sqlalchemy_client import SQLAlchemyClient
-
-from app.models import PersistableEntity, QueryModel, Price
+from app.models import PersistableEntity, Price, QueryModel
 
 from .async_crud_repository import AsyncCrudRepository
 from .sqlalchemy_entity_base import PersistableEntityBase
-
-from app.common.datetime import utcnow
-
-import logging
 
 T = TypeVar("T", bound=PersistableEntity)  # Modelo Pydantic
 B = TypeVar("B", bound=PersistableEntityBase)  # Entidade base do SQLAlchemy

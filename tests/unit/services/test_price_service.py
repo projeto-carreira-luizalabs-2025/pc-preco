@@ -3,13 +3,13 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from app.common.exceptions import BadRequestException, NotFoundException
-from app.models import Price
-from app.repositories import PriceRepository
-from app.services import PriceService
-from app.services.price_history_service import PriceHistoryService
-from app.repositories.price_history_repository import PriceHistoryRepository
 from app.integrations.cache.redis_asyncio_adapter import RedisAsyncioAdapter
 from app.integrations.queue.rabbitmq_adapter import RabbitMQProducer
+from app.models import Price
+from app.repositories import PriceRepository
+from app.repositories.price_history_repository import PriceHistoryRepository
+from app.services import PriceService
+from app.services.price_history_service import PriceHistoryService
 
 
 class TestPriceService:

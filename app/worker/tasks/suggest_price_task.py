@@ -1,14 +1,11 @@
 import asyncio
-
+import json
 from logging import getLogger
 
-from app.integrations.queue.rabbitmq_adapter import QueueMessage, RabbitMQConsumer
+import httpx
 
 from app.integrations.cache.redis_asyncio_adapter import RedisAsyncioAdapter
-
-import httpx
-import json
-
+from app.integrations.queue.rabbitmq_adapter import QueueMessage, RabbitMQConsumer
 
 logger = getLogger(__name__)
 
@@ -91,7 +88,7 @@ class SuggestPriceTask:
             response.raise_for_status()
 
             # A resposta da API do Ollama com format: "json" já é um JSON
-            response_data = await response.json()
+            response_data = response.json()
 
             ia_response = response_data.get("response", "").strip()
 

@@ -1,5 +1,7 @@
-import pytest
 from unittest.mock import AsyncMock, patch
+
+import pytest
+
 from app.integrations.cache.redis_asyncio_adapter import RedisAsyncioAdapter
 
 

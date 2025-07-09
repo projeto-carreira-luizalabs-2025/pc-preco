@@ -1,7 +1,9 @@
-import pytest
 from unittest.mock import AsyncMock, MagicMock
-from app.services.price_history_service import PriceHistoryService
+
+import pytest
+
 from app.common.exceptions.price_exceptions import PriceNotFoundException
+from app.services.price_history_service import PriceHistoryService
 
 
 @pytest.fixture

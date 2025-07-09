@@ -1,8 +1,8 @@
-import pytest
-from httpx import AsyncClient
-import pytest_asyncio
-
 from unittest.mock import AsyncMock
+
+import pytest
+import pytest_asyncio
+from httpx import AsyncClient
 
 
 @pytest.fixture(autouse=True)

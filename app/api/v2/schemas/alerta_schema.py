@@ -1,7 +1,8 @@
 from pydantic import BaseModel, Field
 
+from app.api.common.schemas.base import CreatedAtMixin, IntSchema, UpdatedAtMixin
+
 from .base_schema import SellerSkuBaseModel
-from app.api.common.schemas.base import IntSchema, CreatedAtMixin, UpdatedAtMixin
 
 
 class BaseAlertModel(BaseModel):

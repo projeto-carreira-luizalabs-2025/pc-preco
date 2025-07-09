@@ -1,17 +1,13 @@
 from dependency_injector import containers, providers
 
-from app.integrations.queue.rabbitmq_adapter import RabbitMQConsumer
-from app.settings.worker import WorkerSettings
-
+from app.integrations.cache.redis_asyncio_adapter import RedisAsyncioAdapter
 from app.integrations.database.sqlalchemy_client import SQLAlchemyClient
-
+from app.integrations.queue.rabbitmq_adapter import RabbitMQConsumer
+from app.repositories.alert_repository import AlertRepository
+from app.services.alert_service import AlertService
+from app.settings.worker import WorkerSettings
 from app.worker.tasks.create_alert_task import CreateAlertTask
 from app.worker.tasks.suggest_price_task import SuggestPriceTask
-
-from app.services.alert_service import AlertService
-from app.repositories.alert_repository import AlertRepository
-
-from app.integrations.cache.redis_asyncio_adapter import RedisAsyncioAdapter
 
 
 class WorkerContainer(containers.DeclarativeContainer):

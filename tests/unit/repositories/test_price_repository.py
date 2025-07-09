@@ -1,7 +1,7 @@
 import pytest
-from tests.factories.price_repository_mock_factory import PriceRepositoryMockFactory
 
 from app.models import Price
+from tests.factories.price_repository_mock_factory import PriceRepositoryMockFactory
 
 
 @pytest.mark.asyncio

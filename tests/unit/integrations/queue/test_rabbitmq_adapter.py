@@ -1,6 +1,8 @@
+from unittest.mock import MagicMock, call, patch
+
 import pytest
-from unittest.mock import MagicMock, patch, call
-from app.integrations.queue.rabbitmq_adapter import RabbitMQAdapter, QueueMessage
+
+from app.integrations.queue.rabbitmq_adapter import QueueMessage, RabbitMQAdapter
 
 
 @pytest.fixture

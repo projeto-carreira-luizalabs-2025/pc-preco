@@ -1,6 +1,8 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
+
 from app.api.common.auth_handler import do_auth
-from unittest.mock import patch, MagicMock
 
 
 class DummyKeycloakAdapter:

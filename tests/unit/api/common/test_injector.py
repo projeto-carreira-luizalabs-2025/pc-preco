@@ -1,5 +1,7 @@
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
+
 from app.api.common.injector import get_seller_id
 from app.common.exceptions import BadRequestException
 

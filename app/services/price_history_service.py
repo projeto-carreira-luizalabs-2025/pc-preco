@@ -1,10 +1,12 @@
+from pclogging import LoggingBuilder
+
+from app.api.common.schemas import Paginator
+from app.common.exceptions.price_exceptions import PriceNotFoundException
 from app.models.price_filter_model import PriceFilter
 from app.models.price_history_model import PriceHistory
 from app.repositories.price_history_repository import PriceHistoryRepository
+
 from .base import CrudService
-from app.api.common.schemas import Paginator
-from app.common.exceptions.price_exceptions import PriceNotFoundException
-from pclogging import LoggingBuilder
 
 LoggingBuilder.init(log_level="DEBUG")
 

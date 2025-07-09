@@ -1,4 +1,5 @@
 import pytest
+
 from app.models import Price
 from app.repositories.base.sqlalchemy_crud_repository import SQLAlchemyCrudRepository
 

@@ -1,8 +1,10 @@
-from pydantic import BaseModel, Field, RootModel
 from datetime import datetime
 from typing import List
+
+from pydantic import BaseModel, Field, RootModel
+
 from app.api.common.schemas import SchemaType
-from app.api.common.schemas.base import CreatedByMixin, UpdatedByMixin, IntSchema
+from app.api.common.schemas.base import CreatedByMixin, IntSchema, UpdatedByMixin
 from app.api.common.schemas.response import ErrorResponse
 
 MARKETPLACE_REALM_URL = "http://localhost:8080/realms/marketplace"

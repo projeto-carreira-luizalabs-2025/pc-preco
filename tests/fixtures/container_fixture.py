@@ -1,21 +1,21 @@
-from pytest import fixture
 from typing import Generator
-from fastapi import FastAPI
 
+from dependency_injector import providers
+from fastapi import FastAPI
+from pytest import fixture
+
+from app.api.api_application import create_app
+from app.api.router import router_configurations as api_routes
 from app.container import Container
 from app.models import Price
 from app.repositories import PriceRepository
-from app.repositories.price_history_repository import PriceHistoryRepository
 from app.repositories.alert_repository import AlertRepository
-
+from app.repositories.price_history_repository import PriceHistoryRepository
 from app.services import HealthCheckService, PriceService
 from app.settings import api_settings
-from app.api.api_application import create_app
-from app.api.router import router_configurations as api_routes
-from dependency_injector import providers
-from tests.factories.price_repository_mock_factory import PriceRepositoryMockFactory
-from tests.factories.price_history_repository_mock_factory import PriceHistoryRepositoryMockFactory
 from tests.factories.alert_repository_mock_factory import AlertRepositoryMockFactory
+from tests.factories.price_history_repository_mock_factory import PriceHistoryRepositoryMockFactory
+from tests.factories.price_repository_mock_factory import PriceRepositoryMockFactory
 
 
 @fixture

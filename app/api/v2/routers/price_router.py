@@ -1,23 +1,22 @@
-from typing import TYPE_CHECKING, Optional
-from fastapi import Query
 import logging
+from typing import TYPE_CHECKING, Optional
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 
-from app.api.common.auth_handler import do_auth, UserAuthInfo, get_current_user
+from app.api.common.auth_handler import UserAuthInfo, do_auth, get_current_user
 from app.api.common.dependencies import get_required_seller_id
 from app.api.common.responses.price_responses import (
     BAD_REQUEST_RESPONSE,
+    HISTORY_NOT_FOUND_RESPONSE,
     MISSING_HEADER_RESPONSE,
     NOT_FOUND_RESPONSE,
-    HISTORY_NOT_FOUND_RESPONSE,
     UNPROCESSABLE_ENTITY_RESPONSE,
 )
 from app.api.common.schemas import ListResponse, Paginator, get_request_pagination
 from app.api.v2.schemas.price_history_schema import PriceHistoryListResponse
-from app.api.v2.schemas.price_suggestion_schema import PriceSuggestionResponse
 from app.api.v2.schemas.price_schema import PriceCreate, PricePatch, PriceResponse, PriceUpdate
+from app.api.v2.schemas.price_suggestion_schema import PriceSuggestionResponse
 from app.container import Container
 from app.models import Price
 from app.services.price_history_service import PriceHistoryService

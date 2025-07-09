@@ -1,15 +1,12 @@
-from typing import TYPE_CHECKING, Optional
-from fastapi import Query
 import logging
+from typing import TYPE_CHECKING, Optional
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 
 from app.api.common.auth_handler import do_auth
 from app.api.common.dependencies import get_required_seller_id
-from app.api.common.responses.price_responses import (
-    UNPROCESSABLE_ENTITY_RESPONSE,
-)
+from app.api.common.responses.price_responses import UNPROCESSABLE_ENTITY_RESPONSE
 from app.api.common.schemas import ListResponse, Paginator, get_request_pagination
 from app.api.v2.schemas.alerta_schema import AlertResponse
 from app.container import Container

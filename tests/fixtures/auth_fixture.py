@@ -1,6 +1,7 @@
 import pytest
 from fastapi import Request
-from app.api.common.auth_handler import do_auth, get_current_user, UserAuthInfo
+
+from app.api.common.auth_handler import UserAuthInfo, do_auth, get_current_user
 from app.models.base import UserModel
 
 

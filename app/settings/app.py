@@ -1,4 +1,4 @@
-from pydantic import Field, PostgresDsn, HttpUrl, RedisDsn
+from pydantic import Field, HttpUrl, PostgresDsn, RedisDsn
 
 from .base import BaseSettings
 

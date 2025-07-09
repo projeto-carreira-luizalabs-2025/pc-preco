@@ -1,6 +1,7 @@
-import pytest
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from app.worker.tasks.suggest_price_task import SuggestPriceTask
 
@@ -98,7 +99,7 @@ async def test_generate_price_suggestion_success(task):
         client_instance = client_mock.return_value
         client_instance.__aenter__.return_value = client_instance
         client_instance.post = AsyncMock()
-        client_instance.post.return_value.json = AsyncMock(return_value=fake_response)
+        client_instance.post.return_value.json = MagicMock(return_value=fake_response)  # <-- Aqui!
         client_instance.post.return_value.raise_for_status = MagicMock()
         result = await task.generate_price_suggestion(data)
         assert result == "99.99"

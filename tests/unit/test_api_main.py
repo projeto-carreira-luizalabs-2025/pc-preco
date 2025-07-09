@@ -1,7 +1,8 @@
 # tests/test_api_main.py
+import importlib
+
 import pytest
 from fastapi import FastAPI
-import importlib
 
 representative_api_settings_dump = {
     "server_port": 8000,
