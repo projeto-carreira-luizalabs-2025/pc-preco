@@ -3,10 +3,9 @@ import os
 import dotenv
 from fastapi import FastAPI
 
+from app.common.logging_config import setup_logging
 from app.container import Container
 from app.settings import api_settings
-
-from app.common.logging_config import setup_logging
 
 setup_logging()
 

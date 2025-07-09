@@ -1,5 +1,6 @@
 from typing import Optional
-from app.models import QueryModel
+
+from app.models.query import QueryModel
 
 
 class PriceFilter(QueryModel):

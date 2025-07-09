@@ -1,7 +1,7 @@
 import pytest
-from tests.factories.price_repository_mock_factory import PriceRepositoryMockFactory
 
 from app.models import Price
+from tests.factories.price_repository_mock_factory import PriceRepositoryMockFactory
 
 
 @pytest.mark.asyncio
@@ -39,12 +39,12 @@ class TestPrecoRepository:
         assert preco_criado.created_at is not None
 
         # Verifica se pode ser encontrado no repositório
-        result_dict = await repository_mock.find_by_seller_id_and_sku("3", "C")
-        assert result_dict is not None
-        assert result_dict["seller_id"] == "3"
-        assert result_dict["sku"] == "C"
-        assert result_dict["de"] == 300
-        assert result_dict["por"] == 270
+        result_obj = await repository_mock.find_by_seller_id_and_sku("3", "C")
+        assert result_obj is not None
+        assert result_obj.seller_id == "3"
+        assert result_obj.sku == "C"
+        assert result_obj.de == 300
+        assert result_obj.por == 270
 
     async def test_create_multiple_prices_with_same_seller_id_and_sku(self, repository_mock):
         """Deve permitir múltiplos preços com o mesmo seller_id e sku (caso permitido pela implementação)."""
@@ -55,48 +55,48 @@ class TestPrecoRepository:
         await repository_mock.create(price2)
 
         # O método find_by_seller_id_and_sku retorna o primeiro encontrado
-        result_dict = await repository_mock.find_by_seller_id_and_sku("1", "A")
-        assert result_dict is not None
-        assert result_dict["seller_id"] == "1"
-        assert result_dict["sku"] == "A"
-        assert result_dict["de"] == 160
-        assert result_dict["por"] == 150
+        result_obj = await repository_mock.find_by_seller_id_and_sku("1", "A")
+        assert result_obj is not None
+        assert result_obj.seller_id == "1"
+        assert result_obj.sku == "A"
+        assert result_obj.de == 160
+        assert result_obj.por == 150
 
     async def test_find_by_seller_id_and_sku_found(self, repository_mock):
         """Deve encontrar um preço existente pelo seller_id e sku."""
-        result_dict = await repository_mock.find_by_seller_id_and_sku("1", "A")
+        result_obj = await repository_mock.find_by_seller_id_and_sku("1", "A")
 
-        assert result_dict is not None
-        assert result_dict["seller_id"] == "1"
-        assert result_dict["sku"] == "A"
-        assert result_dict["de"] == 100
-        assert result_dict["por"] == 90
+        assert result_obj is not None
+        assert result_obj.seller_id == "1"
+        assert result_obj.sku == "A"
+        assert result_obj.de == 100
+        assert result_obj.por == 90
 
     async def test_find_by_seller_id_and_sku_not_found(self, repository_mock):
         """Deve retornar None ao buscar um preço inexistente."""
-        result_dict = await repository_mock.find_by_seller_id_and_sku("1", "Z")
-        assert result_dict is None
+        return_obj = await repository_mock.find_by_seller_id_and_sku("1", "Z")
+        assert return_obj is None
 
     async def test_find_by_seller_id_and_sku_with_empty_repository(self, empty_repository_mock):
         """Deve retornar None ao buscar em um repositório vazio."""
-        result_dict = await empty_repository_mock.find_by_seller_id_and_sku("1", "A")
-        assert result_dict is None
+        return_obj = await empty_repository_mock.find_by_seller_id_and_sku("1", "A")
+        assert return_obj is None
 
     async def test_update_by_seller_id_and_sku(self, repository_mock):
         """Deve atualizar um preço existente."""
         updated_price = Price(seller_id="1", sku="A", de=120, por=110)
-        result_dict = await repository_mock.update_by_seller_id_and_sku("1", "A", updated_price)
+        return_obj = await repository_mock.update_by_seller_id_and_sku("1", "A", updated_price)
 
         # Verifica se o resultado da atualização está correto
-        assert result_dict is not None
-        assert result_dict["de"] == 120
-        assert result_dict["por"] == 110
+        assert return_obj is not None
+        assert return_obj.de == 120
+        assert return_obj.por == 110
 
         # Verifica se a busca retorna o valor atualizado
         found_price = await repository_mock.find_by_seller_id_and_sku("1", "A")
         assert found_price is not None
-        assert found_price["de"] == 120
-        assert found_price["por"] == 110
+        assert found_price.de == 120
+        assert found_price.por == 110
 
     async def test_update_by_seller_id_and_sku_not_found(self, repository_mock):
         """Deve lançar ValueError ao tentar atualizar um preço que não existe."""

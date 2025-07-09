@@ -1,18 +1,18 @@
+import asyncio
+import logging
+import uuid
+
+from app.api.common.schemas import Paginator
+from app.integrations.cache.redis_asyncio_adapter import RedisAsyncioAdapter
+from app.integrations.queue.rabbitmq_adapter import RabbitMQProducer
 from app.models.price_history_model import PriceHistory
 from app.repositories.price_history_repository import PriceHistoryRepository
 from app.services.price_history_service import PriceHistoryService
+
 from ..common.exceptions.price_exceptions import PriceBadRequestException, PriceNotFoundException
 from ..models import Price, PriceFilter
 from ..repositories import PriceRepository
 from .base import CrudService
-from app.api.common.schemas import Paginator
-
-from app.integrations.cache.redis_asyncio_adapter import RedisAsyncioAdapter
-from app.integrations.queue.rabbitmq_adapter import RabbitMQProducer
-
-import logging
-import asyncio
-import uuid
 
 logger = logging.getLogger(__name__)
 

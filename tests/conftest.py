@@ -6,10 +6,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import pytest
-from app.api_main import app
+
 from app.api.common.auth_handler import do_auth
-from tests.factories.price_repository_mock_factory import PriceRepositoryMockFactory
+from app.api_main import app
 from app.repositories import PriceRepository
+from tests.factories.price_repository_mock_factory import PriceRepositoryMockFactory
 
 # Carregando as fixtures dinamicamente
 

@@ -1,10 +1,8 @@
-from pytest import fixture
+from typing import AsyncGenerator, Generator
 
 from fastapi.testclient import TestClient
-from typing import Generator
-
-from typing import AsyncGenerator
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
+from pytest import fixture
 
 
 @fixture

@@ -1,10 +1,10 @@
-from sqlalchemy import Column, Integer, Boolean
+from sqlalchemy import Boolean, Column, Integer
+
+from app.integrations.database.sqlalchemy_client import SQLAlchemyClient
 
 from ..models import Price
-
 from .base.sqlalchemy_crud_repository import SQLAlchemyCrudRepository
 from .base.sqlalchemy_entity_base import SellerIdSkuPersistableEntityBase
-from app.integrations.database.sqlalchemy_client import SQLAlchemyClient
 
 
 class PriceBase(SellerIdSkuPersistableEntityBase):

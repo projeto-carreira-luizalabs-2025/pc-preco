@@ -2,9 +2,9 @@ from asgi_correlation_id import CorrelationIdMiddleware
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from app.api.common.trace_id_middleware import TraceIdMiddleware
 
 from app.api.common.trace import get_trace_id
+from app.api.common.trace_id_middleware import TraceIdMiddleware
 
 from ...settings import ApiSettings
 

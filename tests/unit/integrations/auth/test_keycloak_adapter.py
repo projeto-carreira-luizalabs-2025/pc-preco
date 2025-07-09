@@ -1,13 +1,14 @@
-import pytest
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import httpx
 import jwt
-from unittest.mock import patch, AsyncMock, MagicMock
+import pytest
 
 from app.integrations.auth.keycloak_adapter import (
+    InvalidTokenException,
     KeycloakAdapter,
     OAuthException,
     TokenExpiredException,
-    InvalidTokenException,
 )
 
 WELL_KNOWN_URL = "https://keycloak.example.com/.well-known/openid-configuration"

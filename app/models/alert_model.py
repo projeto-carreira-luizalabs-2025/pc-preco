@@ -1,7 +1,8 @@
-from pydantic import BaseModel, Field
-from app.common.datetime import utcnow
 from datetime import datetime
 
+from pydantic import BaseModel, Field
+
+from app.common.datetime import utcnow
 from app.models.base import SellerSkuEntity
 
 

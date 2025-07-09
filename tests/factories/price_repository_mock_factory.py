@@ -1,10 +1,10 @@
-from typing import Dict, Tuple
-from unittest.mock import AsyncMock, Mock, MagicMock
 from datetime import datetime, timezone
+from typing import Dict, Tuple
+from unittest.mock import AsyncMock, MagicMock, Mock
 
+from app.integrations.database.sqlalchemy_client import SQLAlchemyClient
 from app.models import Price
 from app.repositories import PriceRepository
-from app.integrations.database.sqlalchemy_client import SQLAlchemyClient
 
 
 class AsyncSessionMock(MagicMock):
@@ -61,22 +61,7 @@ class PriceRepositoryMockFactory:
             return price
 
         async def mock_find_by_seller_id_and_sku(seller_id: str, sku: str):
-            price = simulated_db.get((seller_id, sku))
-            if price:
-                # Retorna como dicionário, como esperado pelos testes
-                return {
-                    "seller_id": price.seller_id,
-                    "sku": price.sku,
-                    "de": price.de,
-                    "por": price.por,
-                    "created_at": getattr(price, 'created_at', None),
-                    "updated_at": getattr(price, 'updated_at', None),
-                    "created_by": getattr(price, 'created_by', None),
-                    "updated_by": getattr(price, 'updated_by', None),
-                    "audit_created_at": getattr(price, 'audit_created_at', None),
-                    "audit_updated_at": getattr(price, 'audit_updated_at', None),
-                }
-            return None
+            return simulated_db.get((seller_id, sku))
 
         async def mock_update_by_seller_id_and_sku(seller_id: str, sku: str, price_update: Price):
             if (seller_id, sku) in simulated_db:
@@ -84,7 +69,7 @@ class PriceRepositoryMockFactory:
                 updated_price.seller_id = seller_id
                 updated_price.sku = sku
                 simulated_db[(seller_id, sku)] = updated_price
-                return price_update.model_dump()
+                return updated_price
             raise ValueError("Price not found")
 
         async def mock_delete_by_seller_id_and_sku(seller_id: str, sku: str):

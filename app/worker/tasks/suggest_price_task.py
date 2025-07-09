@@ -1,14 +1,11 @@
 import asyncio
-
+import json
 from logging import getLogger
 
-from app.integrations.queue.rabbitmq_adapter import QueueMessage, RabbitMQConsumer
+import httpx
 
 from app.integrations.cache.redis_asyncio_adapter import RedisAsyncioAdapter
-
-import httpx
-import json
-
+from app.integrations.queue.rabbitmq_adapter import QueueMessage, RabbitMQConsumer
 
 logger = getLogger(__name__)
 

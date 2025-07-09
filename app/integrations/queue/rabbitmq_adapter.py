@@ -1,9 +1,8 @@
 import json
 
 import pika
-from pydantic import BaseModel, Field
-
 from pclogging import LoggingBuilder
+from pydantic import BaseModel, Field
 
 LoggingBuilder.init(log_level="WARNING")
 

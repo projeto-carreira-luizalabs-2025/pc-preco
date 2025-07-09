@@ -1,11 +1,8 @@
 import asyncio
-
 from logging import getLogger
 
-from app.integrations.queue.rabbitmq_adapter import QueueMessage, RabbitMQConsumer
-
 from app.api.v2.schemas.alerta_schema import AlertCreate
-
+from app.integrations.queue.rabbitmq_adapter import QueueMessage, RabbitMQConsumer
 from app.services.alert_service import AlertService
 
 logger = getLogger(__name__)

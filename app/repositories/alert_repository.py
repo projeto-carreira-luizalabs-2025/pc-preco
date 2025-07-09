@@ -1,10 +1,10 @@
 from sqlalchemy import Column, String
 
-from ..models import Alert
-
-from .base.sqlalchemy_crud_repository import SQLAlchemyCrudRepository
-from .base.sqlalchemy_entity_base import IdEntityBase, SellerIdMixin, SkuMixin, CreatedAtMixin, UpdatedAtMixin
 from app.integrations.database.sqlalchemy_client import SQLAlchemyClient
+
+from ..models import Alert
+from .base.sqlalchemy_crud_repository import SQLAlchemyCrudRepository
+from .base.sqlalchemy_entity_base import CreatedAtMixin, IdEntityBase, SellerIdMixin, SkuMixin, UpdatedAtMixin
 
 
 class AlertBase(IdEntityBase, SellerIdMixin, SkuMixin, CreatedAtMixin, UpdatedAtMixin):

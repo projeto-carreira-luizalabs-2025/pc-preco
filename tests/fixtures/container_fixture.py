@@ -1,15 +1,20 @@
-from pytest import fixture
 from typing import Generator
-from fastapi import FastAPI
 
+from dependency_injector import providers
+from fastapi import FastAPI
+from pytest import fixture
+
+from app.api.api_application import create_app
+from app.api.router import router_configurations as api_routes
 from app.container import Container
 from app.models import Price
 from app.repositories import PriceRepository
+from app.repositories.alert_repository import AlertRepository
+from app.repositories.price_history_repository import PriceHistoryRepository
 from app.services import HealthCheckService, PriceService
 from app.settings import api_settings
-from app.api.api_application import create_app
-from app.api.router import router_configurations as api_routes
-from dependency_injector import providers
+from tests.factories.alert_repository_mock_factory import AlertRepositoryMockFactory
+from tests.factories.price_history_repository_mock_factory import PriceHistoryRepositoryMockFactory
 from tests.factories.price_repository_mock_factory import PriceRepositoryMockFactory
 
 
@@ -64,10 +69,17 @@ def health_check_service(container: Container) -> HealthCheckService:
 
 @fixture
 def mock_price_repository() -> PriceRepository:
-    """
-    Cria um repositório mockado usando a factory centralizada.
-    """
     return PriceRepositoryMockFactory.create_mock_repository()
+
+
+@fixture
+def mock_price_history_repository() -> PriceHistoryRepository:
+    return PriceHistoryRepositoryMockFactory.create_mock_repository()
+
+
+@fixture
+def mock_alert_repository() -> AlertRepository:
+    return AlertRepositoryMockFactory.create_mock_repository()
 
 
 @fixture
@@ -78,21 +90,21 @@ def test_prices() -> list[Price]:
             sku="A",
             de=100,
             por=90,
+            created_at=None,
             updated_at=None,
             created_by=None,
             updated_by=None,
-            audit_created_at=None,
-            audit_updated_at=None,
+            alerta_pendente=False,
         ),
         Price(
             seller_id="2",
             sku="B",
             de=200,
             por=180,
+            created_at=None,
             updated_at=None,
             created_by=None,
             updated_by=None,
-            audit_created_at=None,
-            audit_updated_at=None,
+            alerta_pendente=False,
         ),
     ]

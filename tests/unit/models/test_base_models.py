@@ -1,6 +1,8 @@
-import pytest
 from datetime import datetime, timedelta, timezone
-from app.models.base import AuditModel
+
+import pytest
+
+from app.models.base import AuditModel, UserModel
 
 # app/models/test_base.py
 
@@ -11,8 +13,6 @@ def test_auditmodel_default_created_at():
     assert model.updated_at is None
     assert model.created_by is None
     assert model.updated_by is None
-    assert model.audit_created_at is None
-    assert model.audit_updated_at is None
 
 
 def test_auditmodel_all_fields():
@@ -20,17 +20,13 @@ def test_auditmodel_all_fields():
     model = AuditModel(
         created_at=now,
         updated_at=now + timedelta(hours=1),
-        created_by="user1",
-        updated_by="user2",
-        audit_created_at=now,
-        audit_updated_at=now + timedelta(hours=2),
+        created_by=UserModel(name="user1", server="issuer1"),
+        updated_by=UserModel(name="user2", server="issuer2"),
     )
     assert model.created_at == now
     assert model.updated_at == now + timedelta(hours=1)
-    assert model.created_by == "user1"
-    assert model.updated_by == "user2"
-    assert model.audit_created_at == now
-    assert model.audit_updated_at == now + timedelta(hours=2)
+    assert model.created_by.name == "user1"
+    assert model.updated_by.name == "user2"
 
 
 def test_auditmodel_accepts_none():
@@ -41,8 +37,6 @@ def test_auditmodel_accepts_none():
     assert model.updated_at is None
     assert model.created_by is None
     assert model.updated_by is None
-    assert model.audit_created_at is None
-    assert model.audit_updated_at is None
 
 
 def test_auditmodel_datetime_fields():

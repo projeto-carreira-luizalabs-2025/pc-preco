@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, Integer, String, JSON
+from sqlalchemy import JSON, Column, DateTime, Integer, String
 
 from app.common.datetime import utcnow
 from app.integrations.database.sqlalchemy_client import Base

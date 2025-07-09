@@ -1,10 +1,13 @@
-from pydantic import BaseModel, Field, RootModel
 from datetime import datetime
 from typing import List
 
+from pydantic import BaseModel, Field, RootModel
+
 from app.api.common.schemas import SchemaType
-from app.api.common.schemas.base import CreatedByMixin, UpdatedByMixin, IntSchema
+from app.api.common.schemas.base import CreatedByMixin, IntSchema, UpdatedByMixin
 from app.api.common.schemas.response import ErrorResponse
+
+MARKETPLACE_REALM_URL = "http://localhost:8080/realms/marketplace"
 
 
 class BasePriceHistoryModel(BaseModel):
@@ -48,11 +51,11 @@ class PriceHistoryListResponse(RootModel[List[PriceHistoryResponse]]):
                     "registered_at": "2026-06-25T10:30:00Z",
                     "created_by": {
                         "name": "37a743fc-7ce3-43b7-ace3-7cfc98699135",
-                        "server": "http://localhost:8080/realms/marketplace",
+                        "server": MARKETPLACE_REALM_URL,
                     },
                     "updated_by": {
                         "name": "37a743fc-7ce3-43b7-ace3-7cfc98699135",
-                        "server": "http://localhost:8080/realms/marketplace",
+                        "server": MARKETPLACE_REALM_URL,
                     },
                 },
                 {
@@ -64,11 +67,11 @@ class PriceHistoryListResponse(RootModel[List[PriceHistoryResponse]]):
                     "registered_at": "2026-06-25T10:30:00Z",
                     "created_by": {
                         "name": "37a743fc-7ce3-43b7-ace3-7cfc98699135",
-                        "server": "http://localhost:8080/realms/marketplace",
+                        "server": MARKETPLACE_REALM_URL,
                     },
                     "updated_by": {
                         "name": "37a743fc-7ce3-43b7-ace3-7cfc98699135",
-                        "server": "http://localhost:8080/realms/marketplace",
+                        "server": MARKETPLACE_REALM_URL,
                     },
                 },
             ]

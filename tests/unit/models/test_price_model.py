@@ -1,7 +1,7 @@
+from datetime import datetime
+
 import pytest
 from pydantic import ValidationError
-
-from datetime import datetime
 
 from app.models import Price
 

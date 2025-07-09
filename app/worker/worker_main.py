@@ -15,7 +15,6 @@ from dependency_injector.wiring import Provide
 
 from ..settings.worker import WorkerSettings
 from .container_event_worker import WorkerContainer
-
 from .tasks.create_alert_task import CreateAlertTask
 from .tasks.suggest_price_task import SuggestPriceTask
 
