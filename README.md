@@ -2,11 +2,10 @@
 
 ## 📌 O que é este projeto?
 
-O `pc-preco` é um microsserviço que gerencia e fornece os **preços de produtos** exibidos ao consumidor final no marketplace, considerando:
+O `pc-preco` é um microsserviço que gerencia e fornece os **preços de produtos** do seller do marketplace:
 
-- Preço à vista (com ou sem desconto)
-- Preço a prazo (com ou sem juros)
-- Variação de preços por vendedor (mesmo produto, diferentes preços)
+- Preço de custo
+- Preço de venda
 
 ## 👥 Equipe
 
@@ -16,8 +15,6 @@ O `pc-preco` é um microsserviço que gerencia e fornece os **preços de produto
 - Layza Nauane De Paula Silva
 
 ## 📄 Design e documentação
-
-<!-- Colar o design docs da sua aplicação no link abaixo -->
 
 Você pode encontrar a documentação inicial referente a este projeto neste [design docs](https://github.com/projeto-carreira-luizalabs-2025/pc-preco/blob/main/devtools/info-projeto.md)
 
@@ -41,6 +38,7 @@ Você pode encontrar a documentação inicial referente a este projeto neste [de
 - **Documentação da API:** [Swagger](https://swagger.io/)
 - **Testes:** [Pytest](https://docs.pytest.org/)
 - **Qualidade:** [SonarQube](https://www.sonarsource.com/products/sonarqube/)
+- **IA**: [Ollama](https://ollama.com/)
 
 ## 🧰 Configuração do ambiente virtual
 
@@ -96,35 +94,17 @@ do ambiente virtual `(venv)`.
 1. Configuração dos contêineres da aplicação
 
 ```bash
-# Inicie os contêineres da aplicação, postgreSQL e Keycloak
+# Inicie os contêineres da aplicação (PostgreSQL, Keycloak, RabbitMQ, Redis e Ollama)
 make docker-compose-up
-
-# Ajuste o arquivo .env alterando a variável APP_DB_URL para apontar para o seu banco de dados PostgreSQL local.
-APP_DB_URL: postgresql+asyncpg://USER:PASSWORD@HOST:PORT/DATABASE_NAME.
 
 # Se desejar parar e remover os contêineres, execute:
 make docker-compose-down
 ```
 
-2.  Migração PostgreSQL
+2. Migração PostgreSQL
 
 ```bash
-# Instale localmente
-pip install alembic==1.16.1 psycopg2-binary==2.9.10
-
-# Crie o ambiente de migração
-alembic init alembic
-```
-
-Edite o arquivo env.py para carregar a variável de ambiente APP_DB_URL, tal como deixamos no arquivo dotenv.dev.txt.
-
-3. Aplique as migrações
-
-```bash
-# Inicie a primeira migração:
-alembic revision --autogenerate -m "anything-creeate"
-
-# Rode a migração:
+# Rode as migrações:
 make migration
 # ou
 alembic upgrade head
@@ -141,6 +121,37 @@ make run-dev
 # Windows
 uvicorn app.api_main:app --reload
 ```
+
+## 🛠️ Criação de filas e execução de workers
+
+Nosso projeto utiliza filas para gerenciar o processamento assíncrono de tarefas, garantindo maior escalabilidade, desacoplamento e performance na aplicação.
+
+### ⚙️ Criação das filas
+
+Para criar as filas no RabbitMQ, execute o comando correspondente ao seu sistema operacional, em um novo terminal:
+
+```bash
+# Linux
+make create-queue
+
+# Windows
+python -m devtools.scripts.queue.create_queue
+```
+
+### ⚙️ Execução dos workers
+
+Além das filas, temos workers responsáveis por consumir e processar as mensagens inseridas nelas.
+
+Para executar os workers (o terminal deve permanecer aberto durante a execução), use:
+
+```bash
+# Linux
+make worker
+
+# Windows
+python -m app.worker.worker_main
+```
+
 
 ## 📘 Acesso à documentação da API
 
@@ -168,6 +179,7 @@ tests/
 - **Serviços:** Regras de negócio e fluxos principais.
 - **Repositórios:** Operações de CRUD e acesso ao banco de dados.
 - **APIs:** Testes de integração das rotas principais.
+- **Workers:** Processamento assíncrono de tarefas, execução de rotinas em background e integração com sistemas externos.
 
 ### 🚀 Como executar os testes
 
@@ -289,34 +301,37 @@ sudo sysctl -w vm.max_map_count=262144
 
 ```bash
 .
-├── README.md
-├── alembic/
-│   └── versions
-├── app/                        # Código-fonte principal da aplicação (Em construção)
-│   └── api/                    # Rotas, controladores e interfaces REST da aplicação
-│   └── common/                 # Utilitários e código compartilhado
-│   └── integrations/           # Integrações com sistemas externos
-│   └── models/                 # Definições de modelos para rotas
-│   └── repositories/           # Persistência e acesso a banco de dados
-│   └── services/               # Regras de negócio da aplicação
-│   └── settings/               # Configurações da aplicação
-│   └── worker/
-├── devtools/                   # Ferramentas e scripts auxiliares para desenvolvimento
-|   └── api/
-│   └── docker/                  # Arquivos e configurações para Docker (ex: Dockerfile, docker-compose-sonar.yml)
-|   └── keycloack-config/
-│   └── scripts/                # Scripts automatizados usados no `makefile` (ex: configuração de ambiente)
-│   └── info-projeto.md         # Documento de levantamento de requisitos
-├── requirements/
-├── tests/                       # Pasta para testes da aplicação
-│   └── factories
-│   └── fixtures
-│   └── unit                    # Testes unitários
-├── venv/
-├── makefile                    # Comandos automatizados (ex: build, run, test)
-├── pyproject.toml
-├── requirements.txt
-├── sonar-project.properties    # Configurações do SonarQube
+.
+├── README.md                       # Documentação principal do projeto, instruções de uso e informações gerais.
+├── alembic/                        # Diretório de controle de versões de migrações do banco de dados (usando Alembic).
+│   └── versions/                   # Scripts de migração gerados pelo Alembic.
+├── app/                            # Código-fonte principal da aplicação.
+│   └── api/                        # Implementação da camada de API da aplicação.
+│   └── common/                     # Utilitários e código compartilhado entre módulos.
+│   └── integrations/               # Integrações com sistemas externos (ex: APIs, filas, etc).
+│   └── models/                     # Definições de modelos de dados (ex: Pydantic, ORM).
+│   └── repositories/               # Persistência e acesso a banco de dados.
+│   └── services/                   # Regras de negócio e lógica da aplicação.
+│   └── settings/                   # Configurações e variáveis de ambiente da aplicação.
+│   └── worker/                     # Implementação de workers e processamento assíncrono.
+├── devtools/                       # Ferramentas e scripts auxiliares para desenvolvimento.
+│   └── api/                        # Arquivos http para execução de rotas da api fora do swagger.
+│   └── docker/                     # Arquivos e configurações para Docker (ex: Dockerfile, docker-compose-sonar.yml).
+│   └── keycloack-config/           # Configurações e scripts para Keycloak (autenticação/autorização).
+│   └── scripts/                    # Scripts automatizados usados no Makefile (ex: configuração de ambiente, filas).
+│   └── info-projeto.md             # Documento de levantamento de requisitos e informações do projeto.
+├── requirements/                   # Diretório com arquivos de dependências do projeto.
+│   └── base.txt                    # Dependências principais da aplicação.
+│   └── develop.txt                 # Dependências adicionais para desenvolvimento.
+├── tests/                          # Testes automatizados da aplicação.
+│   └── factories/                  # Fábricas de objetos para testes.
+│   └── fixtures/                   # Fixtures para testes.
+│   └── unit/                       # Testes unitários.
+├── venv/                           # Ambiente virtual Python (gerado localmente, não versionar).
+├── makefile                        # Comandos automatizados para build, testes, lint, etc.
+├── pyproject.toml                  # Configuração de ferramentas Python (ex: Black, isort, pytest).
+├── requirements.txt                # Lista geral de dependências.
+├── sonar-project.properties        # Configurações do SonarQube para análise de qualidade de código.
 ```
 
 ## 📫 Contribuições
