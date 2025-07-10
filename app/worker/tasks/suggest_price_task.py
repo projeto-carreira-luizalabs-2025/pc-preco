@@ -69,8 +69,9 @@ class SuggestPriceTask:
             f"Você é um especialista em precificação de produtos.\n"
             f"Analise o histórico dos últimos preços de venda ('por') para o produto SKU '{sku}' do seller '{seller_id}'.\n"
             f"Histórico de preços (do mais antigo para o mais recente): {history}\n"
-            f"Com base nessa sequência, sugira um novo preço de venda ('por') para maximizar as chances de venda, "
-            f"considerando tendências e possíveis promoções. "
+            f"Com base nessa sequência, sugira um novo preço de venda ('por') que seja coerente com a tendência histórica recente, "
+            f"evitando variações abruptas em relação aos últimos preços e buscando maximizar as chances de venda considerando a estabilidade de mercado.\n"
+            f"Considere que variações muito grandes podem prejudicar a percepção de valor do cliente.\n"
             f"Responda apenas com o valor sugerido, sem texto adicional."
         )
         # Payload de envio para IA

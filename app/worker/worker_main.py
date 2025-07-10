@@ -46,7 +46,6 @@ class WorkerMain:
         return tasks
 
     def init(self):
-        # XXX Configurando o logger aqui mesmo
         logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s -   %(message)s")
         logging.getLogger("pika").setLevel(logging.WARNING)
         self.init_container()

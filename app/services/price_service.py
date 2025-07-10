@@ -91,14 +91,13 @@ class PriceService(CrudService[Price]):
 
         return Price.model_validate(price_dict)
 
-    async def find_price_in_cache(self, seller_id: str, sku: str, cache_key: str) -> dict:
+    async def find_price_in_cache(self, seller_id: str, sku: str, cache_key: str) -> Price | None:
         """
         Busca um preço pelo seller_id e sku, utilizando cache.
 
         :param seller_id: Identificador do vendedor.
         :param sku: Código do produto.
-        :return: Instância de Preco encontrada.
-        :raises NotFoundException: Se não encontrar o preço.
+        :return: Instância de Preco encontrada ou None.
         """
         cached = await self.redis_adapter.get_json(cache_key)
         if cached is not None:
@@ -109,6 +108,7 @@ class PriceService(CrudService[Price]):
                 extra={"seller_id": seller_id, "sku": sku},
             )
             return Price.model_validate(cached)
+        return None
 
     async def create(self, price_create: Price) -> Price:
         """

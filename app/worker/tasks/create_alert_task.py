@@ -35,7 +35,6 @@ class CreateAlertTask:
             if message.has_value():
                 await self.process(message)
             else:
-                # XXX Exportar o tempo para variável
                 await asyncio.sleep(1)
 
     async def process(self, message: QueueMessage):

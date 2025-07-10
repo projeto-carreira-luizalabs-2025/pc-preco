@@ -165,4 +165,6 @@ else
 	@ENV=test pytest --cov=${APP_DIR} --cov-report=term-missing --cov-report=html ${ROOT_TESTS_DIR}
 endif
 
+cache-test:
+	python -m devtools.scripts.cache_test.cache_test
 
